@@ -83,58 +83,57 @@ mountMotion(
 // 1. Hero --- the rig applies a load.
 //
 // No ScrollTrigger: this is the first viewport, so the sequence belongs to the
-// page opening rather than to a scroll position. One timeline, played once per
-// visit to the page; it does not repeat and does not loop.
+// page opening rather than to a scroll position.
+//
+// The load is photographed, not simulated. Two frames of the same specimen sit
+// stacked; the sequence cross-fades the earlier one out, so the platen closes
+// the gap and the crumb yields together, in the pixels. Nothing here scales or
+// squashes the photograph --- a transformed picture of bread reads as a
+// transformed picture, which is the failure this replaces.
+//
+// It plays on first arrival at the hero only. A ClientRouter return to the
+// homepage lands on the loaded frame with the marks already legible, which is
+// the honest state anyway. `isFirstLoad()` is not reusable here: it is a
+// one-shot latch already consumed by the nav entrance above, so the hero keeps
+// its own.
+let heroPlayed = false;
+
 mountMotion(
   "[data-motion-hero]",
   ({ root, gsap }) => {
-    const plate = root.querySelector(".rig-plate");
-    const specimen = root.querySelector(".rig-specimen");
-    const arrows = root.querySelectorAll(".rig-load path");
-    const scale = root.querySelector(".rig-scale");
-    if (!plate || !specimen) return;
+    if (heroPlayed) return;
 
+    const preload = root.querySelector(".rig-layer--preload");
+    // Both overlays are in the DOM; the one for the other breakpoint is
+    // display:none, so animating it is inert.
+    const arrows = root.querySelectorAll(".rig-load");
+    const scale = root.querySelectorAll(".rig-scale");
+    if (!preload) return;
+
+    heroPlayed = true;
     const tl = gsap.timeline({ defaults: { ease: MOTION.ease.instrument } });
-    // The plate descends a few pixels and the specimen loses a little height
-    // under it. Both are transforms, so neither costs a layout.
-    tl.from(plate, { y: -12, duration: MOTION.duration.base, clearProps: "all" })
-      .from(
-        specimen,
-        {
-          scaleY: 1.045,
-          transformOrigin: "center bottom",
-          duration: MOTION.duration.base,
-          clearProps: "all",
-        },
-        "<",
-      )
-      // The load becomes legible only once it is being applied.
+
+    // Raising the earlier frame is the only thing that departs from the static
+    // state, and matchMedia's revert puts it back at navigation.
+    tl.set(preload, { autoAlpha: 1 })
+      .to(preload, { autoAlpha: 0, duration: MOTION.duration.base * 1.5 })
+      // The load becomes legible only once it is being carried.
       .from(
         arrows,
         {
           autoAlpha: 0,
-          scale: 0.55,
-          transformOrigin: "center center",
           duration: MOTION.duration.quick,
           stagger: MOTION.stagger.evidence,
           clearProps: "all",
         },
-        "-=0.18",
-      );
-    if (scale) {
-      // The measurement resolves into place last: you measure after loading.
-      tl.from(
+        ">-0.08",
+      )
+      // The measurement resolves last: you measure after loading.
+      .from(
         scale,
-        {
-          scaleY: 0,
-          autoAlpha: 0,
-          transformOrigin: "center center",
-          duration: MOTION.duration.quick,
-          clearProps: "all",
-        },
+        { autoAlpha: 0, duration: MOTION.duration.quick, clearProps: "all" },
         "<",
       );
-    }
   },
   1,
 );

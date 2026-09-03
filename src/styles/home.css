@@ -64,9 +64,28 @@ body:has(main.home)::after {
 }
 
 /* --- 1. Hero ----------------------------------------------------------- */
+
+/* The hero alone runs wider than the 1440px body measure. The reference gives
+   the rig roughly the same share of the frame as the title, and at 1440 the
+   equipment shrinks to a thumbnail beside a 5.75rem headline. Only this band
+   widens; every band below it keeps the page's measure, so the rhythm at the
+   fold and the start of the next section are unchanged. */
+.home .band--hero .inner {
+  max-width: 1760px;
+}
+
+/* The hero band alone runs tighter than the page's block rhythm. The reference
+   ends its hero at 88% of the first screen, with the next section already
+   showing; the photographic rig is a much taller object than the drawing it
+   replaced, and at the page's 5rem band padding it pushed that boundary off
+   the fold entirely. The padding is what gives way, not the equipment. */
+.home .band--hero {
+  padding-block: clamp(2rem, 2.6vw, 3rem);
+}
+
 .home .hero {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
   gap: clamp(1.5rem, 4vw, 4rem);
   align-items: center;
 }
@@ -113,7 +132,10 @@ body:has(main.home)::after {
 .home .linkline span { color: var(--slop-tomato); }
 
 .home .hero-figure { margin: 0; }
-.home .hero-figure .rig { max-width: 560px; margin-inline: auto; }
+/* No artwork cap: the rig is the composition's counterweight to the title and
+   is allowed the whole column. It is capped only on the phone, where the tall
+   crop would otherwise push the fold past the lede. */
+.home .hero-figure .rig { margin-inline: auto; }
 
 .home .readout {
   display: flex;
@@ -345,6 +367,11 @@ body:has(main.home)::after {
   .home .res { grid-template-columns: minmax(0, 1fr); }
 
   .home .phases { grid-template-columns: 1fr 1fr; }
+
+  /* Stacked, the portrait crop is the tallest thing above the fold. Capping it
+     keeps the lede and the primary action on the first screen of a phone, and
+     stops a 880px-wide tablet turning it into a full-height poster. */
+  .home .hero-figure .rig { max-width: 380px; }
 
   /* The horizontal rail becomes a vertical load track: the dot column is the
      line, and each station stacks its own record. */

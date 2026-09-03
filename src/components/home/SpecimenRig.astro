@@ -1,125 +1,218 @@
 ---
 /**
- * Specimen 001 held in a vertical compression rig, drawn as a cross-section.
+ * Specimen 001 under load in a benchtop compression rig.
  *
- * The reference composition photographs a real sandwich in a steel press.
- * A photograph is not something this repo can honestly ship, so the specimen
- * is drawn instead --- which also suits the course better: a cross-section
- * shows the interfaces that a photograph of an intact sandwich hides.
+ * Two photographic states of the same specimen, art-directed per breakpoint:
+ * `preload` (platen clear of the bread) and `loaded` (platen in contact, the
+ * crumb compressed at the contact face). The compression is photographed
+ * rather than simulated --- scaling a picture of bread reads as a picture
+ * being scaled, not as bread yielding.
  *
- * The specimen is monochrome. The only colour is the load itself: the two
- * force arrows and the plate they act through. That is the "locally
- * meaningful coloured layer" rule --- red here means load, nothing else.
+ * The LOADED state is the static DOM state. It is what renders with no
+ * JavaScript, with GSAP failing, and under reduced motion, and it is the
+ * truthful one: the labels beside it say the test is in progress. The preload
+ * layer is a decorative transition surface --- it carries no alt text, sits at
+ * opacity 0 until motion asks for it, and returns there when matchMedia
+ * reverts on navigation.
  *
- * The readable labels (specimen id, load case, status) are HTML beside this
- * drawing, not text inside the SVG, so they are selectable, translatable and
- * reachable in the normal reading order.
+ * Every readable mark is code-native and lives outside the photograph: crop
+ * marks, the two force arrows and the measurement scale are drawn here in SVG,
+ * and the specimen id, scale, load case and status are HTML in the figcaption.
+ * Nothing legible is baked into the pixels.
  */
+import { getImage } from "astro:assets";
+import loadedDesktop from "../../assets/images/hero/hero-rig-loaded-desktop.png";
+import loadedMobile from "../../assets/images/hero/hero-rig-loaded-mobile.png";
+import preloadDesktop from "../../assets/images/hero/hero-rig-preload-desktop.png";
+import preloadMobile from "../../assets/images/hero/hero-rig-preload-mobile.png";
+
+const DESKTOP_WIDTHS = [800, 1200, 1600];
+const MOBILE_WIDTHS = [400, 700, 1088];
+
+type Src = typeof loadedDesktop;
+
+/** srcset string for one source image in one format. */
+async function set(src: Src, widths: number[], format: "avif" | "webp") {
+  const image = await getImage({ src, widths, format });
+  return image.srcSet.attribute || image.src;
+}
+
+const art = async (desktop: Src, mobile: Src) => ({
+  desktopAvif: await set(desktop, DESKTOP_WIDTHS, "avif"),
+  desktopWebp: await set(desktop, DESKTOP_WIDTHS, "webp"),
+  mobileAvif: await set(mobile, MOBILE_WIDTHS, "avif"),
+  mobileWebp: await set(mobile, MOBILE_WIDTHS, "webp"),
+  fallback: await getImage({ src: desktop, widths: DESKTOP_WIDTHS, format: "webp" }),
+});
+
+const loaded = await art(loadedDesktop, loadedMobile);
+const preload = await art(preloadDesktop, preloadMobile);
+
+// Art direction switches with the layout, at the same 900px the hero grid
+// collapses on, so the picture and the composition never disagree.
+const AD = "(min-width: 900px)";
+const SIZES = "(min-width: 900px) min(58vw, 940px), 100vw";
+
+const ALT =
+  "A sandwich of open-crumb bread, ruffled lettuce, tomato, red onion, cheese " +
+  "and folded sliced ham, held between the steel platens of a benchtop " +
+  "compression press. The upper platen is pressing down on the top slice, " +
+  "flattening the crumb where it makes contact.";
 ---
 
-<svg
-  class="rig"
-  viewBox="0 0 420 380"
-  role="img"
-  aria-labelledby="rig-title rig-desc"
-  focusable="false"
->
-  <title id="rig-title">Specimen 001 in a vertical compression rig</title>
-  <desc id="rig-desc">
-    A cross-section of a five-layer sandwich between the two platens of a
-    compression rig. The upper platen is applying a downward load and the base
-    an equal upward reaction, shown by two arrows. A scale bar at the right
-    marks the specimen at fifty millimetres tall.
-  </desc>
+<div class="rig">
+  <picture class="rig-layer">
+    <source media={AD} type="image/avif" srcset={loaded.desktopAvif} sizes={SIZES} />
+    <source media={AD} type="image/webp" srcset={loaded.desktopWebp} sizes={SIZES} />
+    <source type="image/avif" srcset={loaded.mobileAvif} sizes={SIZES} />
+    <source type="image/webp" srcset={loaded.mobileWebp} sizes={SIZES} />
+    <img
+      src={loaded.fallback.src}
+      width={loadedDesktop.width}
+      height={loadedDesktop.height}
+      alt={ALT}
+      decoding="async"
+      fetchpriority="high"
+    />
+  </picture>
 
-  <g class="rig-crop" aria-hidden="true">
-    <path d="M8 30 V8 H30" /><path d="M390 8 H412 V30" />
-    <path d="M8 350 V372 H30" /><path d="M390 372 H412 V350" />
-  </g>
+  {/* Decorative: the same specimen a moment earlier. Never announced. */}
+  <picture class="rig-layer rig-layer--preload">
+    <source media={AD} type="image/avif" srcset={preload.desktopAvif} sizes={SIZES} />
+    <source media={AD} type="image/webp" srcset={preload.desktopWebp} sizes={SIZES} />
+    <source type="image/avif" srcset={preload.mobileAvif} sizes={SIZES} />
+    <source type="image/webp" srcset={preload.mobileWebp} sizes={SIZES} />
+    <img
+      src={preload.fallback.src}
+      width={preloadDesktop.width}
+      height={preloadDesktop.height}
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+    />
+  </picture>
 
-  <g class="rig-frame" aria-hidden="true">
-    <rect x="70" y="40" width="14" height="270" rx="2" />
-    <rect x="306" y="40" width="14" height="270" rx="2" />
-    <g class="rig-plate">
-      <path d="M188 22 h24 v40 h-24 z" />
-      <path d="M182 62 h36 v26 h-36 z" />
-      <rect x="60" y="88" width="270" height="18" rx="2" />
+  {/* Marks are drawn in the photograph's own pixel space, so a coordinate here
+      is the coordinate in the asset it annotates. One overlay per crop. */}
+  <svg class="rig-marks rig-marks--wide" viewBox="0 44 1600 1160" aria-hidden="true" focusable="false">
+    <g class="rig-crop">
+      <path d="M40 144 V80 H104" /><path d="M1496 80 H1560 V144" />
+      <path d="M40 1104 V1168 H104" /><path d="M1496 1168 H1560 V1104" />
     </g>
-    <rect x="60" y="284" width="270" height="18" rx="2" />
-    <rect x="46" y="310" width="298" height="22" rx="3" />
-  </g>
-
-  <g class="rig-specimen">
-    <path class="crust" d="M104 130 h182 a10 10 0 0 1 0 34 h-182 a10 10 0 0 1 0 -34 z" />
-    <path class="leaf" d="M104 168 q22 -10 44 0 q22 10 44 0 q22 -10 44 0 q22 10 50 0 v14 h-182 z" />
-    <rect class="slab" x="104" y="184" width="182" height="16" rx="3" />
-    <path class="fill" d="M104 202 q30 12 60 0 q30 -12 62 0 q30 12 60 0 v16 h-182 z" />
-    <path class="crust" d="M104 220 h182 a10 10 0 0 1 0 34 h-182 a10 10 0 0 1 0 -34 z" />
-    <g class="hatch">
-      <path d="M112 138 h20 M148 142 h24 M196 138 h18 M240 143 h22 M266 137 h14" />
-      <path d="M112 232 h22 M152 238 h20 M198 231 h24 M244 237 h18 M266 232 h16" />
+    <g class="rig-load">
+      <path d="M800 498 V584 M786 570 L800 584 L814 570" />
+      <path d="M800 1078 V994 M786 1008 L800 994 L814 1008" />
     </g>
-  </g>
+    <g class="rig-scale">
+      <path d="M1452 641 V948" />
+      <path d="M1438 641 H1466 M1438 948 H1466" />
+      <path d="M1446 718 H1466 M1446 794 H1466 M1446 871 H1466" />
+    </g>
+  </svg>
 
-  <g class="rig-load" aria-hidden="true">
-    <path d="M195 112 v14 m-6 -6 l6 6 l6 -6" />
-    <path d="M195 272 v-14 m-6 6 l6 -6 l6 6" />
-  </g>
-
-  <g class="rig-scale" aria-hidden="true">
-    <path d="M360 130 v124" />
-    <path d="M354 130 h12 M354 254 h12" />
-    <path d="M357 161 h9 M357 192 h9 M357 223 h9" />
-  </g>
-</svg>
+  <svg class="rig-marks rig-marks--tall" viewBox="0 0 1088 1328" aria-hidden="true" focusable="false">
+    <g class="rig-crop">
+      <path d="M28 80 V28 H80" /><path d="M1008 28 H1060 V80" />
+      <path d="M28 1248 V1300 H80" /><path d="M1008 1300 H1060 V1248" />
+    </g>
+    <g class="rig-load">
+      <path d="M544 482 V566 M531 553 L544 566 L557 553" />
+      <path d="M544 1082 V1002 M531 1015 L544 1002 L557 1015" />
+    </g>
+    <g class="rig-scale">
+      <path d="M1014 622 V895" />
+      <path d="M1000 622 H1028 M1000 895 H1028" />
+      <path d="M1008 690 H1028 M1008 758 H1028 M1008 827 H1028" />
+    </g>
+  </svg>
+</div>
 
 <style>
+  /* The box is reserved from the aspect ratio of whichever crop is on screen,
+     so the photograph never moves the copy beneath it while it decodes.
+
+     The wide asset is 1600x1280 but its ink only runs y 58..1188, so 150px of
+     it is white margin. The box is cut to the 1160px window y 44..1204 and the
+     photograph is positioned into it, which buys back that margin as machine
+     size instead of spending it on empty paper. The marks SVG below is given
+     the same window as its viewBox, so a mark still lands where it landed. */
   .rig {
-    width: 100%;
-    height: auto;
+    position: relative;
+    aspect-ratio: 1600 / 1160;
+    margin-inline: auto;
+  }
+
+  .rig-layer,
+  .rig-layer img {
     display: block;
+    width: 100%;
+    height: 100%;
   }
 
-  .rig-crop {
-    fill: none;
-    stroke: var(--slop-charcoal);
-    stroke-width: 1.5;
+  .rig-layer {
+    position: absolute;
+    inset: 0;
   }
 
-  .rig-frame {
-    fill: none;
-    stroke: var(--slop-charcoal);
-    stroke-width: 1.5;
+  /* 36.7% of the 120px of overflow puts the window at y 44..1204: 14px of
+     clear paper above the rod tip and 16px below the base shadow, in both the
+     loaded and the preload asset. Not `contain` --- contain would letterbox the
+     margin straight back in. */
+  .rig-layer img {
+    object-fit: cover;
+    object-position: 50% 36.7%;
+    /* The studio paper renders 253,253,253 against the page's 255. Two levels
+       is below a just-noticeable difference as a gradient but not as a hard
+       rectangle edge, and the seam was visible around the whole figure. The
+       multiplier lands 253 on 255 and leaves black at black. */
+    filter: brightness(1.008);
   }
 
-  /* The specimen is deliberately drawn in ink only. */
-  .rig-specimen :is(.crust, .leaf, .slab, .fill) {
-    fill: var(--slop-paper);
-    stroke: var(--slop-charcoal);
-    stroke-width: 1.5;
-    stroke-linejoin: round;
+  /* Not content waiting to be revealed: the layer beneath it is the complete,
+     truthful state. This one is only ever a transition surface, so its resting
+     value is the one it must return to. */
+  .rig-layer--preload {
+    opacity: 0;
   }
 
-  .hatch {
-    fill: none;
-    stroke: var(--slop-charcoal);
-    stroke-width: 1;
-    opacity: 0.55;
-    stroke-linecap: round;
+  .rig-marks {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
   }
 
-  /* The only colour in the drawing: the load. */
-  .rig-load {
-    fill: none;
-    stroke: var(--slop-tomato);
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
+  .rig-crop,
   .rig-scale {
     fill: none;
     stroke: var(--slop-charcoal);
-    stroke-width: 1;
+    stroke-linecap: butt;
+  }
+
+  .rig-crop { stroke-width: 5; }
+  .rig-scale { stroke-width: 4; }
+
+  /* The only colour over the photograph: the load. */
+  .rig-load {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .rig-marks--tall { display: none; }
+
+  @media (width < 900px) {
+    /* The tall crop is already cut close, so its box matches the asset exactly
+       and nothing is cropped away. */
+    .rig { aspect-ratio: 1088 / 1328; }
+    .rig-layer img { object-position: 50% 50%; }
+    .rig-marks--wide { display: none; }
+    .rig-marks--tall { display: block; }
+    .rig-crop { stroke-width: 6; }
+    .rig-scale { stroke-width: 5; }
+    .rig-load { stroke-width: 11; }
   }
 </style>
