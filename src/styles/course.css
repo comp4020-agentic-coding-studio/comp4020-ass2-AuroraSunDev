@@ -69,3 +69,183 @@
      without an override. Line length is held at the reading measure. */
   --slop-measure: 68ch;
 }
+
+/* --- Spacing and containers ------------------------------------------- */
+:root {
+  /* One scale, used for section rhythm. The theme's --at-spacing-* stays for
+     component-level padding; these are the page-level intervals that give a
+     long teaching page its vertical rhythm. */
+  --slop-space-2xs: 0.25rem;
+  --slop-space-xs: 0.5rem;
+  --slop-space-sm: 0.75rem;
+  --slop-space-md: 1.25rem;
+  --slop-space-lg: 2rem;
+  --slop-space-xl: 3.5rem;
+  --slop-space-2xl: 6rem;
+}
+
+/* A full-bleed band that can carry its own ground. Sections use this rather
+   than a card, because the plan's page families are bands and rails, not
+   grids of rounded boxes. */
+.slop-band {
+  padding-block: var(--slop-space-xl);
+}
+
+/* The charcoal ground. Rare and meaningful: destructive testing, autopsy, or
+   a conceptual transition. Swaps in the on-ink inks so nothing inside it
+   inherits a colour that was only checked against paper. */
+.slop-band--ink {
+  background: var(--slop-ink);
+  color: var(--slop-paper-on-ink);
+  --slop-charcoal: var(--slop-paper-on-ink);
+  --slop-tomato: var(--slop-tomato-on-ink);
+  --slop-lettuce: var(--slop-lettuce-on-ink);
+  --slop-toast: var(--slop-toast-on-ink);
+  --slop-rule: var(--slop-paper-on-ink);
+  --slop-rule-hair: rgb(255 255 255 / 32%);
+}
+
+/* Reading measure for extended prose. */
+.slop-measure {
+  max-width: var(--slop-measure);
+}
+
+/* --- Shared technical marks -------------------------------------------- */
+
+/* An archive rule: a struck measurement line with its record beside it. The
+   line's resting state is full width --- the animation scales it up from the
+   left, so with motion off, reduced, or JavaScript broken this is simply a
+   ruled line with a label. */
+.slop-archive-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--slop-space-sm);
+  margin-block: var(--slop-space-md);
+}
+
+.slop-archive-rule__line {
+  flex: 1 1 auto;
+  height: var(--slop-rule-width);
+  background: var(--slop-rule);
+  transform: scaleX(1);
+  /* Only elements that actually animate get promoted. */
+  will-change: transform;
+}
+
+.slop-archive-rule__label {
+  flex: 0 0 auto;
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slop-toast);
+}
+
+/* A specimen label: instrument metadata, not a badge. Monospace, because
+   every one of these is an identifier, a date, a measurement or a condition. */
+.slop-specimen-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--slop-space-xs);
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slop-toast);
+}
+
+.slop-specimen-label__key {
+  color: var(--slop-charcoal);
+  opacity: 0.72;
+}
+
+.slop-specimen-label__value {
+  color: var(--slop-charcoal);
+  font-weight: 600;
+}
+
+/* An archive stamp. Attaches to a real specimen, page state or review action;
+   never a decorative pill. The state is carried by the word first --- the
+   colour and the border are the second and third channels, never the only
+   one. */
+.slop-stamp {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border: var(--slop-rule-heavy) solid currentcolor;
+  font-family: var(--slop-font-display);
+  font-size: var(--at-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.slop-stamp--tested { color: var(--slop-charcoal); }
+.slop-stamp--held { color: var(--slop-lettuce); }
+.slop-stamp--failed { color: var(--slop-tomato); }
+.slop-stamp--revised {
+  color: var(--slop-toast);
+  border-style: dashed; /* second channel: revision is provisional */
+}
+
+/* --- Shell ------------------------------------------------------------- */
+
+/* The nav settles once on arrival. Give it a stable ground so the entrance
+   never reveals page content sliding underneath it. */
+.at-nav {
+  background: var(--slop-paper);
+}
+
+/* Touch targets on the phone composition. */
+@media (width < 640px) {
+  .at-nav a,
+  .at-nav button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* --- Bringing the theme's surfaces into the course palette --------------
+ *
+ * The theme derives its neutrals from --at-primary with relative colour
+ * (`oklch(from var(--at-primary) 99.4% 0.004 h)`), so with the Slop gold in
+ * place the page ground renders as a warm cream and headings render gold.
+ * plan.md requires true laboratory white and charcoal ink, and explicitly
+ * prohibits replacing the white with cream, beige or warm grey.
+ *
+ * The fixed Slop identity is NOT touched: --at-primary/--at-secondary/
+ * --at-tertiary keep their values, so the crest, the wordmark lockup and the
+ * brand's own marks stay exactly as the brand package ships them. What
+ * changes is the paper the course is printed on and the ink it is set in.
+ *
+ * These declarations are unlayered, so they win over the theme's
+ * `@layer at.tokens` regardless of load order --- the same mechanism the
+ * theme documents for brand CSS.
+ */
+:root {
+  --at-bg: var(--slop-paper);
+  --at-bg-alt: var(--slop-wash);
+  --at-bg-elevated: var(--slop-paper);
+
+  --at-text: var(--slop-charcoal);
+  --at-heading: var(--slop-charcoal);
+  /* The theme's muted inks derive from the brand hue too; re-derive them from
+     charcoal at the same alphas it verified for contrast. */
+  --at-text-secondary: rgb(31 30 28 / 78%);
+  --at-text-muted: rgb(31 30 28 / 62%);
+}
+
+/* The active page. Colour is the second channel --- the rule beneath it is
+   what survives a colour-vision difference or a greyscale print.
+   Drawn with text-decoration rather than box-shadow on purpose: the theme's
+   focus ring IS a box-shadow, so an inset rule here silently replaced the
+   focus ring on whichever nav item was the current page. Caught by tabbing
+   through the nav and reading the computed styles. */
+.at-nav-links a[aria-current="page"] {
+  color: var(--slop-tomato);
+  text-decoration: underline;
+  text-decoration-color: var(--slop-tomato);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}

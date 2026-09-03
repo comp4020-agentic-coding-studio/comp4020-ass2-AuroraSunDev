@@ -1,0 +1,23 @@
+---
+/**
+ * An archive stamp attached to a specimen, page state or review action.
+ *
+ * The word carries the state; colour and border style are the second and
+ * third channels. A screen reader gets the word, so nothing here depends on
+ * seeing the colour.
+ */
+interface Props {
+  state: "tested" | "held" | "failed" | "revised";
+  /** Overrides the default word when the record says something more exact. */
+  label?: string;
+}
+const { state, label } = Astro.props;
+const words = {
+  tested: "Tested",
+  held: "Held",
+  failed: "Failed",
+  revised: "Revised",
+} as const;
+---
+
+<span class={`slop-stamp slop-stamp--${state}`}>{label ?? words[state]}</span>

@@ -1,8 +1,14 @@
 ---
 import MdxPageLayout from "astro-theme-university/layouts/MdxPageLayout.astro";
+import ArchiveRule from "../components/course/ArchiveRule.astro";
+import { courseMeta } from "../course-config";
 import { siteConfig } from "../site-config";
 ---
 
 <MdxPageLayout siteConfig={siteConfig} {...Astro.props}>
   <slot />
+  {/* The shared archive layer closes every page that renders through this
+      layout. It records the course the page belongs to rather than decorating
+      it, and it is the one place Phase 1 exercises the archive-rule mark. */}
+  <ArchiveRule label={`${courseMeta.code} / ${courseMeta.session} ${courseMeta.year}`} />
 </MdxPageLayout>

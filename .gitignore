@@ -26,3 +26,7 @@ mise.local.toml
 # your course API key, and this repo goes public when you ship. Your tracked
 # harness is CLAUDE.md (and any AGENTS.md), not this directory.
 .claude/
+
+# Local QA screenshots for viewport checks. Rendered output, never
+# committed, and kept apart from design-references/, which are approved inputs.
+.qa/

@@ -1,0 +1,17 @@
+---
+/**
+ * Instrument metadata: a key and its value, set in the monospace role because
+ * every one of these is an identifier, date, measurement or test condition.
+ * Not a badge, and not a fabricated metric --- callers pass real course data.
+ */
+interface Props {
+  key: string;
+  value: string;
+}
+const { key, value } = Astro.props;
+---
+
+<span class="slop-specimen-label">
+  <span class="slop-specimen-label__key">{key}</span>
+  <span class="slop-specimen-label__value">{value}</span>
+</span>

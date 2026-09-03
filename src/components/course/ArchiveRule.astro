@@ -1,0 +1,21 @@
+---
+/**
+ * A struck measurement line with its record beside it --- the site's shared
+ * "a reading was taken here" mark.
+ *
+ * The rule's resting state is its full length. The motion in
+ * src/lib/motion-boot.ts scales it up from the left on first sight, so with
+ * reduced motion, with JavaScript disabled, or with the script broken, this
+ * renders as an ordinary ruled line and its label.
+ */
+interface Props {
+  /** The record: a specimen id, a revision note, a date. Kept short. */
+  label: string;
+}
+const { label } = Astro.props;
+---
+
+<div class="slop-archive-rule" data-slop-archive-rule>
+  <span class="slop-archive-rule__line" aria-hidden="true"></span>
+  <span class="slop-archive-rule__label">{label}</span>
+</div>

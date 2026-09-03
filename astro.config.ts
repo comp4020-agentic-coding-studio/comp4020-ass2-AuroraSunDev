@@ -9,6 +9,19 @@ import { gitOrigin, resolveDeployment } from "./scripts/pages-base.ts";
 // Derived, never hardcoded --- see scripts/pages-base.ts for why.
 const { site, base } = resolveDeployment(process.env, gitOrigin);
 
+// One global client entry for the course's motion. Astro bundles a component
+// <script> per component; this keeps the shared mounts in a single module that
+// every page loads, so plugin registration and the ClientRouter lifecycle are
+// bound exactly once per document.
+const slopMotion = {
+  name: "slop-motion",
+  hooks: {
+    "astro:config:setup": ({ injectScript }: { injectScript: (stage: "page", code: string) => void }) => {
+      injectScript("page", 'import "/src/lib/motion-boot.ts";');
+    },
+  },
+};
+
 export default defineConfig({
   site,
   base,
@@ -51,6 +64,7 @@ export default defineConfig({
     // --- see src/decks/theme.css. `fontVariables` makes the deck page emit the
     // @font-face for the theme's body font, which the deck styles ask for by
     // name.
+    slopMotion,
     astromotion({
       theme: "./src/decks/theme.css",
       fontVariables: ["--font-public-sans"],
