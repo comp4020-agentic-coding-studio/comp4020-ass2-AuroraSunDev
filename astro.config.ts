@@ -1,4 +1,4 @@
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import courseGraph from "astro-course-university";
 import universityTheme from "astro-theme-university";
 import { astromotion, deckRemarkPlugins } from "astromotion";
@@ -30,6 +30,32 @@ export default defineConfig({
   // and what a visitor clicks in agreement --- otherwise each click costs a
   // 301 on GitHub Pages.
   trailingSlash: "always",
+  // The third typography role. Public Sans (body) and Roboto Mono (specimen
+  // ids, dates, measurements) are registered by the theme; this adds the
+  // condensed industrial display face plan.md calls for, through the same
+  // Astro font provider rather than a separate font package.
+  //
+  // IBM Plex Sans Condensed is SIL Open Font License 1.1 (c) 2017 IBM Corp.,
+  // reserved font name "Plex" --- verified against IBM/plex LICENSE.txt and
+  // the Google Fonts METADATA.pb, which records license: "OFL".
+  //
+  // It is NOT a variable font: a `wght@100..700` range request to the Google
+  // CSS API returns HTTP 400, and only the discrete weights 100-700 resolve
+  // (800 and 900 do not exist). So the weights are listed explicitly --- two
+  // of them, since the display role is titles, numbers and short capability
+  // words, never running text.
+  fonts: [
+    {
+      name: "IBM Plex Sans Condensed",
+      cssVariable: "--font-ibm-plex-sans-condensed",
+      provider: fontProviders.google(),
+      weights: ["600", "700"],
+      styles: ["normal"],
+      // A condensed fallback, so a failed webfont degrades to something with
+      // roughly the same width rather than reflowing every title.
+      fallbacks: ["Arial Narrow", "Helvetica Neue", "sans-serif"],
+    },
+  ],
   integrations: [
     universityTheme({
       defaultLayout: "src/layouts/PageLayout.astro",
@@ -45,6 +71,10 @@ export default defineConfig({
       // build time, not page URLs, so the base path does not apply to them.
       brandCss: ["astro-theme-slop/slop.css", "/src/styles/course.css"],
       imageFormat: "avif",
+      // The display face sets page titles, so it is above the fold on every
+      // page and is preloaded alongside the body font. The mono face is not:
+      // it carries specimen ids and dates, which sit further down.
+      preloadFonts: ["--font-public-sans", "--font-ibm-plex-sans-condensed"],
       llmsTxt: true,
       // The theme owns the markdown plugin chain, so astromotion's slide
       // plugins (slide breaks, classes, backgrounds, notes, QR codes) are

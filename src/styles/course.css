@@ -60,7 +60,9 @@
      The display face is not chosen yet (plan.md lists it under Next Design
      Decisions), so it resolves to the body stack today. Registering the real
      face later is a one-line change here and nowhere else. */
-  --slop-font-display: var(--at-font-body);
+  --slop-font-display:
+    var(--font-ibm-plex-sans-condensed, "IBM Plex Sans Condensed"), "Arial Narrow",
+    "Helvetica Neue", sans-serif;
   --slop-font-body: var(--at-font-body);
   --slop-font-mono: var(--at-font-mono);
 
@@ -248,4 +250,21 @@
   text-decoration-color: var(--slop-tomato);
   text-decoration-thickness: 2px;
   text-underline-offset: 6px;
+}
+
+/* --- The display role ---------------------------------------------------
+ * Page titles only, plus anything explicitly marked .slop-display (week and
+ * assessment numbers, the four failure-family names, occasional capability
+ * words). Section headings stay in the readable sans on purpose.
+ * Condensed faces set tight at display sizes, so the tracking is opened
+ * very slightly to keep the counters legible at 1920 and the wrapping
+ * predictable at 390. */
+h1,
+.slop-display {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  /* Condensed titles are long; keep breaks at sensible words rather than
+     letting a two-word title split. */
+  text-wrap: balance;
 }
