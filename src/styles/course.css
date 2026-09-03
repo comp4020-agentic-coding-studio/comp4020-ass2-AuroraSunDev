@@ -99,6 +99,18 @@
 .slop-band--ink {
   background: var(--slop-ink);
   color: var(--slop-paper-on-ink);
+  /* The theme's own text tokens have to move too, not just the course ones.
+     Any theme rule inside this band (list items, captions, muted text) resolves
+     --at-text-secondary, which is charcoal at 78% --- charcoal on charcoal, a
+     contrast ratio of about 1:1, i.e. invisible. The build's axe pass does not
+     catch it: that check runs over the built DOM without rendered CSS, so its
+     colour-contrast rule cannot fire. Caught by reading computed styles in a
+     real browser instead. */
+  --at-text: var(--slop-paper-on-ink);
+  --at-text-secondary: rgb(255 255 255 / 82%);
+  --at-text-muted: rgb(255 255 255 / 70%);
+  --at-heading: var(--slop-paper-on-ink);
+  --at-link: var(--slop-paper-on-ink);
   --slop-charcoal: var(--slop-paper-on-ink);
   --slop-tomato: var(--slop-tomato-on-ink);
   --slop-lettuce: var(--slop-lettuce-on-ink);

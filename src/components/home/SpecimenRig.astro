@@ -1,0 +1,123 @@
+---
+/**
+ * Specimen 001 held in a vertical compression rig, drawn as a cross-section.
+ *
+ * The reference composition photographs a real sandwich in a steel press.
+ * A photograph is not something this repo can honestly ship, so the specimen
+ * is drawn instead --- which also suits the course better: a cross-section
+ * shows the interfaces that a photograph of an intact sandwich hides.
+ *
+ * The specimen is monochrome. The only colour is the load itself: the two
+ * force arrows and the plate they act through. That is the "locally
+ * meaningful coloured layer" rule --- red here means load, nothing else.
+ *
+ * The readable labels (specimen id, load case, status) are HTML beside this
+ * drawing, not text inside the SVG, so they are selectable, translatable and
+ * reachable in the normal reading order.
+ */
+---
+
+<svg
+  class="rig"
+  viewBox="0 0 420 380"
+  role="img"
+  aria-labelledby="rig-title rig-desc"
+  focusable="false"
+>
+  <title id="rig-title">Specimen 001 in a vertical compression rig</title>
+  <desc id="rig-desc">
+    A cross-section of a five-layer sandwich between the two platens of a
+    compression rig. The upper platen is applying a downward load and the base
+    an equal upward reaction, shown by two arrows. A scale bar at the right
+    marks the specimen at fifty millimetres tall.
+  </desc>
+
+  <g class="rig-crop" aria-hidden="true">
+    <path d="M8 30 V8 H30" /><path d="M390 8 H412 V30" />
+    <path d="M8 350 V372 H30" /><path d="M390 372 H412 V350" />
+  </g>
+
+  <g class="rig-frame" aria-hidden="true">
+    <rect x="70" y="40" width="14" height="270" rx="2" />
+    <rect x="306" y="40" width="14" height="270" rx="2" />
+    <path d="M188 22 h24 v40 h-24 z" />
+    <path d="M182 62 h36 v26 h-36 z" />
+    <rect x="60" y="88" width="270" height="18" rx="2" />
+    <rect x="60" y="284" width="270" height="18" rx="2" />
+    <rect x="46" y="310" width="298" height="22" rx="3" />
+  </g>
+
+  <g class="rig-specimen">
+    <path class="crust" d="M104 130 h182 a10 10 0 0 1 0 34 h-182 a10 10 0 0 1 0 -34 z" />
+    <path class="leaf" d="M104 168 q22 -10 44 0 q22 10 44 0 q22 -10 44 0 q22 10 50 0 v14 h-182 z" />
+    <rect class="slab" x="104" y="184" width="182" height="16" rx="3" />
+    <path class="fill" d="M104 202 q30 12 60 0 q30 -12 62 0 q30 12 60 0 v16 h-182 z" />
+    <path class="crust" d="M104 220 h182 a10 10 0 0 1 0 34 h-182 a10 10 0 0 1 0 -34 z" />
+    <g class="hatch">
+      <path d="M112 138 h20 M148 142 h24 M196 138 h18 M240 143 h22 M266 137 h14" />
+      <path d="M112 232 h22 M152 238 h20 M198 231 h24 M244 237 h18 M266 232 h16" />
+    </g>
+  </g>
+
+  <g class="rig-load" aria-hidden="true">
+    <path d="M195 112 v14 m-6 -6 l6 6 l6 -6" />
+    <path d="M195 272 v-14 m-6 6 l6 -6 l6 6" />
+  </g>
+
+  <g class="rig-scale" aria-hidden="true">
+    <path d="M360 130 v124" />
+    <path d="M354 130 h12 M354 254 h12" />
+    <path d="M357 161 h9 M357 192 h9 M357 223 h9" />
+  </g>
+</svg>
+
+<style>
+  .rig {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .rig-crop {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
+  }
+
+  .rig-frame {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
+  }
+
+  /* The specimen is deliberately drawn in ink only. */
+  .rig-specimen :is(.crust, .leaf, .slab, .fill) {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  .hatch {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    opacity: 0.55;
+    stroke-linecap: round;
+  }
+
+  /* The only colour in the drawing: the load. */
+  .rig-load {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .rig-scale {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+  }
+</style>

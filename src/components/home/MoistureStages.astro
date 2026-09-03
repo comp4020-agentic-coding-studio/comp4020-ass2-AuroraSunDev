@@ -1,0 +1,61 @@
+---
+/**
+ * Three states of a moisture front advancing through a porous layer, as the
+ * Week 4 deck teaches it. Discrete states, not a continuous animation: the
+ * lecture's own point is that the failure arrives late, so the interesting
+ * thing is the comparison between stages rather than the movement.
+ */
+const stages = [
+  { id: "01", label: "Dry material.", note: "No moisture front." },
+  { id: "02", label: "Moisture front advances.", note: "Penetration begins." },
+  { id: "03", label: "Saturation.", note: "Strength falls." },
+];
+---
+
+<ol class="ms">
+  {stages.map((stage, i) => (
+    <li class="ms-item">
+      <svg class="ms-svg" viewBox="0 0 110 60" role="presentation" focusable="false">
+        <rect class="ms-body" x="8" y="16" width="94" height="34" />
+        {i > 0 && (
+          <path
+            class="ms-front"
+            d={i === 1 ? "M8 16 h94 v11 h-94 z" : "M8 16 h94 v26 h-94 z"}
+          />
+        )}
+        {i > 0 && <path class="ms-arrow" d={`M30 4 v8 m-3 -3 l3 3 l3 -3`} />}
+        {i > 0 && <path class="ms-arrow" d={`M78 4 v8 m-3 -3 l3 3 l3 -3`} />}
+      </svg>
+      <p class="ms-stage">Stage {stage.id}</p>
+      <p class="ms-text">{stage.label}<br />{stage.note}</p>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .ms {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--slop-space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ms-svg { width: 100%; height: auto; display: block; }
+  .ms-body { fill: var(--slop-paper); stroke: var(--slop-charcoal); stroke-width: 1.5; }
+  .ms-front {
+    fill: color-mix(in srgb, var(--slop-toast) 38%, var(--slop-paper));
+    stroke: var(--slop-toast);
+    stroke-width: 1.5;
+  }
+  .ms-arrow { fill: none; stroke: var(--slop-toast); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .ms-stage {
+    margin: var(--slop-space-xs) 0 0;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slop-lettuce);
+  }
+  .ms-text { margin: 0.15rem 0 0; font-size: var(--at-font-size-sm); }
+</style>

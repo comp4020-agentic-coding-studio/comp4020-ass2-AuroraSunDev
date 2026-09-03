@@ -1,0 +1,113 @@
+---
+/**
+ * One before/after state for one failure family.
+ *
+ * Four families, two states each. The geometry does the explaining: SLIP
+ * offsets the layers, CRUSH shortens the stack, SPLAY pushes the filling past
+ * the outer layers, SOAK advances a front through them. The word and the
+ * caption beside each diagram say the same thing in text, so nothing here is
+ * the only carrier of the meaning.
+ *
+ * SOAK is the one family whose coloured layer is moisture rather than load,
+ * so it is drawn in toasted brown; the other three are red, which on this
+ * site means load or failure.
+ */
+interface Props {
+  family: "slip" | "soak" | "crush" | "splay";
+  state: "before" | "after";
+}
+const { family, state } = Astro.props;
+const after = state === "after";
+---
+
+<svg
+  class:list={["fd", `fd--${family}`, after && "fd--after"]}
+  viewBox="0 0 160 74"
+  role="presentation"
+  focusable="false"
+>
+  {family === "slip" && (
+    <g>
+      <rect class="outer" x={after ? 34 : 22} y="12" width="104" height="14" />
+      <path class="core" d={after ? "M26 28 h104 v12 h-104 z" : "M22 28 h104 v12 h-104 z"} />
+      <rect class="outer" x={after ? 14 : 22} y="42" width="104" height="14" />
+      <path class="force" d="M8 19 h-6 m4 -4 l-4 4 l4 4" />
+      <path class="force" d="M152 49 h6 m-4 -4 l4 4 l-4 4" />
+    </g>
+  )}
+
+  {family === "soak" && (
+    <g>
+      <rect class="outer" x="22" y="12" width="112" height="14" />
+      <path class="core" d="M22 28 h112 v14 h-112 z" />
+      <rect class="outer" x="22" y="44" width="112" height="14" />
+      <path class="front" d={after ? "M22 28 h112 v14 h-112 z" : "M22 28 h34 v14 h-34 z"} />
+      <path class="drop" d="M40 6 v3 M62 4 v4 M84 6 v3" />
+    </g>
+  )}
+
+  {family === "crush" && (
+    <g>
+      <rect class="outer" x="22" y={after ? 22 : 12} width="112" height={after ? 10 : 14} />
+      <path class="core" d={after ? "M22 32 h112 v7 h-112 z" : "M22 28 h112 v14 h-112 z"} />
+      <rect class="outer" x="22" y={after ? 39 : 44} width="112" height={after ? 10 : 14} />
+      <path class="force" d="M78 4 v6 m-4 -4 l4 4 l4 -4" />
+      <path class="force" d="M78 68 v-6 m-4 4 l4 -4 l4 4" />
+    </g>
+  )}
+
+  {family === "splay" && (
+    <g>
+      <rect class="outer" x="26" y="12" width="104" height="14" />
+      <path class="core" d={after ? "M12 28 h132 v13 h-132 z" : "M26 28 h104 v13 h-104 z"} />
+      <rect class="outer" x="26" y="43" width="104" height="14" />
+      {after && <path class="force" d="M8 34 h-5 m3 -4 l-3 4 l3 4" />}
+      {after && <path class="force" d="M152 34 h5 m-3 -4 l3 4 l-3 4" />}
+    </g>
+  )}
+</svg>
+
+<style>
+  .fd {
+    width: 100%;
+    max-width: 190px;
+    height: auto;
+    display: block;
+  }
+
+  .outer,
+  .core {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.4;
+  }
+
+  .core {
+    fill: color-mix(in srgb, var(--slop-tomato) 26%, var(--slop-paper));
+  }
+
+  .fd--soak .core {
+    fill: var(--slop-paper);
+  }
+
+  .front {
+    fill: color-mix(in srgb, var(--slop-toast) 40%, var(--slop-paper));
+    stroke: var(--slop-toast);
+    stroke-width: 1.4;
+  }
+
+  .force {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .drop {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+</style>

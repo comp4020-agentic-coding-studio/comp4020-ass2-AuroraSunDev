@@ -1,0 +1,475 @@
+/* SLOP2895 homepage.
+ *
+ * Bands, not cards. Each section is full-bleed so a charcoal band can mean
+ * something, with one centred container inside it. Mobile is a different
+ * composition rather than a narrowed desktop: the hero puts copy above the
+ * specimen and moves the instrument readout into a strip below it, the
+ * horizontal test rail becomes a vertical load track, and the assessment
+ * stems become rows.
+ */
+
+/* The theme lays the body out on a named grid and puts every direct child in
+   the `content` column. The homepage needs the `full` column so its bands can
+   carry their own ground edge to edge. */
+main.home {
+  grid-column: full;
+  display: block;
+  padding: 0;
+}
+
+/* The theme draws a 1px accent rule down the content edge. It reads as a
+   margin rule on an article page, but it would cut straight through a
+   full-bleed band, so the homepage turns it off. */
+body:has(main.home)::after {
+  display: none;
+}
+
+.home .inner {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+.home .band {
+  padding-block: clamp(2.5rem, 5vw, 5rem);
+  border-bottom: var(--slop-rule-width) solid var(--slop-rule);
+}
+
+.home .band--alt { background: var(--slop-wash); }
+.home .band--ink { background: var(--slop-ink); border-bottom-color: var(--slop-ink); }
+.home .band--details { border-bottom: 0; }
+
+.home .display { font-family: var(--slop-font-display); font-weight: 700; letter-spacing: 0.005em; }
+.home .xl {
+  font-size: clamp(2.4rem, 5.4vw, 4.5rem);
+  line-height: 1.02;
+  margin: 0 0 0.5rem;
+  text-wrap: balance;
+}
+
+.home .eyebrow,
+.home .fam-cap,
+.home .phase-n,
+.home .res-kicker,
+.home .load-cap,
+.home .stn-date,
+.home .caveat,
+.home .dim,
+.home .prop-spec {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* --- 1. Hero ----------------------------------------------------------- */
+.home .hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+}
+
+.home .hero-title {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(2.9rem, 6.4vw, 5.75rem);
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+  margin: 0 0 1rem;
+  /* Not `balance`: it evens the lines out and split this title across three.
+     Greedy filling gives "The Sandwich / Must Hold", as the reference sets it. */
+  text-wrap: pretty;
+}
+
+.home .hero-lede { font-size: clamp(1.05rem, 1.4vw, 1.375rem); margin: 0 0 2rem; }
+.home .hero-actions, .home .hero-secondary { margin: 0 0 1rem; }
+
+.home .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 48px;
+  padding: 0.75rem 1.6rem;
+  background: var(--slop-tomato);
+  color: var(--slop-paper);
+  font-family: var(--slop-font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.home .btn:hover { background: color-mix(in srgb, var(--slop-tomato) 84%, #000); }
+
+.home .linkline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  font-family: var(--slop-font-mono);
+  color: var(--slop-charcoal);
+  text-underline-offset: 5px;
+}
+.home .linkline span { color: var(--slop-tomato); }
+
+.home .hero-figure { margin: 0; }
+.home .hero-figure .rig { max-width: 560px; margin-inline: auto; }
+
+.home .readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.75rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: var(--slop-rule-width) solid var(--slop-rule);
+}
+
+.home .status {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--slop-tomato);
+  border: var(--slop-rule-width) solid var(--slop-tomato);
+  padding: 0.2em 0.55em;
+}
+
+/* --- 2. Proposition (charcoal) ------------------------------------------ */
+.home .prop {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+.home .prop-lede { font-size: clamp(1rem, 1.3vw, 1.25rem); margin: 0 0 2rem; }
+.home .prop-record { display: flex; gap: 1.25rem; align-items: flex-start; }
+.home .prop-n { font-size: 3rem; line-height: 1; margin: 0; }
+.home .prop-spec { color: var(--slop-lettuce); margin-bottom: 0.35rem; }
+.home .prop-obs { margin: 0; font-size: var(--at-font-size-sm); }
+.home .prop-figure { margin: 0; }
+
+.home .callouts { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.3rem; }
+.home .callouts li { display: flex; gap: 0.7rem; font-size: var(--at-font-size-sm); }
+.home .callouts-n {
+  font-family: var(--slop-font-mono);
+  color: var(--slop-tomato);
+  border: 1px solid var(--slop-tomato);
+  padding: 0 0.35em;
+  font-size: var(--at-font-size-xs);
+  align-self: center;
+}
+.home .dim { margin-top: 0.75rem; opacity: 0.85; }
+
+/* --- 3. Failure families ------------------------------------------------ */
+.home .fam-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.home .caveat { color: var(--slop-lettuce); }
+
+.home .fam { list-style: none; margin: 2rem 0 0; padding: 0; }
+.home .fam-row {
+  display: grid;
+  grid-template-columns: auto minmax(9rem, 1.1fr) minmax(0, 2.2fr) minmax(0, 1.1fr);
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+  align-items: center;
+  padding-block: 1.75rem;
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.home .fam-n { font-size: 2.6rem; line-height: 1; margin: 0; color: var(--slop-lettuce); }
+.home .fam-name h3 { font-size: 1.5rem; margin: 0 0 0.25rem; color: var(--slop-lettuce); letter-spacing: 0.04em; text-transform: uppercase; }
+.home .fam-name p { margin: 0; font-size: var(--at-font-size-sm); }
+.home .fam-states { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 2vw, 2rem); }
+.home .fam-state { display: grid; gap: 0.5rem; justify-items: start; }
+.home .fam-note { margin: 0; font-size: var(--at-font-size-sm); }
+.home .fam-week { margin: 0; font-size: var(--at-font-size-sm); }
+
+/* --- 4. Semester load path ---------------------------------------------- */
+.home .sem-lede { max-width: var(--slop-measure); margin: 0 0 2rem; }
+
+.home .phases {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 0 0 2rem;
+  padding: 0;
+}
+.home .phase { border-top: var(--slop-rule-heavy) solid var(--slop-rule); padding-top: 0.6rem; display: grid; gap: 0.2rem; }
+.home .phase-n { color: var(--slop-toast); }
+.home .phase-name { font-size: 1.2rem; color: var(--slop-lettuce); text-transform: uppercase; letter-spacing: 0.03em; }
+.home .phase-weeks { font-size: var(--at-font-size-sm); }
+
+.home .track { list-style: none; margin: 0; padding: 0; }
+.home .stn {
+  display: grid;
+  grid-template-columns: 1.5rem auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 1.25rem;
+  padding-block: 0.9rem;
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.home .stn-dot {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid var(--slop-charcoal);
+  background: var(--slop-paper);
+  align-self: center;
+}
+.home .stn-n { font-size: 1.6rem; }
+.home .stn-body { display: grid; gap: 0.15rem; }
+.home .stn-title { font-size: 1.0625rem; font-weight: 600; }
+.home .stn-date { color: var(--slop-toast); }
+.home .stn-q { font-size: var(--at-font-size-sm); color: var(--at-text-secondary); }
+.home .stn-marks { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
+
+.home .tag {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2em 0.5em;
+  border: 1px solid currentcolor;
+  white-space: nowrap;
+}
+.home .tag--deck { color: var(--slop-lettuce); }
+.home .tag--milestone { color: var(--slop-tomato); }
+
+.home .track-foot { margin-top: 1.5rem; font-size: var(--at-font-size-sm); }
+
+/* --- 5. Layer order ------------------------------------------------------ */
+.home .order { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; }
+.home .order h2 { font-size: clamp(1.6rem, 2.6vw, 2.4rem); margin: 0.35rem 0 1rem; }
+.home .order-note { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: var(--at-font-size-sm); }
+.home .order-figure { margin: 0; }
+.home .order-legend { margin: 1rem 0 0; padding-left: 1.2rem; font-size: var(--at-font-size-sm); display: grid; gap: 0.2rem; }
+
+/* --- 6. Assessment load -------------------------------------------------- */
+.home .loads {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: end;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+  margin: 0;
+  padding: 0;
+  border-bottom: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-bottom: 1.25rem;
+}
+.home .load { display: grid; gap: 0.35rem; align-content: end; }
+.home .load-cap { color: var(--slop-toast); }
+.home .load-title { font-size: clamp(1.05rem, 1.5vw, 1.4rem); text-transform: uppercase; letter-spacing: 0.03em; }
+.home .load-pct { font-size: clamp(2rem, 4.5vw, 3.6rem); line-height: 1; color: var(--slop-tomato); }
+.home .load-stem { height: var(--h); min-height: 1.5rem; width: 2px; background: var(--slop-tomato); }
+.home .load-meta, .home .load-sum { font-size: var(--at-font-size-sm); }
+.home .load-meta { color: var(--at-text-secondary); font-family: var(--slop-font-mono); font-size: var(--at-font-size-xs); }
+.home .loads-axis {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0.6rem 0 0;
+  color: var(--slop-toast);
+}
+
+/* --- 7. Resources -------------------------------------------------------- */
+.home .res { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 3vw, 3rem); margin-top: 2rem; }
+.home .res-card { border: var(--slop-rule-width) solid var(--slop-rule); padding: clamp(1.25rem, 2.5vw, 2rem); }
+.home .res-card--acetate { background: color-mix(in srgb, var(--slop-wash) 70%, var(--slop-paper)); }
+.home .res-card h3 { font-size: clamp(1.5rem, 2.6vw, 2.2rem); margin: 0.4rem 0 0.5rem; }
+.home .res-card--acetate h3 { color: var(--slop-lettuce); }
+.home .res-kicker { color: var(--slop-toast); }
+.home .res-q { margin: 0 0 1.25rem; }
+.home .res-foot { font-size: var(--at-font-size-sm); margin: 1.25rem 0 0.75rem; }
+
+.home .tabs { list-style: none; display: flex; gap: 0.5rem; margin: 1rem 0 0; padding: 0; flex-wrap: wrap; }
+.home .tabs li {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25em 0.6em;
+  border: 1px solid var(--slop-charcoal);
+}
+.home .tabs-evidence { color: var(--slop-lettuce); border-color: var(--slop-lettuce); }
+.home .tabs-failure { color: var(--slop-tomato); border-color: var(--slop-tomato); }
+
+/* A route whose page does not exist yet. Never a link, never styled as one. */
+.home .pending { color: var(--at-text-secondary); font-size: var(--at-font-size-sm); }
+.home .pending em::before,
+.home .btn--pending em::before { content: "· "; }
+.home .pending em,
+.home .btn--pending em {
+  font-family: var(--slop-font-mono);
+  font-style: normal;
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slop-toast);
+}
+.home .btn--pending {
+  background: none;
+  color: var(--at-text-secondary);
+  border: var(--slop-rule-width) dashed var(--slop-rule-hair);
+}
+
+/* --- 8. Course details ---------------------------------------------------- */
+.home .det { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem); margin-top: 1.5rem; }
+.home .det-facts { margin: 0; display: grid; gap: 0.5rem; }
+.home .det-facts > div { display: grid; grid-template-columns: 11rem 1fr; gap: 1rem; border-bottom: 1px solid var(--slop-rule-hair); padding-bottom: 0.5rem; }
+.home .det-facts dt { font-family: var(--slop-font-mono); font-size: var(--at-font-size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--slop-toast); }
+.home .det-facts dd { margin: 0; }
+.home .det-line { font-family: var(--slop-font-mono); font-size: var(--at-font-size-sm); margin: 0 0 1rem; }
+.home .det-links { list-style: none; margin: 0 0 1.25rem; padding: 0; display: grid; gap: 0.4rem; }
+.home .det-stamp { margin: 0 0 0.6rem; }
+.home .det-quip { font-family: var(--slop-font-mono); font-size: var(--at-font-size-sm); color: var(--slop-toast); margin: 0; }
+
+/* --- Phone composition ---------------------------------------------------- */
+@media (width < 900px) {
+  .home .hero,
+  .home .prop,
+  .home .order,
+  .home .det,
+  .home .res { grid-template-columns: minmax(0, 1fr); }
+
+  .home .phases { grid-template-columns: 1fr 1fr; }
+
+  /* The horizontal rail becomes a vertical load track: the dot column is the
+     line, and each station stacks its own record. */
+  .home .track { border-left: var(--slop-rule-width) solid var(--slop-rule); margin-left: 5px; padding-left: 1.25rem; }
+  .home .stn {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "n body" "marks marks";
+    gap: 0.5rem 1rem;
+    position: relative;
+  }
+  .home .stn-dot { position: absolute; left: -1.65rem; top: 1.4rem; }
+  .home .stn-n { grid-area: n; }
+  .home .stn-body { grid-area: body; }
+  .home .stn-marks { grid-area: marks; justify-content: flex-start; }
+
+  /* Stems make no sense stacked, so the load becomes a labelled row. */
+  .home .loads { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 0; }
+  .home .load {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "pct title" "pct cap" "pct meta" "sum sum";
+    gap: 0.15rem 1rem;
+    align-items: baseline;
+    padding-block: 1.1rem;
+    border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  }
+  .home .load-stem { display: none; }
+  .home .load-pct { grid-area: pct; align-self: center; }
+  .home .load-title { grid-area: title; }
+  .home .load-cap { grid-area: cap; }
+  .home .load-meta { grid-area: meta; }
+  .home .load-sum { grid-area: sum; margin-top: 0.35rem; }
+
+  .home .fam-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "n name" "states states" "week week";
+    gap: 0.75rem 1rem;
+  }
+  .home .fam-n { grid-area: n; }
+  .home .fam-name { grid-area: name; }
+  .home .fam-states { grid-area: states; }
+  .home .fam-week { grid-area: week; }
+
+  .home .det-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
+}
+
+@media (width < 560px) {
+  .home .phases { grid-template-columns: minmax(0, 1fr); }
+  .home .ms { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- The horizontal test rail (desktop) ---------------------------------- */
+.home .rail { display: none; }
+
+@media (width >= 900px) {
+  .home .rail {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .home .rail-label {
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slop-toast);
+    margin: 0;
+  }
+  .home .rail-label--ms { margin-top: 0.2rem; }
+
+  .home .rail-track {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    border-top: var(--slop-rule-width) solid var(--slop-rule);
+  }
+
+  .home .rail-stn {
+    display: grid;
+    grid-template-rows: auto auto minmax(2.6rem, auto);
+    justify-items: center;
+    gap: 0.3rem;
+    position: relative;
+  }
+
+  .home .rail-extra {
+    display: grid;
+    justify-items: center;
+    gap: 0.3rem;
+    align-content: start;
+  }
+
+  .home .rail-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--slop-charcoal);
+    background: var(--slop-paper);
+    margin-top: -1.35rem;
+  }
+  /* The specimen starts here: a filled marker, not a colour change alone. */
+  .home .rail-stn.is-start .rail-dot { background: var(--slop-charcoal); }
+
+  .home .rail-n {
+    font-family: var(--slop-font-display);
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .home .rail-deck {
+    font-family: var(--slop-font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slop-lettuce);
+    border: 1px solid var(--slop-lettuce);
+    padding: 0 0.3em;
+  }
+
+  .home .rail-ms {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    color: var(--slop-tomato);
+  }
+  .home .rail-ms-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--slop-tomato);
+  }
+}

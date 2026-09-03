@@ -1,68 +1,396 @@
 ---
-import Card from "astro-theme-university/components/Card.astro";
-import CardGrid from "astro-theme-university/components/CardGrid.astro";
-import ContentLayout from "astro-theme-university/layouts/ContentLayout.astro";
-import heroImage from "../assets/images/hero-home.avif";
+import BaseLayout from "astro-theme-university/layouts/BaseLayout.astro";
+import { getPublishedCollection } from "astro-course-university/content";
+import { withBase } from "astro-theme-university/url";
+import ArchiveRule from "../components/course/ArchiveRule.astro";
+import SpecimenLabel from "../components/course/SpecimenLabel.astro";
+import Stamp from "../components/course/Stamp.astro";
+import FailureDiagram from "../components/home/FailureDiagram.astro";
+import LayerOrderStack from "../components/home/LayerOrderStack.astro";
+import MoistureStages from "../components/home/MoistureStages.astro";
+import ShearSpecimen from "../components/home/ShearSpecimen.astro";
+import SpecimenRig from "../components/home/SpecimenRig.astro";
 import { courseMeta } from "../course-config";
-import { sessionLabels, siteConfig } from "../site-config";
+import { formatCourseDate } from "../lib/dates";
+import { ASSESSMENTS, PHASES, TOTAL_WEIGHT, WEEKS } from "../lib/semester";
+import { siteConfig } from "../site-config";
+import "../styles/home.css";
 
-// STARTER_CONTENT: replace the hero artwork and its alt text below, then
-// remove this comment.
+// Every internal link on this page is guarded by what actually built. A route
+// whose page does not exist yet renders as plain text with an "in preparation"
+// note rather than a link --- the build's link checker would fail on the
+// alternative, and a marker clicking a dead link is worse than a marker
+// reading that a page is still coming.
+const sessions = await getPublishedCollection("sessions");
+const builtWeeks = new Set(sessions.map((s) => s.id));
+
+const FAMILIES = [
+  {
+    id: "slip", n: "01", name: "Slip",
+    line: "Layers move laterally.",
+    before: "Friction holds the interface.",
+    after: "Shear overcomes friction. Layers slide.",
+    week: 3,
+  },
+  {
+    id: "soak", n: "02", name: "Soak",
+    line: "Moisture advances.",
+    before: "The boundary is dry.",
+    after: "The moisture front moves. Strength degrades.",
+    week: 4,
+  },
+  {
+    id: "crush", n: "03", name: "Crush",
+    line: "Compression closes gaps.",
+    before: "The stack carries its own height.",
+    after: "Load shortens the stack. Gaps collapse.",
+    week: 2,
+  },
+  {
+    id: "splay", n: "04", name: "Splay",
+    line: "Exposed edges expand.",
+    before: "Contents sit inside the boundary.",
+    after: "Unbraced edges flare. The structure opens.",
+    week: 5,
+  },
+] as const;
+
+const weekOf = (n: number) => WEEKS.find((w) => w.week === n)!;
+const hrefFor = (slug: string) =>
+  builtWeeks.has(slug) ? withBase(`/sessions/${slug}/`) : undefined;
+const milestoneAt = (week: number) => ASSESSMENTS.find((a) => a.dueWeek === week);
+const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
 ---
 
-<ContentLayout
-  title={`${courseMeta.code}: ${courseMeta.title}`}
+<BaseLayout
+  title={`${courseMeta.code}: ${courseMeta.title} — ${siteConfig.name}`}
   description={courseMeta.description}
-  heroImage={heroImage}
-  heroImageAlt="A lecture theatre reduced to flat gold and black shapes, rows of seats sweeping past the frame, in a two-ink risograph print"
   {...siteConfig}
+  mainAttrs={{ class: "home" }}
 >
-  <ul class="course-tags" aria-label="Course tags">
-    {courseMeta.tags.map((tag) => <li>{tag}</li>)}
-  </ul>
+  {/* 1 --- FIRST VIEWPORT: the specimen under load ------------------------ */}
+  <section class="band band--hero" aria-labelledby="hero-title">
+    <div class="inner hero">
+      <div class="hero-copy">
+        <h1 id="hero-title" class="hero-title">The Sandwich Must Hold</h1>
+        <p class="hero-lede">
+          Every lunch is a temporary structure.<br />
+          Study the forces that make it fail.
+        </p>
+        <p class="hero-actions">
+          {hrefFor("week-01") ? (
+            <a class="btn" href={hrefFor("week-01")}>Enter Week 1<span aria-hidden="true">→</span></a>
+          ) : (
+            <span class="btn btn--pending">Enter Week 1 <em>in preparation</em></span>
+          )}
+        </p>
+        <p class="hero-secondary">
+          <a class="linkline" href={withBase("/sessions/")}>View the semester structure<span aria-hidden="true">→</span></a>
+        </p>
+      </div>
 
-  <!-- STARTER_CONTENT: replace the authored page below, then remove this comment. -->
-  <h2>What you will do</h2>
-  <p>
-    Say what a student spends their time on — the making, reading, arguing or
-    measuring that fills the weeks. Name the artefact they walk out with.
-  </p>
+      <figure class="hero-figure">
+        <SpecimenRig />
+        <figcaption class="readout">
+          <SpecimenLabel key="Specimen" value="001" />
+          <SpecimenLabel key="Scale" value="50 mm" />
+          <SpecimenLabel key="Load case" value="One-handed hold" />
+          <span class="status">Test in progress</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
 
-  <h2>Who it is for</h2>
-  <p>
-    Say who this is aimed at and what they need to already know. Be specific
-    enough that someone can rule themselves in or out without emailing you.
-  </p>
+  {/* 2 --- THE STRUCTURAL PROPOSITION ------------------------------------- */}
+  <section class="band band--ink slop-band--ink" aria-labelledby="prop-title">
+    <div class="inner prop">
+      <div class="prop-copy">
+        <h2 id="prop-title" class="display xl">Lunch is a load case.</h2>
+        <p class="prop-lede">
+          A sandwich is a temporary assembly.<br />
+          Every layer is both a material and an interface.
+        </p>
+        <div class="prop-record">
+          <p class="prop-n display">03</p>
+          <div>
+            <p class="prop-spec">Specimen: grip, friction and slip</p>
+            <p class="prop-obs">
+              Observed failure: lateral slip at the cheese–meat interface, under
+              a shear load applied by one-handed use.
+            </p>
+          </div>
+        </div>
+      </div>
 
-  <h2>Where to go next</h2>
-  <CardGrid columns={2}>
-    <Card title={sessionLabels.plural} href="/sessions/">
-      <p>The weekly schedule and what happens in each teaching session.</p>
-    </Card>
-    <Card title="Assessment" href="/assessments/">
-      <p>What is marked, what it is worth, and when it is due.</p>
-    </Card>
-    <Card title="People" href="/people/">
-      <p>Who teaches the course and how to reach them.</p>
-    </Card>
-  </CardGrid>
-</ContentLayout>
+      <figure class="prop-figure">
+        <ShearSpecimen />
+        <figcaption>
+          <ol class="callouts">
+            <li><span class="callouts-n">01</span> Bread (top)</li>
+            <li><span class="callouts-n">02</span> Cheese</li>
+            <li><span class="callouts-n">03</span> Meat — failure interface</li>
+            <li><span class="callouts-n">04</span> Bread (bottom)</li>
+          </ol>
+          <p class="dim">Specimen height ≈ 80 mm</p>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
 
-<style>
-  .course-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-block: 0 2rem;
-    padding: 0;
-    list-style: none;
-  }
+  {/* 3 --- FOUR FAILURE FAMILIES ------------------------------------------ */}
+  <section class="band" aria-labelledby="fam-title">
+    <div class="inner">
+      <div class="fam-head">
+        <h2 id="fam-title" class="display xl">Four failure families</h2>
+        <p class="caveat">Course working model — not a professional standard.</p>
+      </div>
 
-  .course-tags li {
-    padding: 0.25rem 0.65rem;
-    border-radius: 999px;
-    color: var(--at-text-secondary);
-    background: var(--at-bg-alt);
-    font-size: 0.9rem;
-  }
-</style>
+      <ol class="fam">
+        {FAMILIES.map((f) => {
+          const week = weekOf(f.week);
+          const href = hrefFor(week.slug);
+          return (
+            <li class="fam-row">
+              <p class="fam-n display">{f.n}</p>
+              <div class="fam-name">
+                <h3 class="display">{f.name}</h3>
+                <p>{f.line}</p>
+              </div>
+              <div class="fam-states">
+                <div class="fam-state">
+                  <p class="fam-cap">Before load</p>
+                  <FailureDiagram family={f.id} state="before" />
+                  <p class="fam-note">{f.before}</p>
+                </div>
+                <div class="fam-state">
+                  <p class="fam-cap">After load</p>
+                  <FailureDiagram family={f.id} state="after" />
+                  <p class="fam-note">{f.after}</p>
+                </div>
+              </div>
+              <p class="fam-week">
+                {href ? (
+                  <a href={href}>Week {week.week}: {week.title}</a>
+                ) : (
+                  <span class="pending">Week {week.week}: {week.title} <em>in preparation</em></span>
+                )}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  </section>
+
+  {/* 4 --- THE SEMESTER LOAD PATH ----------------------------------------- */}
+  <section class="band band--alt" aria-labelledby="sem-title">
+    <div class="inner">
+      <h2 id="sem-title" class="display xl">Twelve stations. One specimen.</h2>
+      <p class="sem-lede">
+        From definition to destructive testing, each station isolates one
+        condition that determines whether a sandwich holds.
+      </p>
+
+      <ol class="phases">
+        {PHASES.map((p) => (
+          <li class="phase">
+            <span class="phase-n">Phase {p.numeral}</span>
+            <span class="phase-name display">{p.name}</span>
+            <span class="phase-weeks">Weeks {p.weeks[0]}–{p.weeks[1]}</span>
+          </li>
+        ))}
+      </ol>
+
+      {/* The section's signature: twelve stations on one rail, with the
+          assessment milestones hanging beneath the weeks they fall due in.
+          Desktop only, and aria-hidden --- every station's number, title, date
+          and milestone is announced by the list below, so exposing the rail
+          too would make a screen reader read the semester twice. */}
+      <div class="rail" aria-hidden="true">
+        <p class="rail-label">Station no.</p>
+        <ol class="rail-track">
+          {WEEKS.map((w) => {
+            const milestone = milestoneAt(w.week);
+            return (
+              <li class:list={["rail-stn", w.week === 1 && "is-start"]}>
+                <span class="rail-dot"></span>
+                <span class="rail-n">{String(w.week).padStart(2, "0")}</span>
+                {/* Always rendered, so every station has the same three rows
+                    and the numbers share one baseline whether or not the week
+                    carries a deck or a milestone. */}
+                <span class="rail-extra">
+                  {w.lecture && <span class="rail-deck">Deck</span>}
+                  {milestone && (
+                    <span class="rail-ms"><span class="rail-ms-dot"></span>{milestone.weight}%</span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+        <p class="rail-label rail-label--ms">Assessment milestone</p>
+      </div>
+
+      <ol class="track">
+        {WEEKS.map((w) => {
+          const href = hrefFor(w.slug);
+          const milestone = milestoneAt(w.week);
+          return (
+            <li class="stn">
+              <span class="stn-dot" aria-hidden="true"></span>
+              <span class="stn-n display">{String(w.week).padStart(2, "0")}</span>
+              <span class="stn-body">
+                <span class="stn-title">
+                  {href ? <a href={href}>{w.title}</a> : <span class="pending">{w.title}</span>}
+                </span>
+                <span class="stn-date">{formatCourseDate(w.date)}</span>
+                <span class="stn-q">{w.question}</span>
+              </span>
+              <span class="stn-marks">
+                {w.lecture && <span class="tag tag--deck">Lecture deck</span>}
+                {milestone && (
+                  <span class="tag tag--milestone">{milestone.title} · {milestone.weight}%</span>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      <p class="track-foot">
+        Weeks 3 to 12 open as the semester is published. The full schedule lives
+        on the <a href={withBase("/sessions/")}>semester structure</a> page.
+      </p>
+    </div>
+  </section>
+
+  {/* 5 --- STATIC WEEK 8 SPECIMEN (the Load Tester is not built) ---------- */}
+  <section class="band" aria-labelledby="order-title">
+    <div class="inner order">
+      <div>
+        <p class="eyebrow">Specimen study</p>
+        <h2 id="order-title" class="display">The order of layers changes the result.</h2>
+        <p>
+          The same four structural categories, assembled two ways. Moving the
+          binding layer between the moist layer and the outer layer changes
+          which interface is exposed first — the materials are identical, so
+          the difference is structural, not culinary.
+        </p>
+        <p class="order-note">
+          <Stamp state="revised" /> Assembly revised after the first interface failure.
+        </p>
+        <p>
+          {hrefFor("week-08") ? (
+            <a class="linkline" href={hrefFor("week-08")}>Week 8: The Order of Layers<span aria-hidden="true">→</span></a>
+          ) : (
+            <span class="pending">Week 8: The Order of Layers <em>in preparation</em></span>
+          )}
+        </p>
+      </div>
+      <figure class="order-figure">
+        <LayerOrderStack />
+        <figcaption>
+          <ol class="order-legend">
+            <li>Outer layer</li>
+            <li>Moist layer — against the outer layer in the first order</li>
+            <li>Binding layer — moved between them in the second</li>
+            <li>Support layer</li>
+            <li>Outer layer</li>
+          </ol>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  {/* 6 --- ASSESSMENT LOAD ------------------------------------------------ */}
+  <section class="band band--alt" aria-labelledby="load-title">
+    <div class="inner">
+      <h2 id="load-title" class="display xl">The load increases.</h2>
+      <p class="sem-lede">
+        Assessments scale with the structural load. Prove more, risk more, hold
+        stronger. Four submissions, totalling {TOTAL_WEIGHT}%.
+      </p>
+
+      <ol class="loads">
+        {ASSESSMENTS.map((a) => (
+          <li class="load" style={`--h:${Math.round((a.weight / maxWeight) * 100)}%`}>
+            <span class="load-cap">{a.capability}</span>
+            <span class="load-title display">{a.title}</span>
+            <span class="load-pct display">{a.weight}%</span>
+            <span class="load-stem" aria-hidden="true"></span>
+            <span class="load-meta">Due {formatCourseDate(a.due)} · end of Week {a.dueWeek}</span>
+            <span class="load-sum">{a.summary}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="loads-axis" aria-hidden="true">Structural load axis →</p>
+      <p class="track-foot">
+        Every brief, what counts as evidence, and what is not assessed:
+        <a href={withBase("/assessments/")}>the assessment overview</a>.
+      </p>
+    </div>
+  </section>
+
+  {/* 7 --- LECTURE AND FIELD MANUAL --------------------------------------- */}
+  <section class="band" aria-labelledby="res-title">
+    <div class="inner">
+      <p class="eyebrow">Resources</p>
+      <h2 id="res-title" class="display xl">Use the evidence.</h2>
+
+      <div class="res">
+        <article class="res-card res-card--acetate" aria-labelledby="res-deck">
+          <p class="res-kicker">Lecture deck · Week 04</p>
+          <h3 id="res-deck" class="display">Moisture Is a Load</h3>
+          <p class="res-q">How does moisture progressively degrade a boundary?</p>
+          <MoistureStages />
+          <p class="res-foot">Moisture is not harmless. It adds weight and it drives load.</p>
+          <p class="pending">Open the Week 4 lecture deck <em>in preparation</em></p>
+        </article>
+
+        <article class="res-card res-card--manual" aria-labelledby="res-manual">
+          <p class="res-kicker">Laboratory archive</p>
+          <h3 id="res-manual" class="display">Field Manual</h3>
+          <p>Procedures. Observations. Failure modes.</p>
+          <ul class="tabs">
+            <li>Methods</li>
+            <li class="tabs-evidence">Evidence</li>
+            <li class="tabs-failure">Failure</li>
+          </ul>
+          <p class="res-foot">
+            The course methods for recording a specimen, applying a load,
+            identifying failure and defending a claim.
+          </p>
+          <p class="pending">Consult the Field Manual <em>in preparation</em></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  {/* 8 --- COURSE DETAILS -------------------------------------------------- */}
+  <section class="band band--details" aria-labelledby="det-title">
+    <div class="inner">
+      <h2 id="det-title" class="visually-hidden">Course details</h2>
+      <ArchiveRule label={`${courseMeta.code} / experiment archived`} />
+      <div class="det">
+        <dl class="det-facts">
+          <div><dt>Course</dt><dd>{courseMeta.code}</dd></div>
+          <div><dt>Session</dt><dd>{courseMeta.session} {courseMeta.year}</dd></div>
+          <div><dt>Duration</dt><dd>Twelve teaching weeks</dd></div>
+          <div><dt>Teaching period</dt>
+            <dd>{formatCourseDate(courseMeta.startDate)} – {formatCourseDate(courseMeta.endDate)}</dd></div>
+          <div><dt>Level</dt><dd>{courseMeta.level}000-level undergraduate</dd></div>
+        </dl>
+        <div class="det-side">
+          <p class="det-line">From definition to destructive testing. One load path.</p>
+          <ul class="det-links">
+            <li><a href={withBase("/policies/")}>Policies, safety and equivalent participation</a></li>
+            <li><a href={withBase("/assessments/")}>Assessment</a></li>
+            <li><a href={withBase("/sessions/")}>Semester structure</a></li>
+            <li><a href={withBase("/people/")}>People</a></li>
+          </ul>
+          <p class="det-stamp"><Stamp state="tested" label="Experiment archived" /></p>
+          <p class="det-quip">The evidence survived. The sandwich did not.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

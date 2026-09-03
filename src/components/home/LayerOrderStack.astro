@@ -1,0 +1,56 @@
+---
+/**
+ * The static Week 8 specimen: the same four structural categories in two
+ * orders, with the adjacency note that changes between them.
+ *
+ * This is the homepage's fallback for the optional Load Tester, which has not
+ * been built. It is deliberately not interactive and makes no claim to be ---
+ * plan.md is explicit that the core homepage must never carry a broken,
+ * disabled or "coming soon" control.
+ */
+---
+
+<svg class="los" viewBox="0 0 420 200" role="img" aria-labelledby="los-t los-d" focusable="false">
+  <title id="los-t">The same four layers in two assembly orders</title>
+  <desc id="los-d">
+    Two exploded stacks side by side. In the first, the moist layer sits
+    directly against the outer layer. In the second, the binding layer has been
+    moved between them.
+  </desc>
+  <g class="los-stack">
+    <rect x="24" y="30" width="150" height="16" />
+    <rect class="los-moist" x="24" y="56" width="150" height="16" />
+    <rect x="24" y="82" width="150" height="16" />
+    <rect x="24" y="108" width="150" height="16" />
+    <rect x="24" y="134" width="150" height="16" />
+  </g>
+  <path class="los-arrow" d="M198 92 h24 m-7 -6 l7 6 l-7 6" aria-hidden="true" />
+  <g class="los-stack">
+    <rect x="246" y="30" width="150" height="16" />
+    <rect x="246" y="56" width="150" height="16" />
+    <rect class="los-moist" x="246" y="82" width="150" height="16" />
+    <rect x="246" y="108" width="150" height="16" />
+    <rect x="246" y="134" width="150" height="16" />
+  </g>
+</svg>
+
+<style>
+  .los { width: 100%; height: auto; display: block; }
+  .los-stack rect {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
+  }
+  /* Moisture, not load --- so brown rather than red. */
+  .los-moist {
+    fill: color-mix(in srgb, var(--slop-toast) 34%, var(--slop-paper));
+    stroke: var(--slop-toast);
+  }
+  .los-arrow {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>
