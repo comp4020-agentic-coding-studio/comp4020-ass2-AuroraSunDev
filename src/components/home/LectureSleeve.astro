@@ -1,0 +1,121 @@
+---
+/**
+ * The Week 4 deck, presented as what it is in the studio: a printed handout in
+ * a punched plastic sleeve.
+ *
+ * The photograph is an *empty* sleeve holding a blank sheet. Everything a
+ * reader can read --- the title, the kicker, the stage captions, the closing
+ * line --- is HTML laid over the blank page, not pixels. That keeps the deck's
+ * words selectable, translatable, searchable and available to a screen reader,
+ * and it means the page's own type renders at full resolution instead of being
+ * resampled with the photograph.
+ *
+ * The overlay is sized in `cqw`, so the whole page scales with the prop rather
+ * than drifting out of its paper at another breakpoint. Photograph and overlay
+ * share one container, and the slight tilt is applied to that container, so
+ * they can never come apart.
+ */
+import { getImage } from "astro:assets";
+import sleeve from "../../assets/images/props/lecture-sleeve.png";
+import MoistureStages from "./MoistureStages.astro";
+
+const img = await getImage({ src: sleeve, widths: [544, 816, 1088], format: "webp" });
+const avif = await getImage({ src: sleeve, widths: [544, 816, 1088], format: "avif" });
+---
+
+<div class="propshot propshot--sleeve">
+  <picture>
+    <source type="image/avif" srcset={avif.srcSet.attribute} sizes="(min-width: 900px) 44vw, 92vw" />
+    <img
+      src={img.src}
+      width={sleeve.width}
+      height={sleeve.height}
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+    />
+  </picture>
+
+  <div class="propshot-page">
+    <p class="pg-head">
+      <span class="pg-title">Moisture Is a Load</span>
+      <span class="pg-ref">Lecture 04</span>
+    </p>
+    <p class="pg-kicker">Moisture front progression</p>
+    <div class="pg-stages"><MoistureStages /></div>
+    <p class="pg-foot">
+      <span>Moisture is not harmless.<br />It adds weight. It drives load.</span>
+      <span class="pg-ref">SLOP2895 — Week 4</span>
+    </p>
+  </div>
+</div>
+
+<style>
+  .propshot {
+    position: relative;
+    container-type: inline-size;
+    rotate: -0.7deg;
+  }
+  .propshot img { display: block; width: 100%; height: auto; }
+
+  /* The blank sheet inside the plastic, measured off the asset. */
+  .propshot-page {
+    position: absolute;
+    top: 9%;
+    bottom: 9.5%;
+    left: 12%;
+    right: 7%;
+    display: flex;
+    flex-direction: column;
+    /* Everything below is in em, so one number scales the whole page. */
+    font-size: 3.05cqw;
+    color: var(--slop-charcoal);
+  }
+
+  .pg-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1em;
+    margin: 0 0 0.5em;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid var(--slop-charcoal);
+  }
+  .pg-title {
+    font-family: var(--slop-font-display);
+    font-weight: 700;
+    font-size: 1.75em;
+    line-height: 1;
+    color: var(--slop-lettuce);
+  }
+  .pg-ref {
+    font-family: var(--slop-font-mono);
+    font-size: 0.72em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .pg-kicker {
+    margin: 0 0 0.9em;
+    font-family: var(--slop-font-mono);
+    font-size: 0.72em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .pg-stages { flex: 1; font-size: 0.78em; }
+  .pg-foot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1em;
+    margin: 0.6em 0 0;
+    padding-top: 0.6em;
+    border-top: 1px solid var(--slop-charcoal);
+    font-size: 0.8em;
+    line-height: 1.35;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .propshot { rotate: none; }
+  }
+</style>

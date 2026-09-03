@@ -24,8 +24,13 @@ body:has(main.home)::after {
   display: none;
 }
 
+/* The reference sets this page nearly full-bleed: its content spans 96% of the
+   frame, leaving a margin of about 50px at 1672. A 1440 measure left a quarter
+   of a 1920 screen empty and shrank every specimen, rail and diagram against
+   the references. Long-form prose keeps its own `--slop-measure` cap, so only
+   the apparatus gets the extra width. */
 .home .inner {
-  max-width: 1440px;
+  max-width: 1760px;
   margin-inline: auto;
   padding-inline: clamp(1.25rem, 4vw, 4rem);
 }
@@ -64,15 +69,6 @@ body:has(main.home)::after {
 }
 
 /* --- 1. Hero ----------------------------------------------------------- */
-
-/* The hero alone runs wider than the 1440px body measure. The reference gives
-   the rig roughly the same share of the frame as the title, and at 1440 the
-   equipment shrinks to a thumbnail beside a 5.75rem headline. Only this band
-   widens; every band below it keeps the page's measure, so the rhythm at the
-   fold and the start of the next section are unchanged. */
-.home .band--hero .inner {
-  max-width: 1760px;
-}
 
 /* The hero band alone runs tighter than the page's block rhythm. The reference
    ends its hero at 88% of the first screen, with the next section already
@@ -160,9 +156,9 @@ body:has(main.home)::after {
 /* --- 2. Proposition (charcoal) ------------------------------------------ */
 .home .prop {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-columns: minmax(0, 38fr) minmax(0, 62fr);
   gap: clamp(1.5rem, 4vw, 3.5rem);
-  align-items: start;
+  align-items: center;
 }
 .home .prop-lede { font-size: clamp(1rem, 1.3vw, 1.25rem); margin: 0 0 2rem; }
 .home .prop-record { display: flex; gap: 1.25rem; align-items: flex-start; }
@@ -171,80 +167,138 @@ body:has(main.home)::after {
 .home .prop-obs { margin: 0; font-size: var(--at-font-size-sm); }
 .home .prop-figure { margin: 0; }
 
-.home .callouts { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.3rem; }
-.home .callouts li { display: flex; gap: 0.7rem; font-size: var(--at-font-size-sm); }
-.home .callouts-n {
-  font-family: var(--slop-font-mono);
-  color: var(--slop-tomato);
-  border: 1px solid var(--slop-tomato);
-  padding: 0 0.35em;
-  font-size: var(--at-font-size-xs);
-  align-self: center;
-}
-.home .dim { margin-top: 0.75rem; opacity: 0.85; }
+
 
 /* --- 3. Failure families ------------------------------------------------ */
-.home .fam-head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+.home .fam-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 1rem;
+  column-gap: 1.5rem;
 }
-.home .caveat { color: var(--slop-lettuce); }
+.home .fam-inner .fam { grid-column: 1 / -1; }
+.home .caveat { color: var(--slop-lettuce); justify-self: end; }
 
 .home .fam { list-style: none; margin: 2rem 0 0; padding: 0; }
+
+/* One row per family, five columns: number, family, the two states either side
+   of a divider, and what the load did. The reference keeps the rows shallow ---
+   the four families are meant to be read together as a set, not scrolled
+   through as four blocks --- so nothing in a row is taller than two lines and
+   the diagram carries the height. */
 .home .fam-row {
   display: grid;
-  grid-template-columns: auto minmax(9rem, 1.1fr) minmax(0, 2.2fr) minmax(0, 1.1fr);
-  gap: clamp(1rem, 2.5vw, 2.5rem);
+  grid-template-columns:
+    auto minmax(8rem, 13rem) minmax(0, 1fr) 1px minmax(0, 1fr) minmax(0, 17rem);
+  gap: clamp(0.75rem, 2vw, 2.25rem);
   align-items: center;
-  padding-block: 1.75rem;
+  padding-block: clamp(0.9rem, 1.3vw, 1.4rem);
   border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
 }
-.home .fam-n { font-size: 2.6rem; line-height: 1; margin: 0; color: var(--slop-lettuce); }
-.home .fam-name h3 { font-size: 1.5rem; margin: 0 0 0.25rem; color: var(--slop-lettuce); letter-spacing: 0.04em; text-transform: uppercase; }
+/* The hairline between the two states, in its own track. */
+.home .fam-row::before {
+  content: "";
+  grid-column: 4;
+  grid-row: 1;
+  align-self: stretch;
+  margin-block: 0.4rem;
+  background: var(--slop-rule-hair);
+}
+.home .fam-n { font-size: 2.9rem; line-height: 1; margin: 0; color: var(--slop-lettuce); }
+.home .fam-name h3 {
+  font-family: var(--slop-font-mono);
+  font-weight: 500;
+  font-size: 1.35rem;
+  margin: 0 0 0.2rem;
+  color: var(--slop-lettuce);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
 .home .fam-name p { margin: 0; font-size: var(--at-font-size-sm); }
-.home .fam-states { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 2vw, 2rem); }
-.home .fam-state { display: grid; gap: 0.5rem; justify-items: start; }
-.home .fam-note { margin: 0; font-size: var(--at-font-size-sm); }
-.home .fam-week { margin: 0; font-size: var(--at-font-size-sm); }
+
+.home .fam-states { display: contents; }
+.home .fam-arrow { display: none; }
+.home .fam-state { display: grid; gap: 0.45rem; justify-items: center; }
+.home .fam-cap { color: var(--slop-lettuce); }
+.home .fam-out { display: grid; gap: 0.3rem; }
+.home .fam-conseq { margin: 0; font-size: var(--at-font-size-sm); line-height: 1.35; }
+.home .fam-week { margin: 0; font-size: var(--at-font-size-xs); }
+.home .fam-week .pending { font-size: inherit; }
 
 /* --- 4. Semester load path ---------------------------------------------- */
-.home .sem-lede { max-width: var(--slop-measure); margin: 0 0 2rem; }
+/* The reference sets the standfirst in the instrument face, not the text
+   face: it reads as a note on the apparatus below it. */
+.home .sem-lede {
+  max-width: 62ch;
+  margin: 0 0 2rem;
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-sm);
+  line-height: 1.6;
+}
 
+/* One row of four stages with an arrow between them, divided by hairlines:
+   the reference reads the semester as a single left-to-right path. */
 .home .phases {
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  display: flex;
+  align-items: center;
   margin: 0 0 2rem;
   padding: 0;
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-top: 0.7rem;
 }
-.home .phase { border-top: var(--slop-rule-heavy) solid var(--slop-rule); padding-top: 0.6rem; display: grid; gap: 0.2rem; }
+.home .phase { display: flex; align-items: center; gap: clamp(0.75rem, 2vw, 2rem); }
+.home .phase + .phase { flex: 1; }
+.home .phase-arrow {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--slop-charcoal);
+  margin-inline: auto;
+}
+.home .phase-body {
+  display: grid;
+  gap: 0.2rem;
+  padding-left: clamp(0.75rem, 2vw, 2rem);
+  border-left: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.home .phase:first-child .phase-body { padding-left: 0; border-left: 0; }
 .home .phase-n { color: var(--slop-toast); }
-.home .phase-name { font-size: 1.2rem; color: var(--slop-lettuce); text-transform: uppercase; letter-spacing: 0.03em; }
-.home .phase-weeks { font-size: var(--at-font-size-sm); }
+.home .phase-name {
+  font-family: var(--slop-font-mono);
+  font-weight: 500;
+  font-size: 1.35rem;
+  color: var(--slop-lettuce);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+/* Phase III is where the specimen leaves the bench: the reference marks it. */
+.home .phase:nth-child(3) .phase-name { color: var(--slop-tomato); }
 
+/* Twelve rows, one line each. The rail above is the picture of the semester;
+   this is the schedule, so it is set as a schedule --- station, title, date,
+   question, marks --- rather than as twelve stacked blocks. */
 .home .track { list-style: none; margin: 0; padding: 0; }
 .home .stn {
   display: grid;
-  grid-template-columns: 1.5rem auto minmax(0, 1fr) auto;
+  grid-template-columns: 1.5rem auto minmax(11rem, 15rem) auto minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 1.25rem;
-  padding-block: 0.9rem;
+  gap: 0.4rem 1.5rem;
+  padding-block: 0.6rem;
   border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
 }
+.home .stn-body { display: contents; }
+/* Desktop reads the phases from the row above the rail. */
+.home .stn-phase { display: none; }
 .home .stn-dot {
   width: 11px; height: 11px; border-radius: 50%;
   border: 2px solid var(--slop-charcoal);
   background: var(--slop-paper);
   align-self: center;
 }
-.home .stn-n { font-size: 1.6rem; }
-.home .stn-body { display: grid; gap: 0.15rem; }
-.home .stn-title { font-size: 1.0625rem; font-weight: 600; }
-.home .stn-date { color: var(--slop-toast); }
+.home .stn-n { font-size: 1.35rem; }
+.home .stn-title { font-size: 1rem; font-weight: 600; }
+.home .stn-date { color: var(--slop-toast); white-space: nowrap; }
 .home .stn-q { font-size: var(--at-font-size-sm); color: var(--at-text-secondary); }
 .home .stn-marks { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
 
@@ -270,51 +324,165 @@ body:has(main.home)::after {
 .home .order-legend { margin: 1rem 0 0; padding-left: 1.2rem; font-size: var(--at-font-size-sm); display: grid; gap: 0.2rem; }
 
 /* --- 6. Assessment load -------------------------------------------------- */
-.home .loads {
-  list-style: none;
+/* The axis label sits beside the line it names, not under it. */
+.home .loadaxis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: end;
-  gap: clamp(1rem, 2.5vw, 2.5rem);
-  margin: 0;
-  padding: 0;
-  border-bottom: var(--slop-rule-heavy) solid var(--slop-rule);
-  padding-bottom: 1.25rem;
+  column-gap: clamp(1rem, 2vw, 2rem);
+  margin-top: clamp(1.5rem, 3vw, 3rem);
 }
-.home .load { display: grid; gap: 0.35rem; align-content: end; }
-.home .load-cap { color: var(--slop-toast); }
-.home .load-title { font-size: clamp(1.05rem, 1.5vw, 1.4rem); text-transform: uppercase; letter-spacing: 0.03em; }
-.home .load-pct { font-size: clamp(2rem, 4.5vw, 3.6rem); line-height: 1; color: var(--slop-tomato); }
-/* The declared load, drawn to scale: --h is the weight as a percentage of the
-   largest, so the four stems form a visibly increasing ladder standing on the
-   axis rule. A length, not a percentage of an indefinite grid row. */
-.home .load-stem {
-  height: calc(var(--h) * 0.075rem);
-  width: 2px;
-  background: var(--slop-tomato);
-  align-self: end;
-  margin-top: 0.75rem;
-}
-.home .load-meta, .home .load-sum { font-size: var(--at-font-size-sm); }
-.home .load-meta { color: var(--at-text-secondary); font-family: var(--slop-font-mono); font-size: var(--at-font-size-xs); }
 .home .loads-axis {
   font-family: var(--slop-font-mono);
   font-size: var(--at-font-size-xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin: 0.6rem 0 0;
-  color: var(--slop-toast);
+  line-height: 1.3;
+  margin: 0 0 0.6rem;
+  color: var(--slop-charcoal);
+}
+.home .loads-axis span { color: var(--slop-charcoal); }
+
+.home .loads {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: end;
+  gap: clamp(1rem, 2.5vw, 2.5rem) 0;
+  margin: 0;
+  padding: 0;
+  border-bottom: var(--slop-rule-width) solid var(--slop-charcoal);
+}
+.home .load {
+  display: grid;
+  gap: 0.3rem;
+  align-content: end;
+  justify-items: center;
+  text-align: center;
+}
+.home .load-cap { color: var(--slop-toast); }
+.home .load-title {
+  font-family: var(--slop-font-mono);
+  font-weight: 500;
+  font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  max-width: 11em;
+}
+/* The figure is the load: --h is the weight as a percentage of the largest, so
+   40% is set nearly twice the size of 15% and the increase is visible before a
+   single number is read. */
+.home .load-pct {
+  font-size: calc(1.05rem + var(--h) * 0.032rem);
+  line-height: 1;
+  color: var(--slop-tomato);
+}
+/* The stem stands the figure on the axis and carries the milestone's node. */
+.home .load-stem {
+  position: relative;
+  height: calc(1.6rem + var(--h) * 0.035rem);
+  width: 2px;
+  background: var(--slop-charcoal);
+  margin-top: 0.5rem;
+}
+.home .load-stem::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  translate: -50% 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--slop-tomato);
+}
+.home .load-meta {
+  color: var(--at-text-secondary);
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
 }
 
+/* The same four loads as ordinary prose, for anyone reading rather than
+   looking --- the plan requires both. */
+.home .load-list {
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  padding: 0;
+  max-width: 68ch;
+  font-size: var(--at-font-size-sm);
+}
+.home .load-list b { font-weight: 600; }
+
 /* --- 7. Resources -------------------------------------------------------- */
-.home .res { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 3vw, 3rem); margin-top: 2rem; }
-.home .res-card { border: var(--slop-rule-width) solid var(--slop-rule); padding: clamp(1.25rem, 2.5vw, 2rem); }
-.home .res-card--acetate { background: color-mix(in srgb, var(--slop-wash) 70%, var(--slop-paper)); }
-.home .res-card h3 { font-size: clamp(1.5rem, 2.6vw, 2.2rem); margin: 0.4rem 0 0.5rem; }
-.home .res-card--acetate h3 { color: var(--slop-lettuce); }
-.home .res-kicker { color: var(--slop-toast); }
-.home .res-q { margin: 0 0 1.25rem; }
-.home .res-foot { font-size: var(--at-font-size-sm); margin: 1.25rem 0 0.75rem; }
+/* The reference rules off under the section label before the heading starts,
+   so the label reads as a header for the band rather than a caption. */
+.home .eyebrow--ruled {
+  padding-bottom: 0.7rem;
+  margin-bottom: 1.1rem;
+  border-bottom: var(--slop-rule-width) solid var(--slop-rule);
+}
+
+/* The two objects sit on the page rather than in boxes: no card border, no
+   fill. The hairline between them is the only rule, and it carries the node
+   the reference puts at its midpoint. */
+.home .res {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  /* The two objects are different heights; the reference lines up the action
+     line under each of them, not the tops of the photographs. */
+  align-items: end;
+  margin-top: clamp(1.5rem, 3vw, 2.75rem);
+}
+.home .res::before {
+  content: "";
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+  margin-block: 6%;
+  background: var(--slop-rule-hair);
+}
+/* The node the reference puts at the midpoint of the divider: the two objects
+   are branches off one point, not two unrelated cards. */
+.home .res::after {
+  content: "";
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--slop-charcoal);
+  border-radius: 50%;
+  background: var(--slop-paper);
+}
+/* Both columns are placed explicitly: the hairline occupies the middle track,
+   so auto-placement would otherwise push the first object past it. */
+.home .res-item:first-of-type { grid-column: 1; grid-row: 1; }
+.home .res-item:last-of-type { grid-column: 3; grid-row: 1; }
+.home .res-item { margin: 0; }
+
+/* The action line is set like the reference's: mono, uppercase, and sitting on
+   its own rule --- the object above it is the evidence, this is the way in. */
+.home .res-act {
+  width: fit-content;
+  max-width: 100%;
+  margin: clamp(1rem, 2vw, 1.75rem) 0 0;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid var(--slop-charcoal);
+  font-family: var(--slop-font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.home .res-act a,
+.home .res-act .pending { color: var(--slop-lettuce); font-size: inherit; }
+.home .res-act a { text-decoration: none; }
+/* The route exists: the reference's red arrow is the affordance. */
+.home .res-act a::after { content: " \2192"; color: var(--slop-tomato); }
 
 .home .tabs { list-style: none; display: flex; gap: 0.5rem; margin: 1rem 0 0; padding: 0; flex-wrap: wrap; }
 .home .tabs li {
@@ -355,7 +523,10 @@ body:has(main.home)::after {
 .home .det-facts dd { margin: 0; }
 .home .det-line { font-family: var(--slop-font-mono); font-size: var(--at-font-size-sm); margin: 0 0 1rem; }
 .home .det-links { list-style: none; margin: 0 0 1.25rem; padding: 0; display: grid; gap: 0.4rem; }
+/* The reference gives the closing stamp real size --- it is the last thing on
+   the page and it is meant to land. */
 .home .det-stamp { margin: 0 0 0.6rem; }
+.home .det-stamp .slop-stamp { font-size: 1.35rem; letter-spacing: 0.1em; padding: 0.2em 0.55em; }
 .home .det-quip { font-family: var(--slop-font-mono); font-size: var(--at-font-size-sm); color: var(--slop-toast); margin: 0; }
 
 /* --- Phone composition ---------------------------------------------------- */
@@ -365,71 +536,172 @@ body:has(main.home)::after {
   .home .order,
   .home .det,
   .home .res { grid-template-columns: minmax(0, 1fr); }
+  .home .res::before,
+  .home .res::after { display: none; }
+  .home .res { gap: clamp(2rem, 7vw, 3rem); }
+  .home .res-item:first-of-type { grid-column: 1; grid-row: auto; }
+  .home .res-item:last-of-type { grid-column: 1; grid-row: auto; }
 
-  .home .phases { grid-template-columns: 1fr 1fr; }
+  /* The four-across phase row cannot survive a phone. The phase names move
+     into the track itself, at the station each one opens on, which is where
+     the phone reference puts them --- so the row is not shown twice. */
+  .home .phases { display: none; }
 
   /* Stacked, the portrait crop is the tallest thing above the fold. Capping it
      keeps the lede and the primary action on the first screen of a phone, and
      stops a 880px-wide tablet turning it into a full-height poster. */
   .home .hero-figure .rig { max-width: 380px; }
 
-  /* The horizontal rail becomes a vertical load track: the dot column is the
-     line, and each station stacks its own record. */
-  .home .track { border-left: var(--slop-rule-width) solid var(--slop-rule); margin-left: 5px; padding-left: 1.25rem; }
+  /* The horizontal rail becomes a vertical load track: one line runs down the
+     dot column and every station hangs its own record off it. */
+  .home .track { border-left: 0; padding-left: 0; margin-left: 0; }
   .home .stn {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "n body" "marks marks";
-    gap: 0.5rem 1rem;
-    position: relative;
+    grid-template-columns: 1.6rem auto minmax(0, 1fr);
+    grid-template-areas:
+      "phase phase phase"
+      "dot   n     title"
+      "dot   n     date"
+      "dot   n     q"
+      "dot   n     marks";
+    gap: 0.2rem 0.85rem;
+    padding-block: 0.9rem;
+    border-top: 0;
   }
-  .home .stn-dot { position: absolute; left: -1.65rem; top: 1.4rem; }
-  .home .stn-n { grid-area: n; }
-  .home .stn-body { grid-area: body; }
-  .home .stn-marks { grid-area: marks; justify-content: flex-start; }
+  /* Only a new phase draws a rule: the stations inside a phase are one run. */
+  .home .stn:has(.stn-phase) { border-top: var(--slop-rule-width) solid var(--slop-rule-hair); }
+  .home .stn-phase {
+    display: block;
+    grid-area: phase;
+    margin-bottom: 0.6rem;
+    padding-left: 2.45rem;
+    font-family: var(--slop-font-mono);
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--slop-lettuce);
+  }
+  .home .stn-dot {
+    grid-area: dot;
+    justify-self: center;
+    align-self: start;
+    margin-top: 0.35rem;
+    width: 13px;
+    height: 13px;
+    border-color: var(--slop-lettuce);
+    background: var(--slop-wash);
+  }
+  .home .stn-n { grid-area: n; font-size: 2.1rem; align-self: start; }
+  .home .stn-body { display: contents; }
+  .home .stn-title { grid-area: title; }
+  .home .stn-date { grid-area: date; }
+  .home .stn-q { grid-area: q; }
+  .home .stn-marks { grid-area: marks; justify-content: flex-start; margin-top: 0.4rem; }
+  /* The track line itself is set with the motion scaffolding at the foot of
+     this file, so the base rule there cannot override it by source order. */
 
-  /* Stems make no sense stacked, so the load becomes a labelled row. */
-  .home .loads { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 0; }
+  /* A vertical axis makes no sense stacked, so each load becomes a row with
+     its node and a short lead, as the phone reference sets it. */
+  .home .loadaxis { grid-template-columns: minmax(0, 1fr); }
+  .home .loads-axis { display: none; }
+  .home .loads {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    border-bottom: 0;
+  }
   .home .load {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "pct title" "pct cap" "pct meta" "sum sum" "stem stem";
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "stem title pct" "stem cap pct" "stem meta pct";
     gap: 0.15rem 1rem;
     align-items: baseline;
+    justify-items: start;
+    text-align: left;
     padding-block: 1.1rem;
     border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
   }
-  .home .load-stem { display: none; }
-  .home .load-pct { grid-area: pct; align-self: center; }
-  .home .load-title { grid-area: title; }
+  .home .load-stem {
+    grid-area: stem;
+    align-self: center;
+    width: 34px;
+    height: 2px;
+    margin: 0 0 0 9px;
+  }
+  .home .load-stem::after { left: 0; top: 50%; bottom: auto; translate: -100% -50%; }
+  .home .load-pct { grid-area: pct; align-self: center; font-size: 1.6rem; }
+  .home .load-title { grid-area: title; max-width: none; }
   .home .load-cap { grid-area: cap; }
   .home .load-meta { grid-area: meta; }
-  .home .load-sum { grid-area: sum; margin-top: 0.35rem; }
+
+  /* The phone reference keeps the two states side by side with an arrow
+     between them, and runs one continuous rule down the inside of the number
+     column, so the four families read as one list rather than four blocks. */
+  .home .fam-inner { display: flex; flex-direction: column; }
+  .home .caveat { order: 3; justify-self: start; margin-top: 1.25rem; }
 
   .home .fam-row {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "n name" "states states" "week week";
-    gap: 0.75rem 1rem;
+    grid-template-columns: auto 1px minmax(0, 1fr);
+    gap: 0.4rem 0.9rem;
+    align-items: start;
+    padding-block: 1.1rem;
   }
-  .home .fam-n { grid-area: n; }
-  .home .fam-name { grid-area: name; }
-  .home .fam-states { grid-area: states; }
-  .home .fam-week { grid-area: week; }
+  .home .fam-row::before { grid-column: 2; grid-row: 1 / span 3; margin-block: 0; }
+  .home .fam-n { grid-column: 1; grid-row: 1 / span 3; font-size: 2.2rem; }
+  .home .fam-name { grid-column: 3; grid-row: 1; }
+  .home .fam-states {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    grid-column: 3;
+    grid-row: 2;
+    margin-top: 0.5rem;
+  }
+  .home .fam-state { flex: 1; min-width: 0; }
+  .home .fam-arrow {
+    display: block;
+    flex: none;
+    color: var(--slop-tomato);
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  /* The state captions still carry the meaning, so they are moved out of sight
+     rather than removed. */
+  .home .fam-cap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .home .fam-out { grid-column: 3; grid-row: 3; margin-top: 0.5rem; }
+  /* The consequence repeats the after-state note, which stays available to a
+     screen reader inside the diagram's own description. */
+  .home .fam-conseq { display: none; }
 
   .home .det-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
 }
 
-@media (width < 560px) {
-  .home .phases { grid-template-columns: minmax(0, 1fr); }
-  .home .ms { grid-template-columns: minmax(0, 1fr); }
-}
+/* The moisture stages are printed on a photographed page: they are sized in
+   `cqw` and must scale with the prop, never reflow out of its paper. There is
+   deliberately no narrow-screen override for `.ms`. */
 
-/* --- The horizontal test rail (desktop) ---------------------------------- */
+/* --- The horizontal test rail (desktop) ----------------------------------
+ * Five rows on one grid: station line, station numbers, whatever hangs off a
+ * station, the assessment line, and its weights. Row 1 and row 4 are two
+ * continuous lines; everything else is placed into the column of the station
+ * it belongs to, so a mark never drifts off its station.
+ */
 .home .rail { display: none; }
 
 @media (width >= 900px) {
   .home .rail {
     display: grid;
-    gap: 0.4rem;
-    margin-bottom: 2.5rem;
+    grid-template-columns: 8.5rem repeat(12, minmax(0, 1fr));
+    grid-template-rows: auto auto minmax(3.6rem, auto) auto auto;
+    align-items: center;
+    row-gap: 0.55rem;
+    margin: 0 0 2.75rem;
+    position: relative;
   }
 
   .home .rail-label {
@@ -439,74 +711,103 @@ body:has(main.home)::after {
     text-transform: uppercase;
     color: var(--slop-toast);
     margin: 0;
+    grid-column: 1;
+    max-width: 7.5rem;
+    line-height: 1.25;
   }
-  .home .rail-label--ms { margin-top: 0.2rem; }
+  .home .rail-label--stn { grid-row: 1 / span 2; align-self: center; }
+  .home .rail-label--ms { grid-row: 4; }
 
-  .home .rail-track {
-    list-style: none;
-    margin: 0;
-    padding: 0.75rem 0 0;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    border-top: var(--slop-rule-width) solid var(--slop-rule);
+  .home .rail-line {
+    grid-column: 2 / -1;
+    grid-row: 1;
+    height: var(--slop-rule-width);
+    align-self: center;
   }
-
-  .home .rail-stn {
-    display: grid;
-    grid-template-rows: auto auto minmax(2.6rem, auto);
-    justify-items: center;
-    gap: 0.3rem;
-    position: relative;
-  }
-
-  .home .rail-extra {
-    display: grid;
-    justify-items: center;
-    gap: 0.3rem;
-    align-content: start;
+  .home .rail-line--ms { grid-row: 4; }
+  .home .rail-line span {
+    display: block;
+    height: 100%;
+    background: var(--slop-charcoal);
+    transform-origin: left center;
   }
 
   .home .rail-dot {
-    width: 12px;
-    height: 12px;
+    grid-row: 1;
+    justify-self: center;
+    width: 13px;
+    height: 13px;
     border-radius: 50%;
-    border: 2px solid var(--slop-charcoal);
-    background: var(--slop-paper);
-    margin-top: -1.35rem;
+    border: 1.5px solid var(--slop-charcoal);
+    background: var(--slop-wash);
   }
-  /* The specimen starts here: a filled marker, not a colour change alone. */
-  .home .rail-stn.is-start .rail-dot { background: var(--slop-charcoal); }
+  /* The specimen starts here: a filled marker inside its own ring, not a
+     colour change alone. */
+  .home .rail-dot.is-start {
+    background: var(--slop-lettuce);
+    box-shadow: inset 0 0 0 2.5px var(--slop-wash);
+  }
 
   .home .rail-n {
+    grid-row: 2;
+    justify-self: center;
     font-family: var(--slop-font-display);
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 1.65rem;
     line-height: 1;
   }
 
-  .home .rail-deck {
+  .home .rail-note {
+    grid-row: 3;
+    justify-self: center;
+    align-self: start;
     font-family: var(--slop-font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .home .rail-note--start { display: grid; justify-items: center; gap: 0.25rem; }
+  .home .rail-note--start svg {
+    width: 10px;
+    height: 22px;
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .home .rail-deck {
     color: var(--slop-lettuce);
     border: 1px solid var(--slop-lettuce);
-    padding: 0 0.3em;
+    padding: 0.3em 0.5em;
+    background: var(--slop-wash);
   }
 
-  .home .rail-ms {
-    display: grid;
-    justify-items: center;
-    gap: 0.35rem;
-    font-family: var(--slop-font-mono);
-    font-size: var(--at-font-size-xs);
-    color: var(--slop-tomato);
+  /* The dotted drop from a station to its milestone. */
+  .home .rail-drop {
+    grid-row: 3 / 5;
+    justify-self: center;
+    align-self: stretch;
+    width: 0;
+    border-left: 2px dotted var(--slop-charcoal);
+    margin-block: 0.1rem;
   }
   .home .rail-ms-dot {
-    width: 9px;
-    height: 9px;
+    grid-row: 4;
+    justify-self: center;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--slop-tomato);
+  }
+  .home .rail-pct {
+    grid-row: 5;
+    justify-self: center;
+    font-family: var(--slop-font-mono);
+    font-size: 1.05rem;
+    color: var(--slop-charcoal);
   }
 }
 
@@ -531,31 +832,16 @@ body:has(main.home)::after {
   transform-origin: top center;
 }
 
+/* The phone's vertical load path. A real element rather than a border, so it
+   can be drawn (a border cannot be transformed), and placed here rather than
+   with the rest of the phone composition so the base rule above cannot win on
+   source order. */
 @media (width < 900px) {
-  /* The vertical load path: the border becomes a real element so it can be
-     drawn, rather than animating a border (which cannot be transformed). */
-  .home .track { border-left: 0; }
-  .home .track-line { display: block; left: -1.25rem; }
+  .home .track-line {
+    display: block;
+    left: calc(0.8rem - 1px);
+    width: 2px;
+  }
+  .home .track-line span { background: var(--slop-lettuce); }
 }
 
-@media (width >= 900px) {
-  .home .rail-track { position: relative; }
-  .home .rail-line {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--slop-rule-width);
-    list-style: none;
-    pointer-events: none;
-  }
-  .home .rail-line span {
-    display: block;
-    height: 100%;
-    background: var(--slop-rule);
-    transform-origin: left center;
-  }
-  /* The static rule is replaced by the drawable line so the two cannot
-     disagree about where the rail is. */
-  .home .rail-track { border-top-color: transparent; }
-}

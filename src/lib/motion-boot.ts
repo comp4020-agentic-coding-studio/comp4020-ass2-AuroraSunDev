@@ -215,12 +215,12 @@ const FAMILY_SETUP: Record<string, (el: Element, gsap: GSAPStatic) => gsap.core.
         { x: (i: number) => (i === 0 ? -12 : 8), duration: MOTION.duration.base, immediateRender: false },
         0,
       )
-      .from(el.querySelectorAll(".core"), { x: -4, duration: MOTION.duration.base, immediateRender: false }, 0),
+      .from(el.querySelectorAll(".fill"), { x: -4, duration: MOTION.duration.base, immediateRender: false }, 0),
   // The moisture front advances through the layer.
   soak: (el, g) =>
     g
       .timeline({ paused: true })
-      .from(el.querySelector(".front"), {
+      .from(el.querySelectorAll(".front, .front-line"), {
         scaleX: 0.3,
         transformOrigin: "left center",
         duration: MOTION.duration.draw,
@@ -236,7 +236,7 @@ const FAMILY_SETUP: Record<string, (el: Element, gsap: GSAPStatic) => gsap.core.
     }),
   // Contents escape past the outer layers.
   splay: (el, g) =>
-    g.timeline({ paused: true }).from(el.querySelector(".core"), {
+    g.timeline({ paused: true }).from(el.querySelectorAll(".fill"), {
       scaleX: 0.79,
       transformOrigin: "center center",
       duration: MOTION.duration.base,
@@ -285,12 +285,13 @@ mountMotion(
   "[data-motion-rail]",
   ({ root, conditions, gsap, refreshPriority }) => {
     if (!conditions.desktop) return;
-    const line = root.querySelector(".rail-line span");
-    if (!line) return;
+    // Two lines now: the station rail and the assessment rail below it.
+    const lines = root.querySelectorAll(".rail-line span");
+    if (!lines.length) return;
 
     gsap
       .timeline({ scrollTrigger: { trigger: root, start: "top 80%", once: true, refreshPriority } })
-      .from(line, {
+      .from(lines, {
         scaleX: 0,
         transformOrigin: "left center",
         duration: MOTION.duration.draw,

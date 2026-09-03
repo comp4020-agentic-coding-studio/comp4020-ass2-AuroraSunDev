@@ -4,30 +4,56 @@
  * Week 4 deck teaches it. Discrete states, not a continuous animation: the
  * lecture's own point is that the failure arrives late, so the interesting
  * thing is the comparison between stages rather than the movement.
+ *
+ * Each panel is a section through the same specimen. The material is stippled,
+ * the front is a wavy line, and the three panels differ only by how deep that
+ * line has reached --- depth is the measurement the deck is making. The load
+ * arriving at the surface is drawn above the section; the load leaving it, once
+ * the front is through, is drawn below.
  */
 const stages = [
-  { id: "01", label: "Dry material.", note: "No moisture front." },
-  { id: "02", label: "Moisture front advances.", note: "Penetration begins." },
-  { id: "03", label: "Saturation.", note: "Strength falls." },
+  { id: "I", depth: 5, arrows: 2, out: false, label: "Initial Absorption", note: "Surface wetting begins." },
+  { id: "II", depth: 13, arrows: 3, out: true, label: "Penetration", note: "Moisture front advances." },
+  { id: "III", depth: 22, arrows: 3, out: true, label: "Saturation", note: "Capacity reached." },
 ];
+
+/** A wavy front at depth d, drawn across the specimen's width. */
+const front = (d: number) =>
+  `M6 ${16 + d} q 12.25 -3.5 24.5 0 t 24.5 0 t 24.5 0 t 24.5 0`;
 ---
 
 <ol class="ms">
   {stages.map((stage, i) => (
     <li class="ms-item">
-      <svg class="ms-svg" viewBox="0 0 110 60" role="presentation" focusable="false">
-        <rect class="ms-body" x="8" y="16" width="94" height="34" />
-        {i > 0 && (
-          <path
-            class="ms-front"
-            d={i === 1 ? "M8 16 h94 v11 h-94 z" : "M8 16 h94 v26 h-94 z"}
-          />
-        )}
-        {i > 0 && <path class="ms-arrow" d={`M30 4 v8 m-3 -3 l3 3 l3 -3`} />}
-        {i > 0 && <path class="ms-arrow" d={`M78 4 v8 m-3 -3 l3 3 l3 -3`} />}
-      </svg>
       <p class="ms-stage">Stage {stage.id}</p>
-      <p class="ms-text">{stage.label}<br />{stage.note}</p>
+
+      <svg class="ms-svg" viewBox="0 0 110 66" role="presentation" focusable="false">
+        <defs>
+          {/* Stipple, not a flat tone: the section reads as a porous material
+              rather than a filled box. */}
+          <pattern id={`ms-stipple-${i}`} width="5" height="5" patternUnits="userSpaceOnUse">
+            <circle class="ms-dot" cx="1.3" cy="1.3" r="0.42" />
+            <circle class="ms-dot" cx="3.8" cy="3.5" r="0.42" />
+          </pattern>
+        </defs>
+
+        {/* Load arriving at the surface. */}
+        {Array.from({ length: stage.arrows }, (_, a) => {
+          const x = 6 + (98 * (a + 1)) / (stage.arrows + 1);
+          return <path class="ms-arrow" d={`M${x} 2 V13 m-2.2 -2.4 l2.2 2.4 l2.2 -2.4`} />;
+        })}
+
+        <rect class="ms-body" x="6" y="16" width="98" height="32" fill={`url(#ms-stipple-${i})`} />
+        {/* The wetted zone: everything the front has already passed. */}
+        <path class="ms-wet" d={`${front(stage.depth)} L104 16 L6 16 Z`} />
+        <rect class="ms-edge" x="6" y="16" width="98" height="32" />
+        <path class="ms-front" d={front(stage.depth)} />
+
+        {/* Once the front is through, the load leaves the far face. */}
+        {stage.out && <path class="ms-arrow" d="M55 51 V62 m-2.2 -2.4 l2.2 2.4 l2.2 -2.4" />}
+      </svg>
+
+      <p class="ms-text"><b>{stage.label}</b><br />{stage.note}</p>
     </li>
   ))}
 </ol>
@@ -36,26 +62,33 @@ const stages = [
   .ms {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--slop-space-md);
+    gap: 1.15em;
     margin: 0;
     padding: 0;
     list-style: none;
   }
   .ms-svg { width: 100%; height: auto; display: block; }
-  .ms-body { fill: var(--slop-paper); stroke: var(--slop-charcoal); stroke-width: 1.5; }
-  .ms-front {
-    fill: color-mix(in srgb, var(--slop-toast) 38%, var(--slop-paper));
-    stroke: var(--slop-toast);
-    stroke-width: 1.5;
+
+  /* The stipple is a presentation attribute on the rect, so the body carries no
+     `fill` of its own --- a CSS fill here would win and flatten the pattern. */
+  .ms-dot { fill: var(--slop-charcoal); }
+  .ms-edge { fill: none; stroke: var(--slop-charcoal); stroke-width: 1; }
+  .ms-wet { fill: color-mix(in srgb, var(--slop-charcoal) 9%, transparent); }
+  .ms-front { fill: none; stroke: var(--slop-charcoal); stroke-width: 1.1; }
+  .ms-arrow {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
-  .ms-arrow { fill: none; stroke: var(--slop-toast); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .ms-stage {
-    margin: var(--slop-space-xs) 0 0;
+    margin: 0 0 0.45em;
     font-family: var(--slop-font-mono);
-    font-size: var(--at-font-size-xs);
-    letter-spacing: 0.08em;
+    font-size: 0.82em;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    color: var(--slop-lettuce);
   }
-  .ms-text { margin: 0.15rem 0 0; font-size: var(--at-font-size-sm); }
+  .ms-text { margin: 0.5em 0 0; font-size: 0.85em; line-height: 1.35; }
+  .ms-text b { font-weight: 500; }
 </style>

@@ -6,10 +6,11 @@ import ArchiveRule from "../components/course/ArchiveRule.astro";
 import SpecimenLabel from "../components/course/SpecimenLabel.astro";
 import Stamp from "../components/course/Stamp.astro";
 import FailureDiagram from "../components/home/FailureDiagram.astro";
+import FieldManual from "../components/home/FieldManual.astro";
 import LayerOrderStack from "../components/home/LayerOrderStack.astro";
-import MoistureStages from "../components/home/MoistureStages.astro";
-import ShearSpecimen from "../components/home/ShearSpecimen.astro";
+import LectureSleeve from "../components/home/LectureSleeve.astro";
 import SpecimenRig from "../components/home/SpecimenRig.astro";
+import SpecimenSection from "../components/home/SpecimenSection.astro";
 import { courseMeta } from "../course-config";
 import { formatCourseDate } from "../lib/dates";
 import { ASSESSMENTS, PHASES, TOTAL_WEIGHT, WEEKS } from "../lib/semester";
@@ -123,15 +124,15 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
       </div>
 
       <figure class="prop-figure">
-        <ShearSpecimen />
-        <figcaption>
-          <ol class="callouts">
-            <li><span class="callouts-n">01</span> Bread (top)</li>
-            <li><span class="callouts-n">02</span> Cheese</li>
-            <li><span class="callouts-n">03</span> Meat — failure interface</li>
-            <li><span class="callouts-n">04</span> Bread (bottom)</li>
-          </ol>
-          <p class="dim">Specimen height ≈ 80 mm</p>
+        <SpecimenSection />
+        {/* The layer names are drawn beside the specimen on desktop and as
+            numbered callouts on the phone, but neither is text a screen reader
+            can follow, so the stack is also stated plainly here. */}
+        <figcaption class="visually-hidden">
+          <p>
+            Specimen 003, four layers from the top: bread, cheese, meat — the
+            failure interface — and bread. Specimen height approximately 80 mm.
+          </p>
         </figcaption>
       </figure>
     </div>
@@ -139,11 +140,11 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
 
   {/* 3 --- FOUR FAILURE FAMILIES ------------------------------------------ */}
   <section class="band" aria-labelledby="fam-title">
-    <div class="inner">
-      <div class="fam-head">
-        <h2 id="fam-title" class="display xl">Four failure families</h2>
-        <p class="caveat">Course working model — not a professional standard.</p>
-      </div>
+    <div class="inner fam-inner">
+      <h2 id="fam-title" class="display xl">Four failure families</h2>
+      {/* Beside the heading on desktop, under the list on the phone --- the
+          reference puts the disclaimer where the reader is looking last. */}
+      <p class="caveat">Course working model — not a professional standard.</p>
 
       <ol class="fam">
         {FAMILIES.map((f) => {
@@ -156,25 +157,36 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
                 <h3 class="display">{f.name}</h3>
                 <p>{f.line}</p>
               </div>
+              {/* `display: contents` on desktop, so the two states sit in the
+                  row's own tracks either side of the divider; a flex row on the
+                  phone, where the reference sets them side by side with an
+                  arrow between. */}
               <div class="fam-states">
                 <div class="fam-state">
                   <p class="fam-cap">Before load</p>
                   <FailureDiagram family={f.id} state="before" />
-                  <p class="fam-note">{f.before}</p>
+                  {/* The diagram is presentational, so the state it shows is
+                      also stated in text for anyone who cannot see it. */}
+                  <p class="fam-note visually-hidden">{f.before}</p>
                 </div>
+                <span class="fam-arrow" aria-hidden="true">→</span>
                 <div class="fam-state">
                   <p class="fam-cap">After load</p>
                   <FailureDiagram family={f.id} state="after" />
-                  <p class="fam-note">{f.after}</p>
+                  <p class="fam-note visually-hidden">{f.after}</p>
                 </div>
               </div>
-              <p class="fam-week">
-                {href ? (
-                  <a href={href}>Week {week.week}: {week.title}</a>
-                ) : (
-                  <span class="pending">Week {week.week}: {week.title} <em>in preparation</em></span>
-                )}
-              </p>
+
+              <div class="fam-out">
+                <p class="fam-conseq">{f.after}</p>
+                <p class="fam-week">
+                  {href ? (
+                    <a href={href}>Week {week.week}: {week.title}</a>
+                  ) : (
+                    <span class="pending">Week {week.week}: {week.title} <em>in preparation</em></span>
+                  )}
+                </p>
+              </div>
             </li>
           );
         })}
@@ -191,12 +203,18 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         condition that determines whether a sandwich holds.
       </p>
 
+      {/* One row, read left to right: the four phases are stages of a single
+          load path, not four parallel columns. The week span each covers is
+          stated on the stations below, so it is not repeated here. */}
       <ol class="phases">
-        {PHASES.map((p) => (
+        {PHASES.map((p, i) => (
           <li class="phase">
-            <span class="phase-n">Phase {p.numeral}</span>
-            <span class="phase-name display">{p.name}</span>
-            <span class="phase-weeks">Weeks {p.weeks[0]}–{p.weeks[1]}</span>
+            {i > 0 && <span class="phase-arrow" aria-hidden="true">→</span>}
+            <span class="phase-body">
+              <span class="phase-n">Phase {p.numeral}</span>
+              <span class="phase-name display">{p.name}</span>
+              <span class="visually-hidden">Weeks {p.weeks[0]} to {p.weeks[1]}</span>
+            </span>
           </li>
         ))}
       </ol>
@@ -206,30 +224,55 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
           Desktop only, and aria-hidden --- every station's number, title, date
           and milestone is announced by the list below, so exposing the rail
           too would make a screen reader read the semester twice. */}
-      <div class="rail" aria-hidden="true">
-        <p class="rail-label">Station no.</p>
-        <ol class="rail-track" data-motion-rail>
-          <li class="rail-line"><span></span></li>
-          {WEEKS.map((w) => {
-            const milestone = milestoneAt(w.week);
-            return (
-              <li class:list={["rail-stn", w.week === 1 && "is-start"]}>
-                <span class="rail-dot"></span>
-                <span class="rail-n">{String(w.week).padStart(2, "0")}</span>
-                {/* Always rendered, so every station has the same three rows
-                    and the numbers share one baseline whether or not the week
-                    carries a deck or a milestone. */}
-                <span class="rail-extra">
-                  {w.lecture && <span class="rail-deck">Deck</span>}
-                  {milestone && (
-                    <span class="rail-ms"><span class="rail-ms-dot"></span>{milestone.weight}%</span>
-                  )}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
+      {/* One grid, five rows: the station line, the station numbers, whatever
+          hangs off a station, the assessment line, and its weights. Everything
+          is placed by column so a mark is always under the station it belongs
+          to, at any width. */}
+      <div class="rail" data-motion-rail aria-hidden="true">
+        <p class="rail-label rail-label--stn">Station no.</p>
         <p class="rail-label rail-label--ms">Assessment milestone</p>
+
+        {/* Drawn first so the open stations sit on top of it. */}
+        <div class="rail-line"><span></span></div>
+        <div class="rail-line rail-line--ms"><span></span></div>
+
+        {WEEKS.map((w) => {
+          const milestone = milestoneAt(w.week);
+          const col = w.week + 1;
+          return (
+            <>
+              <span
+                class:list={["rail-dot", w.week === 1 && "is-start"]}
+                style={`grid-column:${col}`}
+              ></span>
+              <span class="rail-n" style={`grid-column:${col}`}>
+                {String(w.week).padStart(2, "0")}
+              </span>
+
+              {w.week === 1 && (
+                <span class="rail-note rail-note--start" style={`grid-column:${col}`}>
+                  <svg viewBox="0 0 10 22" focusable="false"><path d="M5 22 V3 m-4 4 l4 -4 l4 4" /></svg>
+                  Specimen<br />at start
+                </span>
+              )}
+              {w.lecture && (
+                <span class="rail-note rail-deck" style={`grid-column:${col}`}>
+                  Lecture<br />deck
+                </span>
+              )}
+
+              {milestone && (
+                <>
+                  {/* The milestone hangs off its station: a dotted drop, then
+                      the weight on the assessment line. */}
+                  <span class="rail-drop" style={`grid-column:${col}`}></span>
+                  <span class="rail-ms-dot" style={`grid-column:${col}`}></span>
+                  <span class="rail-pct" style={`grid-column:${col}`}>{milestone.weight}%</span>
+                </>
+              )}
+            </>
+          );
+        })}
       </div>
 
       <ol class="track" data-motion-track>
@@ -237,8 +280,19 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         {WEEKS.map((w) => {
           const href = hrefFor(w.slug);
           const milestone = milestoneAt(w.week);
+          // The phase row above is a desktop device; on the phone the phase
+          // names live in the track itself, at the station each one opens on.
+          const opens = PHASES.find((p) => p.weeks[0] === w.week);
           return (
             <li class="stn">
+              {opens && (
+                <span class="stn-phase">
+                  {opens.name}
+                  <span class="visually-hidden">
+                    {" "}— Phase {opens.numeral}, weeks {opens.weeks[0]} to {opens.weeks[1]}
+                  </span>
+                </span>
+              )}
               <span class="stn-dot" aria-hidden="true"></span>
               <span class="stn-n display">{String(w.week).padStart(2, "0")}</span>
               <span class="stn-body">
@@ -312,19 +366,32 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         stronger. Four submissions, totalling {TOTAL_WEIGHT}%.
       </p>
 
-      <ol class="loads" data-motion-loads>
+      {/* The four declared loads standing on one axis. Weight drives the size
+          of the figure and the height of its stem, so the increase is a
+          physical fact of the drawing rather than a caption. */}
+      <div class="loadaxis">
+        <p class="loads-axis" aria-hidden="true">Structural<br />load axis <span>→</span></p>
+        <ol class="loads" data-motion-loads>
+          {ASSESSMENTS.map((a) => (
+            <li class="load" style={`--h:${Math.round((a.weight / maxWeight) * 100)}`}>
+              <span class="load-cap">{a.capability}</span>
+              <span class="load-title display">{a.title}</span>
+              <span class="load-pct display">{a.weight}%</span>
+              <span class="load-meta">Due {formatCourseDate(a.due)} · end of Week {a.dueWeek}</span>
+              <span class="load-stem" aria-hidden="true"></span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {/* The plan requires the same information as plain, readable text. */}
+      <ul class="load-list">
         {ASSESSMENTS.map((a) => (
-          <li class="load" style={`--h:${Math.round((a.weight / maxWeight) * 100)}`}>
-            <span class="load-cap">{a.capability}</span>
-            <span class="load-title display">{a.title}</span>
-            <span class="load-pct display">{a.weight}%</span>
-            <span class="load-meta">Due {formatCourseDate(a.due)} · end of Week {a.dueWeek}</span>
-            <span class="load-sum">{a.summary}</span>
-            <span class="load-stem" aria-hidden="true"></span>
+          <li>
+            <b>{a.title}</b> — {a.weight}%, due {formatCourseDate(a.due)}. {a.summary}
           </li>
         ))}
-      </ol>
-      <p class="loads-axis" aria-hidden="true">Structural load axis →</p>
+      </ul>
       <p class="track-foot">
         Every brief, what counts as evidence, and what is not assessed:{" "}
         <a href={withBase("/assessments/")}>the assessment overview</a>.
@@ -335,33 +402,28 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
   {/* 7 --- LECTURE AND FIELD MANUAL --------------------------------------- */}
   <section class="band" aria-labelledby="res-title">
     <div class="inner">
-      <p class="eyebrow">Resources</p>
+      <p class="eyebrow eyebrow--ruled">Resources</p>
       <h2 id="res-title" class="display xl">Use the evidence.</h2>
 
       <div class="res">
-        <article class="res-card res-card--acetate" aria-labelledby="res-deck">
-          <p class="res-kicker">Lecture deck · Week 04</p>
-          <h3 id="res-deck" class="display">Moisture Is a Load</h3>
-          <p class="res-q">How does moisture progressively degrade a boundary?</p>
-          <MoistureStages />
-          <p class="res-foot">Moisture is not harmless. It adds weight and it drives load.</p>
-          <p class="pending">Open the Week 4 lecture deck <em>in preparation</em></p>
+        <article class="res-item" aria-labelledby="res-deck">
+          <LectureSleeve />
+          <h3 id="res-deck" class="visually-hidden">
+            Moisture Is a Load — the Week 4 lecture deck
+          </h3>
+          <p class="res-act">
+            <span class="pending">Open the Week 4 lecture deck <em>in preparation</em></span>
+          </p>
         </article>
 
-        <article class="res-card res-card--manual" aria-labelledby="res-manual">
-          <p class="res-kicker">Laboratory archive</p>
-          <h3 id="res-manual" class="display">Field Manual</h3>
-          <p>Procedures. Observations. Failure modes.</p>
-          <ul class="tabs">
-            <li>Methods</li>
-            <li class="tabs-evidence">Evidence</li>
-            <li class="tabs-failure">Failure</li>
-          </ul>
-          <p class="res-foot">
-            The course methods for recording a specimen, applying a load,
-            identifying failure and defending a claim.
+        <article class="res-item" aria-labelledby="res-manual">
+          <FieldManual />
+          <h3 id="res-manual" class="visually-hidden">
+            The Field Manual — procedures, evidence and failure modes
+          </h3>
+          <p class="res-act">
+            <span class="pending">Consult the Field Manual <em>in preparation</em></span>
           </p>
-          <p class="pending">Consult the Field Manual <em>in preparation</em></p>
         </article>
       </div>
     </div>
@@ -389,7 +451,7 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
             <li><a href={withBase("/sessions/")}>Semester structure</a></li>
             <li><a href={withBase("/people/")}>People</a></li>
           </ul>
-          <p class="det-stamp"><Stamp state="tested" label="Experiment archived" /></p>
+          <p class="det-stamp"><Stamp state="archived" label="Experiment archived" /></p>
           <p class="det-quip">The evidence survived. The sandwich did not.</p>
         </div>
       </div>

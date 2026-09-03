@@ -1,0 +1,291 @@
+---
+/**
+ * Specimen 003 --- the sandwich as a stack of materials and interfaces.
+ *
+ * Two photographs of one specimen, art-directed per breakpoint: a wide cut
+ * cross-section for the desktop band, and a tall exploded view for the phone.
+ * Both are laboratory-scan greyscale with a single red layer --- the meat, the
+ * interface the section's copy says the failure ran along. The red is the only
+ * colour on the band, so the eye lands on the failure before it reads a word.
+ *
+ * The photograph carries no annotation. Every label, leader line, dot, arrow,
+ * dimension and the slip step are drawn here, positioned from the layer
+ * boundaries measured off the assets themselves (see LAYERS), so a mark sits
+ * on the material it names at any render size.
+ *
+ * The assets are photographed on pure black and composited with
+ * `mix-blend-mode: screen`. On a dark band screen maps the photograph's black
+ * onto the band's own colour exactly, so there is no rectangle seam and no
+ * cut-out halo around the open crumb.
+ */
+import { getImage } from "astro:assets";
+import sectionSrc from "../../assets/images/specimen/specimen-section.png";
+import explodedSrc from "../../assets/images/specimen/specimen-exploded.png";
+
+/** Layer mid-points, as a percentage of each asset's height. Measured from the
+    row-luminance profile of the assets, not estimated. */
+const LAYERS = [
+  { n: "01", name: "Bread (top)", section: 19.9, exploded: 14.1 },
+  { n: "02", name: "Cheese", section: 42.5, exploded: 31.1 },
+  { n: "03", name: "Meat — failure interface", section: 60.5, exploded: 46.3 },
+  { n: "04", name: "Bread (bottom)", section: 83.6, exploded: 80.7 },
+] as const;
+
+const wide = await getImage({ src: sectionSrc, widths: [768, 1152, 1536], format: "webp" });
+const wideAvif = await getImage({ src: sectionSrc, widths: [768, 1152, 1536], format: "avif" });
+const tall = await getImage({ src: explodedSrc, widths: [448, 672, 896], format: "webp" });
+const tallAvif = await getImage({ src: explodedSrc, widths: [448, 672, 896], format: "avif" });
+
+const AD = "(min-width: 900px)";
+const ALT =
+  "A cut cross-section of a sandwich, photographed as a laboratory specimen " +
+  "scan: two slices of bread with an open, airy crumb enclosing a pale slice " +
+  "of cheese and two layers of folded sliced meat. The specimen is greyscale " +
+  "apart from one meat layer, which is bright red.";
+---
+
+<div class="spec">
+  {/* The applied load, above and below the specimen: equal and opposite. */}
+  <p class="spec-load spec-load--top">
+    <span>Lateral shear load</span>
+    <svg viewBox="0 0 200 12" aria-hidden="true" focusable="false" preserveAspectRatio="none">
+      <path d="M0 6 H196 M190 1.5 L196 6 L190 10.5" vector-effect="non-scaling-stroke" />
+    </svg>
+  </p>
+
+  <div class="spec-body">
+    <ul class="spec-keys">
+      {LAYERS.map((l) => (
+        <li style={`--y:${l.section}%`}>
+          <span class="spec-key">{l.name}</span>
+          <i class="spec-lead" aria-hidden="true"></i>
+          <i class="spec-node" aria-hidden="true"></i>
+        </li>
+      ))}
+    </ul>
+
+    <div class="spec-plate">
+      <picture>
+        <source media={AD} type="image/avif" srcset={wideAvif.srcSet.attribute} sizes="(min-width: 900px) 46vw, 100vw" />
+        <source media={AD} type="image/webp" srcset={wide.srcSet.attribute} sizes="(min-width: 900px) 46vw, 100vw" />
+        <source type="image/avif" srcset={tallAvif.srcSet.attribute} sizes="100vw" />
+        <source type="image/webp" srcset={tall.srcSet.attribute} sizes="100vw" />
+        <img
+          src={wide.src}
+          width={sectionSrc.width}
+          height={sectionSrc.height}
+          alt={ALT}
+          decoding="async"
+        />
+      </picture>
+
+      {/* Drawn in the wide asset's own pixel space, so a coordinate here is the
+          coordinate in the photograph it annotates. */}
+      <svg class="spec-marks" viewBox="0 0 1536 544" aria-hidden="true" focusable="false">
+        <rect class="spec-box" x="10" y="10" width="1516" height="524" />
+        {/* The shear: an undisplaced datum, and the step the stack has taken
+            along the cheese--meat interface. */}
+        <path class="spec-datum" d="M768 10 V262 M768 342 V534" />
+        <path class="spec-step" d="M768 262 H812 V305 H856 V342" />
+      </svg>
+
+      {/* Phone: the same four layers, called out on the exploded view. */}
+      <ul class="spec-callouts" aria-hidden="true">
+        {LAYERS.map((l) => (
+          <li style={`--y:${l.exploded}%`}><span>{l.n}</span></li>
+        ))}
+      </ul>
+    </div>
+
+    <p class="spec-dim"><span>≈80 mm</span></p>
+  </div>
+
+  <p class="spec-load spec-load--bottom">
+    <svg viewBox="0 0 200 12" aria-hidden="true" focusable="false" preserveAspectRatio="none">
+      <path d="M200 6 H4 M10 1.5 L4 6 L10 10.5" vector-effect="non-scaling-stroke" />
+    </svg>
+  </p>
+</div>
+
+<style>
+  .spec { display: grid; gap: 0.6rem; }
+
+  /* --- the applied load ------------------------------------------------- */
+  .spec-load {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slop-paper);
+  }
+  .spec-load svg {
+    flex: 1;
+    height: 12px;
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 2;
+    stroke-linecap: square;
+  }
+  .spec-load--bottom { padding-inline: 0; }
+
+  /* --- keys, plate, dimension ------------------------------------------- */
+  .spec-body {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .spec-keys {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: clamp(9rem, 13vw, 12.5rem);
+  }
+  .spec-keys li {
+    position: absolute;
+    inset-inline: 0;
+    top: var(--y);
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .spec-key {
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--slop-paper);
+    white-space: nowrap;
+  }
+  /* The leader runs from the label to the specimen edge and ends in a node,
+     which is where the dashed capture box begins. */
+  .spec-lead {
+    flex: 1;
+    min-width: 0.75rem;
+    border-top: 1px dashed var(--slop-rule-hair);
+  }
+  .spec-node {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--slop-paper);
+    flex: none;
+  }
+
+  /* The plate reserves the wide asset's own ratio, so the photograph is never
+     squashed and the layer percentages below land on the layers they name. */
+  .spec-plate { position: relative; aspect-ratio: 1536 / 544; }
+  .spec-plate img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* On a dark ground, screen puts the photograph's pure black exactly onto
+       the band's own colour: no seam, and no cut-out edge on the crumb. */
+    mix-blend-mode: screen;
+  }
+  .spec-marks { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .spec-box {
+    fill: none;
+    stroke: var(--slop-rule-hair);
+    stroke-width: 3;
+    stroke-dasharray: 16 12;
+  }
+  .spec-datum {
+    fill: none;
+    stroke: var(--slop-paper);
+    stroke-width: 3;
+    stroke-dasharray: 12 10;
+    opacity: 0.85;
+  }
+  .spec-step { fill: none; stroke: var(--slop-paper); stroke-width: 3; }
+
+  /* The measured height of the specimen, bracketed like a dimension. */
+  .spec-dim {
+    position: relative;
+    margin: 0;
+    padding-left: 1.6rem;
+    display: flex;
+    align-items: center;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.06em;
+    color: var(--slop-paper);
+  }
+  .spec-dim::before {
+    content: "";
+    position: absolute;
+    left: 0.7rem;
+    top: 4%;
+    bottom: 4%;
+    border-left: 1px solid var(--slop-paper);
+  }
+  .spec-dim span { white-space: nowrap; }
+
+  .spec-callouts { display: none; }
+
+  @media (width < 900px) {
+    /* The exploded view runs to the edges of the screen and is cropped from the
+       right, so the stack reads as a specimen too big for the frame. */
+    .spec-load { display: none; }
+    .spec-body { grid-template-columns: minmax(0, 1fr); }
+    .spec-keys, .spec-dim { display: none; }
+    .spec-marks { display: none; }
+
+    /* Full-bleed from the viewport, not from an assumed container padding:
+       the padding is a clamp and guessing it overshot the right edge. */
+    .spec-plate {
+      width: 100vw;
+      margin-inline: calc(50% - 50vw);
+      aspect-ratio: 896 / 1152;
+      max-height: 78vh;
+    }
+    .spec-plate img { object-position: 62% center; }
+
+    .spec-callouts {
+      display: block;
+      position: absolute;
+      inset: 0;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .spec-callouts li {
+      position: absolute;
+      top: var(--y);
+      left: 6%;
+      right: 6%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* An arrow into the callout from each side: the layer is being measured
+       across, not pointed at. */
+    .spec-callouts li::before,
+    .spec-callouts li::after {
+      content: "";
+      flex: 1;
+      height: 2px;
+      background: var(--slop-tomato);
+    }
+    .spec-callouts span {
+      flex: none;
+      margin-inline: 0.5rem;
+      padding: 0.1rem 0.4rem;
+      border: 2px solid var(--slop-tomato);
+      background: var(--slop-ink);
+      color: var(--slop-tomato);
+      font-family: var(--slop-font-mono);
+      font-size: var(--at-font-size-xs);
+      line-height: 1.2;
+    }
+  }
+</style>

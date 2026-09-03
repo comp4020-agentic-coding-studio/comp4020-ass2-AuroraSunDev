@@ -201,6 +201,9 @@
   color: var(--slop-toast);
   border-style: dashed; /* second channel: revision is provisional */
 }
+/* The record is closed. Red, because on this site red is the colour of a
+   finished load: the experiment is over, not in progress. */
+.slop-stamp--archived { color: var(--slop-tomato); }
 
 /* --- Shell ------------------------------------------------------------- */
 

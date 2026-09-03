@@ -1,0 +1,131 @@
+---
+/**
+ * The Field Manual, presented as the object it is: a worn, rivet-bound
+ * laboratory handbook with three index tabs.
+ *
+ * As with the lecture sleeve, the photograph is a blank prop --- blank cover,
+ * blank tabs --- and the title, the archive kicker, the caption and the three
+ * tab labels are HTML over the top. The tab labels are placed from the tab
+ * bands measured off the asset (TABS below), so each word sits on its own tab.
+ */
+import { getImage } from "astro:assets";
+import manual from "../../assets/images/props/field-manual.png";
+
+/** Tab bands as a percentage of the asset's height, read off the photograph. */
+const TABS = [
+  { label: "Methods", top: 10.6, bottom: 34.5, tone: "manila" },
+  { label: "Evidence", top: 34.5, bottom: 56.0, tone: "olive" },
+  { label: "Failure", top: 56.0, bottom: 80.6, tone: "red" },
+] as const;
+
+const img = await getImage({ src: manual, widths: [512, 768, 1024], format: "webp" });
+const avif = await getImage({ src: manual, widths: [512, 768, 1024], format: "avif" });
+---
+
+<div class="propshot propshot--manual">
+  <picture>
+    <source type="image/avif" srcset={avif.srcSet.attribute} sizes="(min-width: 900px) 38vw, 92vw" />
+    <img
+      src={img.src}
+      width={manual.width}
+      height={manual.height}
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+    />
+  </picture>
+
+  <div class="propshot-cover">
+    <p class="mn-kicker">SLOP2895</p>
+    <p class="mn-title">Field Manual</p>
+    <p class="mn-foot">Laboratory handbook</p>
+  </div>
+
+  {/* Decorative: each label is announced in the card's own text below. */}
+  <ul class="mn-tabs" aria-hidden="true">
+    {TABS.map((t) => (
+      <li
+        class={`mn-tab mn-tab--${t.tone}`}
+        style={`--top:${t.top}%; --h:${(t.bottom - t.top).toFixed(2)}%`}
+      >
+        <span>{t.label}</span>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .propshot {
+    position: relative;
+    container-type: inline-size;
+    rotate: 0.6deg;
+  }
+  .propshot img { display: block; width: 100%; height: auto; }
+
+  /* The blank cover panel, inside the rivets and clear of the tabs. */
+  .propshot-cover {
+    position: absolute;
+    top: 11%;
+    bottom: 12%;
+    left: 12%;
+    right: 15%;
+    display: flex;
+    flex-direction: column;
+    font-size: 3.4cqw;
+    color: var(--slop-charcoal);
+  }
+  .mn-kicker {
+    margin: 0;
+    font-family: var(--slop-font-mono);
+    font-size: 0.72em;
+    letter-spacing: 0.09em;
+  }
+  /* The title sits about a third of the way down the cover, the way a bound
+     handbook is titled --- not tucked under the kicker. */
+  .mn-title {
+    margin: 1.5em 0 0;
+    font-family: var(--slop-font-display);
+    font-weight: 700;
+    font-size: 3.1em;
+    line-height: 0.95;
+    letter-spacing: 0.005em;
+  }
+  .mn-foot {
+    margin: auto 0 0;
+    padding-top: 0.5em;
+    border-top: 1px solid var(--slop-charcoal);
+    font-family: var(--slop-font-mono);
+    font-size: 0.72em;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  /* Tab labels read bottom-to-top, the way a tab is read when the book is
+     lying flat. */
+  .mn-tabs { position: absolute; inset: 0; list-style: none; margin: 0; padding: 0; }
+  .mn-tab {
+    position: absolute;
+    top: var(--top);
+    height: var(--h);
+    left: 93.5%;
+    right: 2.5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mn-tab span {
+    font-family: var(--slop-font-mono);
+    font-size: 2.05cqw;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+  }
+  .mn-tab--manila span { color: var(--slop-charcoal); }
+  .mn-tab--olive span,
+  .mn-tab--red span { color: #f2efe9; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .propshot { rotate: none; }
+  }
+</style>

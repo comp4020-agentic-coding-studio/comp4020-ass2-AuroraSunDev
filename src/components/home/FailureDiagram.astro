@@ -5,12 +5,18 @@
  * Four families, two states each. The geometry does the explaining: SLIP
  * offsets the layers, CRUSH shortens the stack, SPLAY pushes the filling past
  * the outer layers, SOAK advances a front through them. The word and the
- * caption beside each diagram say the same thing in text, so nothing here is
+ * consequence beside each row say the same thing in text, so nothing here is
  * the only carrier of the meaning.
  *
- * SOAK is the one family whose coloured layer is moisture rather than load,
- * so it is drawn in toasted brown; the other three are red, which on this
- * site means load or failure.
+ * Two things the reference is strict about and this drawing follows. The load
+ * is drawn *outside* the specimen --- an arrow overlapping the thing it loads
+ * reads as part of the thing. And the section is wide and shallow, so four
+ * families fit on one screen as a set to be compared rather than four blocks
+ * to be scrolled.
+ *
+ * SOAK is the one family whose coloured layer is moisture rather than load, so
+ * it is drawn in toasted brown; the other three are red, which on this site
+ * means load or failure.
  */
 interface Props {
   family: "slip" | "soak" | "crush" | "splay";
@@ -18,88 +24,159 @@ interface Props {
 }
 const { family, state } = Astro.props;
 const after = state === "after";
+const uid = `${family}-${state}`;
+
+/** A wavy band between two depths, drawn across the specimen's width. */
+const wave = (top: number, bottom: number, x0 = 60, x1 = 280) => {
+  const seg = (x1 - x0) / 4;
+  const q = seg / 2;
+  return (
+    `M${x0} ${top} q ${q} -3 ${seg} 0 t ${seg} 0 t ${seg} 0 t ${seg} 0 ` +
+    `L${x1} ${bottom} q ${-q} 3 ${-seg} 0 t ${-seg} 0 t ${-seg} 0 t ${-seg} 0 Z`
+  );
+};
 ---
 
 <svg
   class:list={["fd", `fd--${family}`, after && "fd--after"]}
-  viewBox="0 0 160 74"
+  viewBox="0 0 340 78"
   role="presentation"
   focusable="false"
 >
+  <defs>
+    <pattern id={`fd-stip-${uid}`} width="5" height="5" patternUnits="userSpaceOnUse">
+      <circle class="stip" cx="1.2" cy="1.2" r="0.95" />
+      <circle class="stip" cx="3.7" cy="3.6" r="0.95" />
+    </pattern>
+  </defs>
+
   {family === "slip" && (
     <g>
-      <rect class="outer" x={after ? 34 : 22} y="12" width="104" height="14" />
-      <path class="core" d={after ? "M26 28 h104 v12 h-104 z" : "M22 28 h104 v12 h-104 z"} />
-      <rect class="outer" x={after ? 14 : 22} y="42" width="104" height="14" />
-      <path class="force" d="M8 19 h-6 m4 -4 l-4 4 l4 4" />
-      <path class="force" d="M152 49 h6 m-4 -4 l4 4 l-4 4" />
+      {/* After load the two crusts travel in opposite directions and the
+          filling stays where the friction let it. */}
+      <rect class="outer" x={after ? 82 : 60} y="22" width="220" height="11" />
+      <rect class="fill" x={after ? 48 : 60} y="33" width="220" height="13" />
+      <rect class="fill fill--stip" x={after ? 48 : 60} y="33" width="220" height="13"
+            fill={`url(#fd-stip-${uid})`} />
+      <rect class="outer" x={after ? 28 : 60} y="46" width="220" height="11" />
+
+      {after ? (
+        <g>
+          <path class="force" d="M306 27 H334 m-8 -6 l8 6 l-8 6" />
+          <path class="force" d="M24 52 H2 m8 -6 l-8 6 l8 6" />
+        </g>
+      ) : (
+        <g>
+          <path class="force" d="M56 39 H24 m8 -6 l-8 6 l8 6" />
+          <path class="force" d="M284 39 H316 m-8 -6 l8 6 l-8 6" />
+        </g>
+      )}
     </g>
   )}
 
   {family === "soak" && (
     <g>
-      <rect class="outer" x="22" y="12" width="112" height="14" />
-      <path class="core" d="M22 28 h112 v14 h-112 z" />
-      <rect class="outer" x="22" y="44" width="112" height="14" />
-      <path class="front" d={after ? "M22 28 h112 v14 h-112 z" : "M22 28 h34 v14 h-34 z"} />
-      <path class="drop" d="M40 6 v3 M62 4 v4 M84 6 v3" />
+      <rect class="outer" x="60" y="20" width="220" height="11" />
+      <rect class="outer" x="60" y="31" width="220" height="22" />
+      {/* The wetted zone advances up through the section. */}
+      <path class="front" d={after ? wave(32, 53) : wave(46, 53)} />
+      <path class="front-line" d={after ? wave(32, 32.1) : wave(46, 46.1)} />
+      <rect class="outer" x="60" y="53" width="220" height="11" />
+
+      {/* Moisture arriving at the surface. */}
+      <path class="drop" d="M120 4 v11 M170 2 v13 M220 4 v11" />
+      {after && (
+        <g>
+          {/* The dash belongs to the travelling front; the head must not dash
+              with it, so it is a second, solid path. */}
+          <path class="front-arrow" d="M286 42 H310" />
+          <path class="front-head" d="M304 37 l8 5 l-8 5" />
+        </g>
+      )}
     </g>
   )}
 
   {family === "crush" && (
     <g>
-      <rect class="outer" x="22" y={after ? 22 : 12} width="112" height={after ? 10 : 14} />
-      <path class="core" d={after ? "M22 32 h112 v7 h-112 z" : "M22 28 h112 v14 h-112 z"} />
-      <rect class="outer" x="22" y={after ? 39 : 44} width="112" height={after ? 10 : 14} />
-      <path class="force" d="M78 4 v6 m-4 -4 l4 4 l4 -4" />
-      <path class="force" d="M78 68 v-6 m-4 4 l4 -4 l4 4" />
+      {/* The whole stack shortens: same materials, less usable structure. */}
+      <rect class="outer" x="60" y={after ? 30 : 20} width="220" height={after ? 8 : 12} />
+      <path class="fill" d={after ? wave(38, 48) : wave(32, 52)} />
+      <path class="fill fill--stip" d={after ? wave(38, 48) : wave(32, 52)}
+            fill={`url(#fd-stip-${uid})`} />
+      <rect class="outer" x="60" y={after ? 48 : 52} width="220" height={after ? 8 : 12} />
+
+      <path class="force" d="M170 2 V16 m-6 -8 l6 8 l6 -8" />
+      <path class="force" d="M170 76 V62 m-6 8 l6 -8 l6 8" />
     </g>
   )}
 
   {family === "splay" && (
     <g>
-      <rect class="outer" x="26" y="12" width="104" height="14" />
-      <path class="core" d={after ? "M12 28 h132 v13 h-132 z" : "M26 28 h104 v13 h-104 z"} />
-      <rect class="outer" x="26" y="43" width="104" height="14" />
-      {after && <path class="force" d="M8 34 h-5 m3 -4 l-3 4 l3 4" />}
-      {after && <path class="force" d="M152 34 h5 m-3 -4 l3 4 l-3 4" />}
+      {/* Unbraced, the filling leaves the footprint of the crusts. */}
+      <rect class="outer" x={after ? 70 : 60} y="22" width={after ? 200 : 220} height="11" />
+      {after ? (
+        <g>
+          <path class="fill" d={wave(33, 49, 32, 308)} />
+          <path class="fill fill--stip" d={wave(33, 49, 32, 308)} fill={`url(#fd-stip-${uid})`} />
+        </g>
+      ) : (
+        <g>
+          <rect class="fill" x="60" y="33" width="220" height="14" />
+          <rect class="fill fill--stip" x="60" y="33" width="220" height="14"
+                fill={`url(#fd-stip-${uid})`} />
+        </g>
+      )}
+      <rect class="outer" x={after ? 70 : 60} y={after ? 49 : 47} width={after ? 200 : 220} height="11" />
+
+      <path class="force" d={after ? "M28 41 H4 m8 -6 l-8 6 l8 6" : "M56 40 H24 m8 -6 l-8 6 l8 6"} />
+      <path class="force" d={after ? "M312 41 H336 m-8 -6 l8 6 l-8 6" : "M284 40 H316 m-8 -6 l8 6 l-8 6"} />
     </g>
   )}
 </svg>
 
 <style>
-  .fd {
-    width: 100%;
-    max-width: 190px;
-    height: auto;
-    display: block;
-  }
+  .fd { width: 100%; max-width: 300px; height: auto; display: block; margin-inline: auto; }
 
-  .outer,
-  .core {
+  .outer {
     fill: var(--slop-paper);
     stroke: var(--slop-charcoal);
-    stroke-width: 1.4;
+    stroke-width: 1.5;
   }
 
-  .core {
-    fill: color-mix(in srgb, var(--slop-tomato) 26%, var(--slop-paper));
+  .fill {
+    fill: color-mix(in srgb, var(--slop-tomato) 42%, var(--slop-paper));
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
   }
-
-  .fd--soak .core {
-    fill: var(--slop-paper);
-  }
+  /* The stipple is a second pass over the same shape: the pattern is a
+     presentation attribute, so this rule must not set `fill`. */
+  .fill--stip { stroke: none; }
+  .stip { fill: color-mix(in srgb, var(--slop-tomato) 78%, var(--slop-charcoal)); }
 
   .front {
-    fill: color-mix(in srgb, var(--slop-toast) 40%, var(--slop-paper));
+    fill: color-mix(in srgb, var(--slop-toast) 55%, var(--slop-paper));
+    stroke: none;
+  }
+  .front-line { fill: none; stroke: var(--slop-toast); stroke-width: 1.5; }
+  .front-arrow {
+    fill: none;
     stroke: var(--slop-toast);
-    stroke-width: 1.4;
+    stroke-width: 1.8;
+    stroke-dasharray: 6 4;
+    stroke-linecap: butt;
+  }
+  .front-head {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .force {
     fill: none;
     stroke: var(--slop-tomato);
-    stroke-width: 1.8;
+    stroke-width: 2.4;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
@@ -107,7 +184,7 @@ const after = state === "after";
   .drop {
     fill: none;
     stroke: var(--slop-toast);
-    stroke-width: 1.6;
+    stroke-width: 1.8;
     stroke-linecap: round;
   }
 </style>

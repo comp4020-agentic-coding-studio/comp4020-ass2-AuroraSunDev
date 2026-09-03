@@ -7,7 +7,7 @@
  * seeing the colour.
  */
 interface Props {
-  state: "tested" | "held" | "failed" | "revised";
+  state: "tested" | "held" | "failed" | "revised" | "archived";
   /** Overrides the default word when the record says something more exact. */
   label?: string;
 }
@@ -17,6 +17,7 @@ const words = {
   held: "Held",
   failed: "Failed",
   revised: "Revised",
+  archived: "Archived",
 } as const;
 ---
 
