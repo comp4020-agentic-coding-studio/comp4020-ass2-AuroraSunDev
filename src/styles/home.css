@@ -263,7 +263,16 @@ body:has(main.home)::after {
 .home .load-cap { color: var(--slop-toast); }
 .home .load-title { font-size: clamp(1.05rem, 1.5vw, 1.4rem); text-transform: uppercase; letter-spacing: 0.03em; }
 .home .load-pct { font-size: clamp(2rem, 4.5vw, 3.6rem); line-height: 1; color: var(--slop-tomato); }
-.home .load-stem { height: var(--h); min-height: 1.5rem; width: 2px; background: var(--slop-tomato); }
+/* The declared load, drawn to scale: --h is the weight as a percentage of the
+   largest, so the four stems form a visibly increasing ladder standing on the
+   axis rule. A length, not a percentage of an indefinite grid row. */
+.home .load-stem {
+  height: calc(var(--h) * 0.075rem);
+  width: 2px;
+  background: var(--slop-tomato);
+  align-self: end;
+  margin-top: 0.75rem;
+}
 .home .load-meta, .home .load-sum { font-size: var(--at-font-size-sm); }
 .home .load-meta { color: var(--at-text-secondary); font-family: var(--slop-font-mono); font-size: var(--at-font-size-xs); }
 .home .loads-axis {
@@ -355,7 +364,7 @@ body:has(main.home)::after {
   .home .loads { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 0; }
   .home .load {
     grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: "pct title" "pct cap" "pct meta" "sum sum";
+    grid-template-areas: "pct title" "pct cap" "pct meta" "sum sum" "stem stem";
     gap: 0.15rem 1rem;
     align-items: baseline;
     padding-block: 1.1rem;
@@ -472,4 +481,54 @@ body:has(main.home)::after {
     border-radius: 50%;
     background: var(--slop-tomato);
   }
+}
+
+/* --- Motion scaffolding --------------------------------------------------
+ * Both of these render at their full length with no JavaScript; the motion
+ * only scales them up from zero, so the static page is the finished page.
+ */
+.home .track { position: relative; }
+.home .track-line {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: var(--slop-rule-width);
+  list-style: none;
+  pointer-events: none;
+  display: none;
+}
+.home .track-line span {
+  display: block;
+  height: 100%;
+  background: var(--slop-rule);
+  transform-origin: top center;
+}
+
+@media (width < 900px) {
+  /* The vertical load path: the border becomes a real element so it can be
+     drawn, rather than animating a border (which cannot be transformed). */
+  .home .track { border-left: 0; }
+  .home .track-line { display: block; left: -1.25rem; }
+}
+
+@media (width >= 900px) {
+  .home .rail-track { position: relative; }
+  .home .rail-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--slop-rule-width);
+    list-style: none;
+    pointer-events: none;
+  }
+  .home .rail-line span {
+    display: block;
+    height: 100%;
+    background: var(--slop-rule);
+    transform-origin: left center;
+  }
+  /* The static rule is replaced by the drawable line so the two cannot
+     disagree about where the rail is. */
+  .home .rail-track { border-top-color: transparent; }
 }

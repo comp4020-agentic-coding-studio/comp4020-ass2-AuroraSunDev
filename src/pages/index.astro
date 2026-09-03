@@ -69,7 +69,7 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
   mainAttrs={{ class: "home" }}
 >
   {/* 1 --- FIRST VIEWPORT: the specimen under load ------------------------ */}
-  <section class="band band--hero" aria-labelledby="hero-title">
+  <section class="band band--hero" aria-labelledby="hero-title" data-motion-hero>
     <div class="inner hero">
       <div class="hero-copy">
         <h1 id="hero-title" class="hero-title">The Sandwich Must Hold</h1>
@@ -102,7 +102,7 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
   </section>
 
   {/* 2 --- THE STRUCTURAL PROPOSITION ------------------------------------- */}
-  <section class="band band--ink slop-band--ink" aria-labelledby="prop-title">
+  <section class="band band--ink slop-band--ink" aria-labelledby="prop-title" data-motion-prop>
     <div class="inner prop">
       <div class="prop-copy">
         <h2 id="prop-title" class="display xl">Lunch is a load case.</h2>
@@ -150,7 +150,7 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
           const week = weekOf(f.week);
           const href = hrefFor(week.slug);
           return (
-            <li class="fam-row">
+            <li class="fam-row" data-motion-family={f.id} tabindex="-1">
               <p class="fam-n display">{f.n}</p>
               <div class="fam-name">
                 <h3 class="display">{f.name}</h3>
@@ -208,7 +208,8 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
           too would make a screen reader read the semester twice. */}
       <div class="rail" aria-hidden="true">
         <p class="rail-label">Station no.</p>
-        <ol class="rail-track">
+        <ol class="rail-track" data-motion-rail>
+          <li class="rail-line"><span></span></li>
           {WEEKS.map((w) => {
             const milestone = milestoneAt(w.week);
             return (
@@ -231,7 +232,8 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         <p class="rail-label rail-label--ms">Assessment milestone</p>
       </div>
 
-      <ol class="track">
+      <ol class="track" data-motion-track>
+        <li class="track-line" aria-hidden="true"><span></span></li>
         {WEEKS.map((w) => {
           const href = hrefFor(w.slug);
           const milestone = milestoneAt(w.week);
@@ -310,21 +312,21 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         stronger. Four submissions, totalling {TOTAL_WEIGHT}%.
       </p>
 
-      <ol class="loads">
+      <ol class="loads" data-motion-loads>
         {ASSESSMENTS.map((a) => (
-          <li class="load" style={`--h:${Math.round((a.weight / maxWeight) * 100)}%`}>
+          <li class="load" style={`--h:${Math.round((a.weight / maxWeight) * 100)}`}>
             <span class="load-cap">{a.capability}</span>
             <span class="load-title display">{a.title}</span>
             <span class="load-pct display">{a.weight}%</span>
-            <span class="load-stem" aria-hidden="true"></span>
             <span class="load-meta">Due {formatCourseDate(a.due)} · end of Week {a.dueWeek}</span>
             <span class="load-sum">{a.summary}</span>
+            <span class="load-stem" aria-hidden="true"></span>
           </li>
         ))}
       </ol>
       <p class="loads-axis" aria-hidden="true">Structural load axis →</p>
       <p class="track-foot">
-        Every brief, what counts as evidence, and what is not assessed:
+        Every brief, what counts as evidence, and what is not assessed:{" "}
         <a href={withBase("/assessments/")}>the assessment overview</a>.
       </p>
     </div>
