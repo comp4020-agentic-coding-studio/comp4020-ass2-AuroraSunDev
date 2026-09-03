@@ -1,0 +1,71 @@
+/* SLOP2895 --- course design tokens.
+ *
+ * Additive only. The Slop identity (--at-primary / --at-secondary /
+ * --at-tertiary, set by astro-theme-slop) is fixed and is NOT overridden here:
+ * the nav, links, footer and brand marks stay Slop gold. These --slop-* tokens
+ * describe the course's own analytical vocabulary --- the laboratory ground
+ * the specimens are drawn on, and the four states a specimen can be in.
+ *
+ * Every value below was checked with a WCAG contrast calculation against the
+ * ground it is used on, because `pnpm build` runs axe over every page and a
+ * guessed hex fails the build rather than merely looking wrong. Ratios are
+ * recorded beside each token; AA needs 4.5 for body text and 3.0 for
+ * graphics and UI boundaries.
+ *
+ * Colour never carries meaning alone (plan.md, Colour Semantics): every state
+ * that uses one of these also carries text, a line style, a shape or a
+ * position. These tokens are the second channel, never the only one.
+ */
+
+:root {
+  /* --- Grounds ------------------------------------------------------- */
+  /* True laboratory white. Not cream, not beige, not warm grey. */
+  --slop-paper: #fff;
+  /* A neutral wash for table stripes and inset records only. Deliberately
+     neutral rather than warm, so it reads as paper in shadow, not as card. */
+  --slop-wash: #f5f5f4; /* charcoal on it: 15.27 */
+  /* The autopsy ground. Used rarely and always to mean destructive testing or
+     a conceptual transition --- see plan.md's contrast cadence. */
+  --slop-ink: #1f1e1c; /* white on it: 16.66 */
+
+  /* --- Ink on paper -------------------------------------------------- */
+  --slop-charcoal: #1f1e1c; /* 16.66 on paper --- body text, rules, diagrams */
+  --slop-tomato: #b32d1a; /*  6.35 on paper --- active load, failure, prohibition */
+  --slop-lettuce: #3f6b2b; /*  6.27 on paper --- held, accepted equivalent route */
+  --slop-toast: #7a4a1e; /*  7.43 on paper --- material condition, moisture, metadata */
+
+  /* --- Ink on the charcoal ground ------------------------------------ */
+  /* The paper-ground inks drop to 2.2-2.9:1 on charcoal, so a charcoal
+     section must swap to these rather than reuse the tokens above. */
+  --slop-paper-on-ink: #fff; /* 16.66 on ink */
+  --slop-tomato-on-ink: #ff7256; /*  6.18 on ink */
+  --slop-lettuce-on-ink: #96c97a; /*  8.67 on ink */
+  --slop-toast-on-ink: #d2a273; /*  7.26 on ink */
+
+  /* --- Rules ---------------------------------------------------------- */
+  /* Structural rules are charcoal and sharp; hairlines are measurement marks
+     and scale ticks, which are decorative geometry rather than UI boundaries,
+     so they are not held to the 3.0 UI ratio. */
+  --slop-rule: var(--slop-charcoal);
+  --slop-rule-hair: #c9c6c1;
+  --slop-rule-width: 1px;
+  --slop-rule-heavy: 2px;
+
+  /* --- Typography roles ----------------------------------------------- */
+  /* Three roles, per plan.md: a condensed industrial display face for page
+     titles, week and assessment numbers and the four failure-family names; a
+     readable sans for navigation, headings, tables and all extended reading;
+     a monospace for dates, specimen identifiers, measurements and test
+     conditions.
+     The display face is not chosen yet (plan.md lists it under Next Design
+     Decisions), so it resolves to the body stack today. Registering the real
+     face later is a one-line change here and nowhere else. */
+  --slop-font-display: var(--at-font-body);
+  --slop-font-body: var(--at-font-body);
+  --slop-font-mono: var(--at-font-mono);
+
+  /* Body type: the theme already ships 1.125rem (18px) and does not shrink it
+     below the 640px breakpoint, so desktop and phone both land on the target
+     without an override. Line length is held at the reading measure. */
+  --slop-measure: 68ch;
+}

@@ -22,7 +22,15 @@ export default defineConfig({
       defaultLayout: "src/layouts/PageLayout.astro",
       // The whole brand choice: three colour tokens and a set of lockups. Keep
       // institutional brand packages and assets out of this fictional site.
-      brandCss: "astro-theme-slop/slop.css",
+      // Two globals, in cascade order: the fixed Slop identity, then the
+      // course's own token layer. Both are injected on every page (the theme
+      // does this via `injectScript("page-ssr", ...)`), which is why the
+      // course tokens live here rather than in PageLayout.astro --- that
+      // layout only wraps MDX pages, so the collection detail routes, which
+      // import ContentLayout directly, would never have seen them.
+      // These are Vite module specifiers resolved from the project root at
+      // build time, not page URLs, so the base path does not apply to them.
+      brandCss: ["astro-theme-slop/slop.css", "/src/styles/course.css"],
       imageFormat: "avif",
       llmsTxt: true,
       // The theme owns the markdown plugin chain, so astromotion's slide

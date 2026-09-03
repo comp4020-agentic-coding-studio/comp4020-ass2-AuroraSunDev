@@ -40,23 +40,27 @@ export const slopCourseMetaSchema = z
 
 // The single source of truth for the course record. The generated homepage,
 // navigation label and /api/index.json all read this object.
-// Replace every placeholder value, but keep the shape: the catalogue ingests
-// this API contract when the course is published.
 //
-// The code's last three digits were assigned to this repo when it was
-// provisioned, and no other course in the cohort has them. Change the first
-// digit to your course's level (and `level` to match); keep the other three.
-// STARTER_CONTENT: replace this course record, then remove this comment.
+// The last three digits (895) were assigned to this repo at provisioning and
+// are kept; the leading 2 is the ANU level this course sits at.
+//
+// The dates describe Semester 1 2027 as twelve teaching weeks (commencing
+// 22 February) with an Easter teaching break in the week of 29 March, and a
+// final submission week ending 28 May. Every dated session, lecture and
+// assessment falls inside this window --- spec/data-integrity.test.ts fails
+// the build if one drifts outside it.
 export const courseMeta = slopCourseMetaSchema.parse({
-  code: "SLOP1895",
-  title: "Course Title Goes Here",
+  code: "SLOP2895",
+  title: "The Sandwich Must Hold",
   session: "Semester 1",
   year: 2027,
-  level: 1,
+  level: 2,
   startDate: "2027-02-22",
   endDate: "2027-05-28",
   description:
-    "One concise paragraph explaining what this course is, who it is for, " +
-    "and why somebody would choose to spend a semester taking it.",
-  tags: ["replace me"],
+    "A sandwich is a temporary structure whose failure is eaten. This course " +
+    "treats lunch as a material system: how layers carry load, exchange " +
+    "moisture, and come apart under compression, handling and transport. No " +
+    "culinary experience is expected and taste is not assessed.",
+  tags: ["structures", "materials", "failure analysis"],
 }) satisfies CourseMetaInput;
