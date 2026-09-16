@@ -694,6 +694,11 @@ body:has(main.home)::after {
 .home .rail { display: none; }
 
 @media (width >= 900px) {
+  /* The rail and the track are two presentations of one path, not two
+     sections: above this width the rail carries it, so the track --- which
+     was rendering all twelve weeks again underneath --- stands down. */
+  .home .track { display: none; }
+
   .home .rail {
     display: grid;
     grid-template-columns: 8.5rem repeat(12, minmax(0, 1fr));
@@ -845,3 +850,20 @@ body:has(main.home)::after {
   .home .track-line span { background: var(--slop-lettuce); }
 }
 
+
+/* The phone track's closing record: the path does not end at station six, it
+   leaves the section. Drawn as a break in the line rather than a full station,
+   so it cannot be mistaken for a thirteenth week. */
+.home .stn--more { align-items: center; }
+.home .stn-dot--break {
+  border-style: dashed;
+  background: transparent;
+}
+.home .stn-more-t {
+  grid-area: title;
+  font-size: var(--at-font-size-sm);
+  color: var(--at-text-secondary);
+}
+@media (width < 900px) {
+  .home .stn--more { padding-block: 0.9rem; }
+}

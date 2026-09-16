@@ -59,6 +59,15 @@ const FAMILIES = [
 const weekOf = (n: number) => WEEKS.find((w) => w.week === n)!;
 const hrefFor = (slug: string) =>
   builtWeeks.has(slug) ? withBase(`/sessions/${slug}/`) : undefined;
+/* How many stations the phone's vertical track shows before it says the rest
+   continue. Six is the reference's break, and it is also where Phase II ends,
+   so the truncation lands on a structural seam rather than mid-phase. */
+const TRACK_STATIONS = 6;
+/* Computed here, not in the template: a bare `<` inside a JSX expression is
+   ambiguous with a tag open, and `w.week <= TRACK_STATIONS` in the markup
+   parses as an element. */
+const TRACK_WEEKS = WEEKS.filter((w) => w.week <= TRACK_STATIONS);
+
 const milestoneAt = (week: number) => ASSESSMENTS.find((a) => a.dueWeek === week);
 const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
 ---
@@ -275,13 +284,17 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         })}
       </div>
 
+      {/* The phone's load path. The desktop rail above carries all twelve
+          stations in one line; at this width that line becomes a vertical
+          track, and a track of twelve full records is longer than the section
+          it belongs to. The reference truncates it at six and says so, which
+          is honest about there being more and keeps the phone's first
+          impression the shape of the path rather than a list of weeks. */}
       <ol class="track" data-motion-track>
         <li class="track-line" aria-hidden="true"><span></span></li>
-        {WEEKS.map((w) => {
+        {TRACK_WEEKS.map((w) => {
           const href = hrefFor(w.slug);
           const milestone = milestoneAt(w.week);
-          // The phase row above is a desktop device; on the phone the phase
-          // names live in the track itself, at the station each one opens on.
           const opens = PHASES.find((p) => p.weeks[0] === w.week);
           return (
             <li class="stn">
@@ -300,7 +313,6 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
                   {href ? <a href={href}>{w.title}</a> : <span class="pending">{w.title}</span>}
                 </span>
                 <span class="stn-date">{formatCourseDate(w.date)}</span>
-                <span class="stn-q">{w.question}</span>
               </span>
               <span class="stn-marks">
                 {w.lecture && <span class="tag tag--deck">Lecture deck</span>}
@@ -311,6 +323,13 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
             </li>
           );
         })}
+        <li class="stn stn--more">
+          <span class="stn-dot stn-dot--break" aria-hidden="true"></span>
+          <span class="stn-more-t">
+            Stations {String(TRACK_STATIONS + 1).padStart(2, "0")}–{WEEKS.length} continue on the{" "}
+            <a href={withBase("/sessions/")}>semester load path</a>.
+          </span>
+        </li>
       </ol>
       <p class="track-foot">
         Every week's date, structural question and artefact is on the{" "}
@@ -319,45 +338,13 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
     </div>
   </section>
 
-  {/* 5 --- STATIC WEEK 8 SPECIMEN (the Load Tester is not built) ---------- */}
-  <section class="band" aria-labelledby="order-title">
-    <div class="inner order">
-      <div>
-        <p class="eyebrow">Specimen study</p>
-        <h2 id="order-title" class="display">The order of layers changes the result.</h2>
-        <p>
-          The same four structural categories, assembled two ways. Moving the
-          binding layer between the moist layer and the outer layer changes
-          which interface is exposed first — the materials are identical, so
-          the difference is structural, not culinary.
-        </p>
-        <p class="order-note">
-          <Stamp state="revised" /> Assembly revised after the first interface failure.
-        </p>
-        <p>
-          {hrefFor("week-08") ? (
-            <a class="linkline" href={hrefFor("week-08")}>Week 8: The Order of Layers<span aria-hidden="true">→</span></a>
-          ) : (
-            <span class="pending">Week 8: The Order of Layers <em>in preparation</em></span>
-          )}
-        </p>
-      </div>
-      <figure class="order-figure">
-        <LayerOrderStack />
-        <figcaption>
-          <ol class="order-legend">
-            <li>Outer layer</li>
-            <li>Moist layer — against the outer layer in the first order</li>
-            <li>Binding layer — moved between them in the second</li>
-            <li>Support layer</li>
-            <li>Outer layer</li>
-          </ol>
-        </figcaption>
-      </figure>
-    </div>
-  </section>
-
-  {/* 6 --- ASSESSMENT LOAD ------------------------------------------------ */}
+  {/* 6 --- ASSESSMENT LOAD ------------------------------------------------ *
+      The reference runs the semester path straight into the assessment load:
+      the stations say what the course does to the specimen, the loads say what
+      it asks of the student, and the two axes read as one argument when they
+      are adjacent. plan.md's Week 8 specimen study, which used to sit between
+      them, now follows --- it is a specimen case rather than a step in that
+      argument.                                                              */}
   <section class="band band--alt" aria-labelledby="load-title">
     <div class="inner">
       <h2 id="load-title" class="display xl">The load increases.</h2>
@@ -396,6 +383,44 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         Every brief, what counts as evidence, and what is not assessed:{" "}
         <a href={withBase("/assessments/")}>the assessment overview</a>.
       </p>
+    </div>
+  </section>
+
+  {/* 6b --- STATIC WEEK 8 SPECIMEN (the Load Tester is not built) -------- */}
+  <section class="band" aria-labelledby="order-title">
+    <div class="inner order">
+      <div>
+        <p class="eyebrow">Specimen study</p>
+        <h2 id="order-title" class="display">The order of layers changes the result.</h2>
+        <p>
+          The same four structural categories, assembled two ways. Moving the
+          binding layer between the moist layer and the outer layer changes
+          which interface is exposed first — the materials are identical, so
+          the difference is structural, not culinary.
+        </p>
+        <p class="order-note">
+          <Stamp state="revised" /> Assembly revised after the first interface failure.
+        </p>
+        <p>
+          {hrefFor("week-08") ? (
+            <a class="linkline" href={hrefFor("week-08")}>Week 8: The Order of Layers<span aria-hidden="true">→</span></a>
+          ) : (
+            <span class="pending">Week 8: The Order of Layers <em>in preparation</em></span>
+          )}
+        </p>
+      </div>
+      <figure class="order-figure">
+        <LayerOrderStack />
+        <figcaption>
+          <ol class="order-legend">
+            <li>Outer layer</li>
+            <li>Moist layer — against the outer layer in the first order</li>
+            <li>Binding layer — moved between them in the second</li>
+            <li>Support layer</li>
+            <li>Outer layer</li>
+          </ol>
+        </figcaption>
+      </figure>
     </div>
   </section>
 

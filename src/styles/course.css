@@ -417,8 +417,9 @@ h1,
 @media (width < 640px) {
   .slop-nav .slop-nav-menu { padding-inline-start: 0.9rem; }
   .slop-nav .slop-nav-menu a { display: block; padding-block: 0.4rem; }
-  /* The code would crowd the toggle on a phone; the page title carries it. */
-  .slop-nav .slop-nav-code { display: none; }
+  /* The reference's phone header keeps the code beside the wordmark, so it
+     stays; only its spacing tightens. */
+  .slop-nav .slop-nav-code { font-size: var(--at-font-size-xs); }
 }
 
 .slop-nav .slop-nav-menu-t { display: block; }
