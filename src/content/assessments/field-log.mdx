@@ -29,6 +29,8 @@ related:
   - component-test
 ---
 
+import EvidenceRegisters from "../../components/course/EvidenceRegisters.astro";
+
 **Weight 15% · Capability: Observe · Due 12 March 2027, end of Week 3**
 
 > Record four specimens as structures, keeping what you observed apart from
@@ -100,6 +102,14 @@ Four entries. Each entry contains, in this order:
 ## Evidence standard
 
 Each entry must keep three registers apart.
+
+<EvidenceRegisters
+  registers={[
+    { glyph: "observed", label: "Observed" },
+    { glyph: "inferred", label: "Inferred" },
+    { glyph: "uncertain", label: "Unknown" },
+  ]}
+/>
 
 **Observed** is what a second person could confirm from your photograph,
 diagram or supplied case without asking you a question. It is written in the

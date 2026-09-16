@@ -32,6 +32,8 @@ related:
   - final
 ---
 
+import EvidenceRegisters from "../../components/course/EvidenceRegisters.astro";
+
 **Weight 25% · Capability: Diagnose · Due 14 May 2027, end of Week 11**
 
 > Reconstruct the most defensible failure sequence one supplied case will
@@ -114,6 +116,15 @@ two candidate sequences and says precisely why it cannot choose.
 ## Evidence standard
 
 This report stands or falls on four registers staying visibly apart.
+
+<EvidenceRegisters
+  registers={[
+    { glyph: "observed", label: "Observed" },
+    { glyph: "inferred", label: "Inferred" },
+    { glyph: "uncertain", label: "Uncertain" },
+    { glyph: "limitation", label: "Limitation" },
+  ]}
+/>
 
 **Observed** is what the pack shows, cited by inventory number. If a claim
 cannot be traced to a numbered item, it is not an observation.

@@ -33,6 +33,8 @@ related:
   - failure-autopsy
 ---
 
+import EvidenceRegisters from "../../components/course/EvidenceRegisters.astro";
+
 **Weight 40% · Capability: Synthesise · Due 28 May 2027, end of Week 12**
 
 > Design, test, revise and defend one sandwich system against a load case you
@@ -121,6 +123,15 @@ high.
 ## Evidence standard
 
 The dossier must let a marker separate four things at a glance.
+
+<EvidenceRegisters
+  registers={[
+    { glyph: "observed", label: "Observed" },
+    { glyph: "inferred", label: "Inferred" },
+    { glyph: "uncertain", label: "Uncertain" },
+    { glyph: "limitation", label: "Limitation" },
+  ]}
+/>
 
 **Observed** is the recorded behaviour under the protocol: what deflected, what
 migrated, what separated, when, and at which point in the load case. Failed

@@ -1,0 +1,296 @@
+---
+/**
+ * The registers an evidence standard asks a student to keep apart, drawn on
+ * one specimen.
+ *
+ * Every brief has an `## Evidence standard` section, and every one of them
+ * makes the same demand in different words: say what you saw, say what you
+ * concluded, say what the evidence does not settle, say what your method could
+ * not reach. Written out, the four are four paragraphs of prose that look
+ * alike. The distinction they are asking for is not verbal, though --- it is a
+ * distinction about how much of a claim the evidence actually carries --- so it
+ * can be drawn, and a drawing shows the difference in one pass where the prose
+ * needs four.
+ *
+ * The convention is not invented here. The Field Manual's first section already
+ * separates a body from the limit drawn around it by drawing one solid and the
+ * other dashed, and that is exactly the difference between an observation and
+ * an inference. So:
+ *
+ *   OBSERVED    solid, filled, closed, hatched where it is wet --- the
+ *               specimen exactly as a second person would find it.
+ *   INFERRED    the same specimen ghosted, with a dashed arrow for the event
+ *               nobody witnessed. Dashed because it is reasoning, not record.
+ *   UNCERTAIN   the ghost beside an interval open at both ends. Nothing in
+ *               the glyph picks a value, because picking one is the error the
+ *               register exists to prevent.
+ *   LIMITATION  solid up to a dashed cut, and nothing but a faint outline past
+ *               it. The specimen continues; the evidence stops.
+ *
+ * The labels are a prop because the briefs do not agree on them --- the Field
+ * Log says Unknown where the Autopsy says Uncertain, and the Component Test
+ * says Observation where the others say Observed. The drawings are the same
+ * four regardless, which is the point worth making across four briefs.
+ *
+ * All four are framed from one point set, so they are drawn at one
+ * magnification rather than each being fitted to its own box.
+ */
+import {
+  barbs,
+  box,
+  corners,
+  FILL,
+  frame,
+  HAIRLINE,
+  SLAB,
+  seg,
+} from "../../lib/axonometric";
+
+export type Register = "observed" | "inferred" | "uncertain" | "limitation";
+
+interface Props {
+  /** The registers this brief asks for, in the order its prose introduces them. */
+  registers: readonly { glyph: Register; label: string }[];
+}
+const { registers } = Astro.props;
+
+/* --- The specimen ------------------------------------------------------- */
+
+/* Four layers: bread, a wetted layer, a loose layer, bread. The same stack the
+   Week 8 figures use, so a reader meets one specimen across the site. */
+const Z1 = SLAB;               /* top of the lower crust      */
+const Z2 = SLAB + FILL;        /* top of the wetted layer     */
+const Z3 = SLAB + 2 * FILL;    /* top of the loose layer      */
+const H = 2 * SLAB + 2 * FILL; /* the closed stack            */
+
+const lower = box([0, 0, 0], [1, 1, SLAB]);
+const wet = box([0, 0, Z1], [1, 1, FILL]);
+const loose = box([0, 0, Z2], [1, 1, FILL]);
+const upper = box([0, 0, Z3], [1, 1, SLAB]);
+
+/** Vertical hatch on the front face of the wetted layer: saturation, seen. */
+const HATCH = Array.from({ length: 7 }, (_, i) => {
+  const x = 0.12 + i * 0.127;
+  return seg([x, 1, Z1 + 0.025], [x, 1, Z2 - 0.025]);
+}).join(" ");
+
+/** The inference: an event reaching the wetted layer that nobody watched. */
+const FROM = [-0.42, 1, 0.74] as const;
+const TO = [0, 1, Z1 + FILL / 2] as const;
+
+/** Where the documented half stops, on LIMITATION. */
+const CUT = 0.55;
+
+/* The UNCERTAIN span: a vertical interval open at both ends, struck clear of
+   the specimen. Screen-vertical is a pure change in z, and screen-x is
+   (x - y) --- so the rail sits at y = 0 and the x that puts it past the
+   silhouette's right vertex. */
+const RAIL = 1.34;
+const SPAN_LO = [RAIL, 0, -0.2] as const;
+const SPAN_HI = [RAIL, 0, H + 0.2] as const;
+const SPAN_MID = [RAIL, 0, H / 2] as const;
+
+/* One frame for all four, padded to hold the inference arrow and the outermost
+   ghost, so no glyph is silently drawn larger than its neighbours. */
+const F = frame([...corners([0, 0, 0], [1, 1, H]), FROM, TO, SPAN_LO, SPAN_HI], 10);
+
+const ALT: Record<Register, string> = {
+  observed:
+    "A four-layer specimen drawn solid and closed: two bread layers with a hatched wetted layer and a loose layer between them.",
+  inferred:
+    "The same specimen as a faint outline, with a dashed arrow entering the wetted layer from outside it.",
+  uncertain:
+    "The specimen as a faint outline, beside a dashed vertical interval whose arrows point outward at both ends.",
+  limitation:
+    "The specimen drawn solid as far as a dashed cutting plane, and only faintly beyond it.",
+};
+
+const NOTE: Record<Register, string> = {
+  observed: "Drawn solid: present in the evidence.",
+  inferred: "Drawn dashed: reasoning laid over the evidence.",
+  uncertain: "Drawn as an open span: the evidence fixes no one value.",
+  limitation: "Drawn as far as the method reached, and no further.",
+};
+---
+
+<ul class="er" role="list" style={`--er-n:${registers.length}`}>
+  {
+    registers.map(({ glyph, label }) => (
+      <li class="er-cell">
+        <svg
+          class="er-fig"
+          viewBox={F.viewBox}
+          role="img"
+          aria-label={ALT[glyph]}
+          focusable="false"
+        >
+          {glyph === "observed" && (
+            <g>
+              <path class="face face--front" d={lower.front} />
+              <path class="face face--side" d={lower.side} />
+              <path class="edge" d={lower.outline} {...HAIRLINE} />
+
+              <path class="face face--wet" d={wet.front} />
+              <path class="face face--wet face--side" d={wet.side} />
+              <path class="edge" d={wet.outline} {...HAIRLINE} />
+              <path class="hatch" d={HATCH} {...HAIRLINE} />
+
+              <path class="face face--front" d={loose.front} />
+              <path class="face face--side" d={loose.side} />
+              <path class="edge" d={loose.outline} {...HAIRLINE} />
+
+              <path class="face face--top" d={upper.top} />
+              <path class="face face--front" d={upper.front} />
+              <path class="face face--side" d={upper.side} />
+              <path class="edge" d={upper.outline} {...HAIRLINE} />
+              <path class="edge" d={upper.seams} {...HAIRLINE} />
+            </g>
+          )}
+
+          {glyph === "inferred" && (
+            <g>
+              <path class="ghost" d={upper.outline} {...HAIRLINE} />
+              <path class="ghost" d={loose.outline} {...HAIRLINE} />
+              <path class="ghost" d={wet.outline} {...HAIRLINE} />
+              <path class="ghost" d={lower.outline} {...HAIRLINE} />
+              <path class="claim" d={seg(FROM, TO)} {...HAIRLINE} />
+              <path class="claim claim--barb" d={barbs(FROM, TO, 9)} {...HAIRLINE} />
+            </g>
+          )}
+
+          {glyph === "uncertain" && (
+            <g>
+              <path class="ghost" d={upper.outline} {...HAIRLINE} />
+              <path class="ghost" d={loose.outline} {...HAIRLINE} />
+              <path class="ghost" d={wet.outline} {...HAIRLINE} />
+              <path class="ghost" d={lower.outline} {...HAIRLINE} />
+              <path class="claim" d={seg(SPAN_LO, SPAN_HI)} {...HAIRLINE} />
+              <path class="claim claim--barb" d={barbs(SPAN_MID, SPAN_HI, 8)} {...HAIRLINE} />
+              <path class="claim claim--barb" d={barbs(SPAN_MID, SPAN_LO, 8)} {...HAIRLINE} />
+            </g>
+          )}
+
+          {glyph === "limitation" && (
+            <g>
+              <path class="ghost ghost--past" d={box([CUT, 0, 0], [1 - CUT, 1, H]).outline} {...HAIRLINE} />
+              <path class="face face--front" d={box([0, 0, Z3], [CUT, 1, SLAB]).front} />
+              <path class="face face--top" d={box([0, 0, Z3], [CUT, 1, SLAB]).top} />
+              <path class="face face--front" d={box([0, 0, Z2], [CUT, 1, FILL]).front} />
+              <path class="face face--wet" d={box([0, 0, Z1], [CUT, 1, FILL]).front} />
+              <path class="face face--front" d={box([0, 0, 0], [CUT, 1, SLAB]).front} />
+              <path class="edge" d={box([0, 0, 0], [CUT, 1, H]).outline} {...HAIRLINE} />
+              <path class="edge" d={seg([0, 1, Z1], [CUT, 1, Z1])} {...HAIRLINE} />
+              <path class="edge" d={seg([0, 1, Z2], [CUT, 1, Z2])} {...HAIRLINE} />
+              <path class="edge" d={seg([0, 1, Z3], [CUT, 1, Z3])} {...HAIRLINE} />
+              <path class="cut" d={box([CUT, 0, 0], [0, 1, H]).side} {...HAIRLINE} />
+            </g>
+          )}
+        </svg>
+
+        <p class="er-label mono">{label}</p>
+        <p class="er-note">{NOTE[glyph]}</p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .er {
+    display: grid;
+    /* The count is the brief's, not the width's: three registers must not be
+       laid out as though a fourth were missing, and four must not wrap 3 + 1. */
+    grid-template-columns: repeat(var(--er-n), minmax(0, 1fr));
+    gap: 1.5rem 1.25rem;
+    margin: 2rem 0 2.25rem;
+    padding: 0;
+    list-style: none;
+    border-block: 1px solid color-mix(in srgb, var(--slop-charcoal) 18%, transparent);
+    padding-block: 1.5rem;
+  }
+
+  .er-cell {
+    margin: 0;
+  }
+
+  .er-fig {
+    display: block;
+    width: 100%;
+    max-width: 9rem;
+    height: auto;
+  }
+
+  .er-label {
+    margin: 0.65rem 0 0.2rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--slop-charcoal);
+  }
+
+  .er-note {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--slop-charcoal) 68%, var(--slop-paper));
+    text-wrap: pretty;
+  }
+
+  /* One weight for all geometry, matching the Field Manual's icon set: a
+     register glyph and a manual icon are drawn with the same instrument. */
+  .edge {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    stroke-linejoin: miter;
+  }
+
+  .face { stroke: none; }
+  .face--top { fill: color-mix(in srgb, var(--slop-charcoal) 2%, var(--slop-paper)); }
+  .face--front { fill: color-mix(in srgb, var(--slop-charcoal) 9%, var(--slop-paper)); }
+  .face--side { fill: color-mix(in srgb, var(--slop-charcoal) 16%, var(--slop-paper)); }
+
+  /* The wetted layer. Colour is the third channel: the hatch carries it first. */
+  .face--wet { fill: color-mix(in srgb, var(--slop-toast) 22%, var(--slop-paper)); }
+  .face--wet.face--side { fill: color-mix(in srgb, var(--slop-toast) 34%, var(--slop-paper)); }
+
+  .hatch {
+    fill: none;
+    stroke: color-mix(in srgb, var(--slop-toast) 62%, transparent);
+    stroke-width: 1;
+  }
+
+  /* A specimen that is being reasoned about rather than reported. */
+  .ghost {
+    fill: none;
+    stroke: color-mix(in srgb, var(--slop-charcoal) 58%, transparent);
+    stroke-width: 1;
+  }
+  .ghost--past {
+    stroke: color-mix(in srgb, var(--slop-charcoal) 26%, transparent);
+    stroke-dasharray: 2.5 3.5;
+  }
+
+  /* The inference itself: dashed, because the shaft is the claim. The barbs
+     stay whole --- a dash pattern running through them would eat the head. */
+  .claim {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    stroke-dasharray: 5 3.5;
+  }
+  .claim--barb { stroke-dasharray: none; }
+
+  /* Where documentation stops. A limit, so dashed, like every other limit. */
+  /* Below the two-column width the row would put four glyphs in 90px each,
+     which is narrower than the labels under them. Two rows of two instead. */
+  @media (width < 34rem) {
+    .er { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .cut {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    stroke-dasharray: 5 3.5;
+  }
+</style>

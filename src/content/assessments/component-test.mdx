@@ -30,6 +30,8 @@ related:
   - failure-autopsy
 ---
 
+import EvidenceRegisters from "../../components/course/EvidenceRegisters.astro";
+
 **Weight 20% · Capability: Isolate · Due 9 April 2027, end of Week 6**
 
 > Isolate one structural variable and test it under at least three conditions,
@@ -119,6 +121,15 @@ your measurement method, and the readings you are not confident in — recorded 
 uncertain rather than quietly dropped. **Limitation** is what the protocol could
 not control: specimens that were not identical to begin with, ambient conditions
 that drifted, a measurement taken by eye.
+
+<EvidenceRegisters
+  registers={[
+    { glyph: "observed", label: "Observation" },
+    { glyph: "inferred", label: "Inference" },
+    { glyph: "uncertain", label: "Uncertainty" },
+    { glyph: "limitation", label: "Limitation" },
+  ]}
+/>
 
 Three conditions with one honest repeat and a stated measurement resolution is
 stronger evidence than six conditions measured once each. Fabricated or
