@@ -152,11 +152,17 @@ const isActive = (href: string) => {
                   </li>
                 );
               }
-              const openHere = link.children.some((c) => isActive(c.href));
+              /* Whether the page you are on lives in this group. It marks the
+                 summary and nothing else: it used to also set `open`, which
+                 meant the Course panel hung over the hero on the two pages
+                 inside it --- the homepage among them --- before anyone asked
+                 for it. Where you are is a state of the label; open is a thing
+                 the reader does. */
+              const groupIsCurrent = link.children.some((c) => isActive(c.href));
               return (
                 <li class="slop-nav-group">
-                  <details class="slop-nav-details" open={openHere}>
-                    <summary class:list={["slop-nav-summary", openHere && "is-current"]}>
+                  <details class="slop-nav-details">
+                    <summary class:list={["slop-nav-summary", groupIsCurrent && "is-current"]}>
                       <span>{link.text}</span>
                       <svg class="slop-nav-caret" viewBox="0 0 10 6" aria-hidden="true" focusable="false">
                         <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />

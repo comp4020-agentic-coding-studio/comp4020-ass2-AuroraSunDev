@@ -1,51 +1,96 @@
 ---
 /**
- * The static Week 8 specimen: the same four structural categories in two
- * orders, with the adjacency note that changes between them.
+ * The static Week 8 specimen: the same five layers in two assembly orders.
  *
  * This is the homepage's fallback for the optional Load Tester, which has not
  * been built. It is deliberately not interactive and makes no claim to be ---
  * plan.md is explicit that the core homepage must never carry a broken,
  * disabled or "coming soon" control.
+ *
+ * The number in each bar is the layer's identity, not its position, and that
+ * is the whole figure: the left stack reads 1 2 3 4 5 down the page and the
+ * right stack reads 1 3 2 4 5. Two bars trade places, nothing is added or
+ * taken away, and the numbers resolve against the ordered legend the page
+ * prints beneath the drawing.
+ *
+ * It did not always show that. The two layers that move were tinted by a
+ * `.los-moist` rule that `.los-stack rect` outranked --- one class against a
+ * class and a type --- so every bar computed to the same white and the figure
+ * had been quietly monochrome since it was written, illustrating a change by
+ * drawing two identical stacks. The tint rules are qualified now.
  */
+
+/** Layer identities, in the order the legend lists them. */
+const MOIST = 2;
+const BINDING = 3;
+
+/** Top to bottom in each stack, by identity. Only 2 and 3 trade places. */
+const FIRST = [1, MOIST, BINDING, 4, 5];
+const REVISED = [1, BINDING, MOIST, 4, 5];
+
+const TOP = 30;
+const STEP = 26;
+const H = 16;
+
+const kindOf = (id: number) =>
+  id === MOIST ? "los-moist" : id === BINDING ? "los-bind" : undefined;
 ---
 
 <svg class="los" viewBox="0 0 420 200" role="img" aria-labelledby="los-t los-d" focusable="false">
-  <title id="los-t">The same four layers in two assembly orders</title>
+  <title id="los-t">The same five layers in two assembly orders</title>
   <desc id="los-d">
-    Two exploded stacks side by side. In the first, the moist layer sits
-    directly against the outer layer. In the second, the binding layer has been
-    moved between them.
+    Two stacks of five numbered bars side by side. The left stack reads 1, 2, 3,
+    4, 5 from the top; in the right stack layers 2 and 3 have traded places, so
+    it reads 1, 3, 2, 4, 5. Layer 2 is the moist layer and layer 3 the binding
+    layer. Nothing else differs between the two.
   </desc>
-  <g class="los-stack">
-    <rect x="24" y="30" width="150" height="16" />
-    <rect class="los-moist" x="24" y="56" width="150" height="16" />
-    <rect x="24" y="82" width="150" height="16" />
-    <rect x="24" y="108" width="150" height="16" />
-    <rect x="24" y="134" width="150" height="16" />
-  </g>
+
+  {[{ x: 24, order: FIRST }, { x: 246, order: REVISED }].map(({ x, order }) => (
+    <g class="los-stack">
+      {order.map((id, i) => (
+        <>
+          <rect class:list={[kindOf(id)]} x={x} y={TOP + i * STEP} width="150" height={H} />
+          <text class="los-n" x={x + 10} y={TOP + i * STEP + 11.5}>{id}</text>
+        </>
+      ))}
+    </g>
+  ))}
+
   <path class="los-arrow" d="M198 92 h24 m-7 -6 l7 6 l-7 6" aria-hidden="true" />
-  <g class="los-stack">
-    <rect x="246" y="30" width="150" height="16" />
-    <rect x="246" y="56" width="150" height="16" />
-    <rect class="los-moist" x="246" y="82" width="150" height="16" />
-    <rect x="246" y="108" width="150" height="16" />
-    <rect x="246" y="134" width="150" height="16" />
-  </g>
 </svg>
 
 <style>
   .los { width: 100%; height: auto; display: block; }
+
   .los-stack rect {
     fill: var(--slop-paper);
     stroke: var(--slop-charcoal);
     stroke-width: 1.5;
   }
+
+  /* Qualified past `.los-stack rect`, which is a class and a type and so
+     outranks a bare class. Unqualified, these two rules lost silently. */
+
   /* Moisture, not load --- so brown rather than red. */
-  .los-moist {
+  .los-stack rect.los-moist {
     fill: color-mix(in srgb, var(--slop-toast) 34%, var(--slop-paper));
     stroke: var(--slop-toast);
   }
+
+  /* The binding layer carries no condition of its own; it is the other half
+     of the swap. Grey, so the drawing gains a second mark without inventing a
+     meaning the palette does not already have. */
+  .los-stack rect.los-bind {
+    fill: color-mix(in srgb, var(--slop-charcoal) 13%, var(--slop-paper));
+  }
+
+  .los-n {
+    font-family: var(--at-font-mono, ui-monospace, monospace);
+    font-size: 9.5px;
+    fill: var(--slop-charcoal);
+    dominant-baseline: auto;
+  }
+
   .los-arrow {
     fill: none;
     stroke: var(--slop-charcoal);
