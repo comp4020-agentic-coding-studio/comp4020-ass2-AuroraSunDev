@@ -1,0 +1,450 @@
+---
+/**
+ * The six words the Field Manual's method rests on, drawn rather than defined
+ * twice.
+ *
+ * Section 01 asks a reader to accept six terms before any of the rest of the
+ * manual can be followed, and four of them --- boundary, interface, load case,
+ * failure --- are the kind of word a reader will assume they already know. The
+ * drawings exist to contradict that assumption: BOUNDARY is the same cube as
+ * SPECIMEN with every line dashed, so the difference between the thing and the
+ * limit drawn around it is visible rather than argued; FAILURE is the INTERFACE
+ * drawing with one plane opened, so failure reads as a state of an interface
+ * and not as a mess; LOAD CASE is LOAD plus the rig and the held stack,
+ * because a load case is the declaration, not the force.
+ *
+ * That only works because all six share one projection, one slab thickness and
+ * one scale --- `SCALE` below converts the projected width in user units into
+ * pixels, so the press rig comes out larger than the cube in the same ratio as
+ * it is drawn, instead of every icon being fitted to the same box and so drawn
+ * at six different magnifications.
+ *
+ * Colour is the third channel and never the first. The opened interface in
+ * FAILURE is a gap with a dimension on it before it is red; the accepted layer
+ * in LOAD CASE is a layer still in contact before it is green. Nothing here
+ * carries a word: the page prints the term beside the drawing in real text.
+ */
+import type { P3 } from "../../lib/axonometric";
+import {
+  arrow,
+  box,
+  corners,
+  FILL,
+  frame,
+  HAIRLINE,
+  head,
+  SLAB,
+  SPAN,
+  seg,
+  shaft,
+} from "../../lib/axonometric";
+
+export type IconName =
+  | "specimen"
+  | "boundary"
+  | "interface"
+  | "load"
+  | "failure"
+  | "load-case";
+
+interface Props {
+  name: IconName;
+  /** Set where the drawing is not accompanied by its term in page text. */
+  labelled?: boolean;
+}
+const { name, labelled = false } = Astro.props;
+
+/** Pixels per user unit. One value for the set, so the set is one drawing. */
+const SCALE = 0.72;
+
+/** The standard slab: a unit square in plan, one slab thick. */
+const PLAN: P3 = [SPAN, SPAN, SLAB];
+
+/* --- specimen, boundary: the unit cube ------------------------------- */
+const CUBE = box([0, 0, 0], [SPAN, SPAN, SPAN]);
+
+/* --- interface: two slabs and the plane they meet on ------------------ */
+const IF_GAP_TOP = 0.44;
+const IF_LOWER = box([0, 0, 0], PLAN);
+const IF_UPPER = box([0, 0, IF_GAP_TOP], PLAN);
+/* The plane is drawn wider than the bodies: an interface is a plane the
+   components share, not a part of either of them. */
+const IF_PLANE = box([-0.1, -0.1, 0.35], [SPAN + 0.2, SPAN + 0.2, 0]);
+const IF_TIES = [
+  seg([SPAN, SPAN, SLAB], [SPAN, SPAN, IF_GAP_TOP]),
+  seg([SPAN, 0, SLAB], [SPAN, 0, IF_GAP_TOP]),
+  seg([0, SPAN, SLAB], [0, SPAN, IF_GAP_TOP]),
+].join(" ");
+
+/* --- load: one slab, and the action arriving at it -------------------- */
+const LOAD_SLAB = box([0, 0, 0], PLAN);
+const LOAD_TAIL: P3 = [0.5, 0.5, 1.3];
+const LOAD_TIP: P3 = [0.5, 0.5, SLAB + 0.02];
+/* Where the load enters: a footprint, so the arrow is not the only evidence
+   that this is a contact and not a hovering symbol. */
+const LOAD_FOOT = box([0.3, 0.3, SLAB], [0.4, 0.4, 0]);
+
+/* --- failure: the middle interface has opened ------------------------- */
+const FL_SEAM = SLAB + FILL;
+const FL_OPEN = 0.3;
+const FL_BASE = box([0, 0, 0], PLAN);
+const FL_FILL = box([0, 0, SLAB], [SPAN, SPAN, FILL]);
+const FL_TOP = box([0, 0, FL_SEAM + FL_OPEN], PLAN);
+/* The two faces that used to be one plane. */
+const FL_LOWER_FACE = box([0, 0, FL_SEAM], [SPAN, SPAN, 0]);
+const FL_UPPER_FACE = box([0, 0, FL_SEAM + FL_OPEN], [SPAN, SPAN, 0]);
+/* The opening is dimensioned beside the body, not inside it. Set out from the
+   near right corner along the plan diagonal, which projects to the screen
+   horizontal --- the one direction in which a line leaves a body without
+   crossing any of its faces. */
+const FL_FOOT: P3 = [1.06, -0.06, 0];
+const FL_MARK: P3 = [1.34, -0.34, 0];
+const FL_MID = FL_SEAM + FL_OPEN / 2;
+const atz = (p: P3, z: number): P3 => [p[0], p[1], z];
+const FL_EXT = [
+  seg(atz(FL_FOOT, FL_SEAM), atz(FL_MARK, FL_SEAM)),
+  seg(atz(FL_FOOT, FL_SEAM + FL_OPEN), atz(FL_MARK, FL_SEAM + FL_OPEN)),
+].join(" ");
+const FL_ARROWS = [
+  arrow(atz(FL_MARK, FL_MID), atz(FL_MARK, FL_SEAM + FL_OPEN), 7),
+  arrow(atz(FL_MARK, FL_MID), atz(FL_MARK, FL_SEAM), 7),
+].join(" ");
+
+/* --- load-case: the whole declaration --------------------------------- */
+/* The rig is a frame standing in a shallow slice of depth (`RIG_Y` to
+   `RIG_Y + RIG_D`) with the specimen's full square plan passing through it.
+   A press drawn as two full-depth plates would have near corners hanging so
+   far down the screen that no vertical gap between them could be seen. */
+const RIG_Y = 0.38;
+const RIG_D = 0.24;
+const RIG_BASE = box([-0.3, RIG_Y, 0], [1.6, RIG_D, 0.16]);
+const RIG_POST_L = box([-0.3, RIG_Y, 0.16], [0.16, RIG_D, 1.5]);
+const RIG_POST_R = box([1.14, RIG_Y, 0.16], [0.16, RIG_D, 1.5]);
+const RIG_HEAD = box([-0.3, RIG_Y, 1.66], [1.6, RIG_D, 0.16]);
+const RIG_SCREW = box([0.42, 0.42, 1.04], [0.16, 0.16, 0.62]);
+const RIG_PLATEN = box([-0.04, -0.04, 0.9], [1.08, 1.08, 0.14]);
+const RIG_LOWER = box([0, 0, 0.16], PLAN);
+const RIG_FILL = box([0, 0, 0.16 + SLAB], [SPAN, SPAN, FILL]);
+const RIG_UPPER = box([0, 0, 0.16 + SLAB + FILL], PLAN);
+/* The declared load arrives at the screw. Drawn above the head beam, clear of
+   every face, because a force drawn inside a body reads as part of it. */
+const RIG_TAIL: P3 = [0.5, 0.5, 2.5];
+const RIG_TIP: P3 = [0.5, 0.5, 1.94];
+/* Thread marks: the screw is a travelling part, not a strut. */
+const RIG_THREAD = [1.16, 1.3, 1.44].map((z) => seg([0.42, 0.58, z], [0.58, 0.58, z])).join(" ");
+
+interface Spec {
+  /** What the drawing shows, for the cases where it stands alone. */
+  alt: string;
+  /** Points the frame has to contain. */
+  bounds: P3[];
+}
+
+const ICONS: Record<IconName, Spec> = {
+  specimen: {
+    alt: "An axonometric cube, lightly stippled: the assembled system under test.",
+    bounds: corners([0, 0, 0], [SPAN, SPAN, SPAN]),
+  },
+  boundary: {
+    alt: "The same cube drawn entirely in dashed line, hidden edges included: a limit rather than a body.",
+    bounds: corners([0, 0, 0], [SPAN, SPAN, SPAN]),
+  },
+  interface: {
+    alt: "Two slabs one above the other, with the plane between them drawn as a dashed rhombus wider than either slab.",
+    bounds: [
+      ...corners([-0.1, -0.1, 0], [SPAN + 0.2, SPAN + 0.2, IF_GAP_TOP + SLAB]),
+    ],
+  },
+  load: {
+    alt: "A single slab with a heavy arrow descending onto the centre of its top face.",
+    bounds: [...corners([0, 0, 0], PLAN), LOAD_TAIL],
+  },
+  failure: {
+    alt: "A three-layer stack whose middle interface has opened into a gap, the gap dimensioned beside it.",
+    bounds: [
+      ...corners([0, 0, 0], [SPAN, SPAN, FL_SEAM + FL_OPEN + SLAB]),
+      atz(FL_MARK, FL_SEAM),
+    ],
+  },
+  "load-case": {
+    alt: "A two-post compression press: base beam, head beam, screw and platen, holding a three-layer specimen that is still in contact.",
+    bounds: [...corners([-0.3, -0.04, 0], [1.6, 1.34, 1.82]), RIG_TAIL],
+  },
+};
+
+const spec: Spec | undefined = ICONS[name];
+if (!spec) {
+  throw new Error(
+    `ManualIcon: unknown name "${name}". Expected one of ${Object.keys(ICONS).join(", ")}.`,
+  );
+}
+
+const fr = frame(spec.bounds, name === "load-case" ? 10 : 12);
+const uid = `mi-${name}`;
+---
+
+<svg
+  class:list={["mi", `mi--${name}`]}
+  viewBox={fr.viewBox}
+  width={Math.round(fr.width * SCALE)}
+  height={Math.round(fr.height * SCALE)}
+  role={labelled ? "img" : "presentation"}
+  aria-label={labelled ? spec.alt : undefined}
+  focusable="false"
+>
+  <defs>
+    <pattern id={`${uid}-stip`} width="11" height="11" patternUnits="userSpaceOnUse">
+      <circle class="stip" cx="2.6" cy="3.1" r="0.9" />
+      <circle class="stip" cx="7.9" cy="7.4" r="0.7" />
+      <circle class="stip" cx="8.6" cy="1.9" r="0.5" />
+    </pattern>
+  </defs>
+
+  {/* SPECIMEN --- a closed body. Every line solid, because everything about it
+      has been observed; stippled, because it is material and not a volume. */}
+  {name === "specimen" && (
+    <g>
+      <path class="face face--side" d={CUBE.side} {...HAIRLINE} />
+      <path class="face face--front" d={CUBE.front} {...HAIRLINE} />
+      <path class="face face--top" d={CUBE.top} {...HAIRLINE} />
+      <path class="texture" d={CUBE.outline} fill={`url(#${uid}-stip)`} />
+      <path class="edge" d={CUBE.outline} {...HAIRLINE} />
+      <path class="edge" d={CUBE.seams} {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* BOUNDARY --- the same cube, unfilled and dashed throughout, with the three
+      edges behind it drawn too. A limit has no near side to hide the far one. */}
+  {name === "boundary" && (
+    <g>
+      <path class="bound" d={CUBE.outline} {...HAIRLINE} />
+      <path class="bound" d={CUBE.seams} {...HAIRLINE} />
+      <path class="bound bound--far" d={CUBE.hidden} {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* INTERFACE --- two slabs held apart so the plane between them can be drawn
+      at all. The ties say the slabs are the same footprint; the plane is
+      dashed and oversized, because it belongs to neither slab. */}
+  {name === "interface" && (
+    <g>
+      <path class="face face--side" d={IF_LOWER.side} {...HAIRLINE} />
+      <path class="face face--front" d={IF_LOWER.front} {...HAIRLINE} />
+      <path class="face face--top face--held" d={IF_LOWER.top} {...HAIRLINE} />
+      <path class="edge" d={IF_LOWER.outline} {...HAIRLINE} />
+      <path class="edge" d={IF_LOWER.seams} {...HAIRLINE} />
+
+      <path class="tie" d={IF_TIES} {...HAIRLINE} />
+
+      <path class="face face--side" d={IF_UPPER.side} {...HAIRLINE} />
+      <path class="face face--front" d={IF_UPPER.front} {...HAIRLINE} />
+      <path class="face face--top" d={IF_UPPER.top} {...HAIRLINE} />
+      <path class="edge" d={IF_UPPER.outline} {...HAIRLINE} />
+      <path class="edge" d={IF_UPPER.seams} {...HAIRLINE} />
+
+      {/* Last, not in stacking order: the plane is a construction line, and an
+          interface drawn between two bodies is hidden by the nearer of them. */}
+      <path class="plane" d={IF_PLANE.top} {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* LOAD --- the action, not the consequence. The arrow is the only red thing
+      and it arrives from outside the specimen; the footprint on the top face
+      says where it lands even if the red is not seen. */}
+  {name === "load" && (
+    <g>
+      <path class="face face--side" d={LOAD_SLAB.side} {...HAIRLINE} />
+      <path class="face face--front" d={LOAD_SLAB.front} {...HAIRLINE} />
+      <path class="face face--top" d={LOAD_SLAB.top} {...HAIRLINE} />
+      <path class="edge" d={LOAD_SLAB.outline} {...HAIRLINE} />
+      <path class="edge" d={LOAD_SLAB.seams} {...HAIRLINE} />
+      <path class="foot" d={LOAD_FOOT.top} {...HAIRLINE} />
+      <path class="force" d={shaft(LOAD_TAIL, LOAD_TIP, 15)} {...HAIRLINE} />
+      <path class="force-head" d={head(LOAD_TAIL, LOAD_TIP, 15)} />
+    </g>
+  )}
+
+  {/* FAILURE --- one interface still in contact, one opened. The state is the
+      gap and its dimension; the red and the dashed faces repeat what the gap
+      already says. */}
+  {name === "failure" && (
+    <g>
+      <path class="face face--side" d={FL_BASE.side} {...HAIRLINE} />
+      <path class="face face--front" d={FL_BASE.front} {...HAIRLINE} />
+      <path class="edge" d={FL_BASE.outline} {...HAIRLINE} />
+
+      <path class="face face--side face--gone" d={FL_FILL.side} {...HAIRLINE} />
+      <path class="face face--front face--gone" d={FL_FILL.front} {...HAIRLINE} />
+      <path class="edge" d={FL_FILL.outline} {...HAIRLINE} />
+      <path class="edge" d={FL_FILL.seams} {...HAIRLINE} />
+
+      <path class="opened" d={FL_LOWER_FACE.top} {...HAIRLINE} />
+      <path class="opened" d={FL_UPPER_FACE.top} {...HAIRLINE} />
+
+      <path class="face face--side" d={FL_TOP.side} {...HAIRLINE} />
+      <path class="face face--front" d={FL_TOP.front} {...HAIRLINE} />
+      <path class="face face--top" d={FL_TOP.top} {...HAIRLINE} />
+      <path class="edge" d={FL_TOP.outline} {...HAIRLINE} />
+      <path class="edge" d={FL_TOP.seams} {...HAIRLINE} />
+
+      <path class="extension" d={FL_EXT} {...HAIRLINE} />
+      <path class="force" d={FL_ARROWS} {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* LOAD CASE --- the declaration: a setup (the rig), a load (the arrow at the
+      screw) and a criterion (a specimen whose interfaces are still closed,
+      which is what "held" looks like). Three things, because the term names
+      three things. */}
+  {name === "load-case" && (
+    <g>
+      <path class="face face--side" d={RIG_BASE.side} {...HAIRLINE} />
+      <path class="face face--front" d={RIG_BASE.front} {...HAIRLINE} />
+      <path class="face face--top" d={RIG_BASE.top} {...HAIRLINE} />
+      <path class="edge" d={RIG_BASE.outline} {...HAIRLINE} />
+
+      {[RIG_POST_L, RIG_POST_R].map((post) => (
+        <g>
+          <path class="face face--side" d={post.side} {...HAIRLINE} />
+          <path class="face face--front" d={post.front} {...HAIRLINE} />
+          <path class="face face--top" d={post.top} {...HAIRLINE} />
+          <path class="edge" d={post.outline} {...HAIRLINE} />
+        </g>
+      ))}
+
+      <path class="face face--side" d={RIG_LOWER.side} {...HAIRLINE} />
+      <path class="face face--front" d={RIG_LOWER.front} {...HAIRLINE} />
+      <path class="edge" d={RIG_LOWER.outline} {...HAIRLINE} />
+      <path class="face face--side face--held" d={RIG_FILL.side} {...HAIRLINE} />
+      <path class="face face--front face--held" d={RIG_FILL.front} {...HAIRLINE} />
+      <path class="edge" d={RIG_FILL.outline} {...HAIRLINE} />
+      <path class="face face--side" d={RIG_UPPER.side} {...HAIRLINE} />
+      <path class="face face--front" d={RIG_UPPER.front} {...HAIRLINE} />
+      <path class="face face--top" d={RIG_UPPER.top} {...HAIRLINE} />
+      <path class="edge" d={RIG_UPPER.outline} {...HAIRLINE} />
+      <path class="edge" d={RIG_UPPER.seams} {...HAIRLINE} />
+
+      <path class="face face--side" d={RIG_PLATEN.side} {...HAIRLINE} />
+      <path class="face face--front" d={RIG_PLATEN.front} {...HAIRLINE} />
+      <path class="face face--top" d={RIG_PLATEN.top} {...HAIRLINE} />
+      <path class="edge" d={RIG_PLATEN.outline} {...HAIRLINE} />
+      <path class="edge" d={RIG_PLATEN.seams} {...HAIRLINE} />
+
+      <path class="face face--side" d={RIG_SCREW.side} {...HAIRLINE} />
+      <path class="face face--front" d={RIG_SCREW.front} {...HAIRLINE} />
+      <path class="edge" d={RIG_SCREW.outline} {...HAIRLINE} />
+      <path class="tie" d={RIG_THREAD} {...HAIRLINE} />
+
+      <path class="face face--side" d={RIG_HEAD.side} {...HAIRLINE} />
+      <path class="face face--front" d={RIG_HEAD.front} {...HAIRLINE} />
+      <path class="face face--top" d={RIG_HEAD.top} {...HAIRLINE} />
+      <path class="edge" d={RIG_HEAD.outline} {...HAIRLINE} />
+
+      <path class="force" d={shaft(RIG_TAIL, RIG_TIP, 13)} {...HAIRLINE} />
+      <path class="force-head" d={head(RIG_TAIL, RIG_TIP, 13)} />
+    </g>
+  )}
+</svg>
+
+<style>
+  .mi {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* One weight for all geometry. Non-scaling, so an icon set at 58px and a
+     figure set at 300px are drawn with the same instrument. */
+  .edge {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    stroke-linejoin: miter;
+  }
+
+  /* Tone separates the three faces of a body, because in an isometric
+     projection the two side faces are mirror images and shape cannot. */
+  .face {
+    stroke: none;
+  }
+  .face--top { fill: color-mix(in srgb, var(--slop-charcoal) 2%, var(--slop-paper)); }
+  .face--front { fill: color-mix(in srgb, var(--slop-charcoal) 9%, var(--slop-paper)); }
+  .face--side { fill: color-mix(in srgb, var(--slop-charcoal) 16%, var(--slop-paper)); }
+
+  /* An accepted layer, still in contact. Green, but the contact is the claim. */
+  .face--held { fill: color-mix(in srgb, var(--slop-lettuce) 30%, var(--slop-paper)); }
+  .face--held.face--side { fill: color-mix(in srgb, var(--slop-lettuce) 44%, var(--slop-paper)); }
+
+  /* The layer at the failed interface. */
+  .face--gone { fill: color-mix(in srgb, var(--slop-tomato) 26%, var(--slop-paper)); }
+  .face--gone.face--side { fill: color-mix(in srgb, var(--slop-tomato) 40%, var(--slop-paper)); }
+
+  .texture { stroke: none; }
+  .stip { fill: color-mix(in srgb, var(--slop-toast) 52%, transparent); }
+
+  /* A boundary is dashed everywhere, including the edges a solid body would
+     hide --- that, not the dash alone, is what makes it a limit. */
+  .bound {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    stroke-dasharray: 5 3.5;
+  }
+  .bound--far {
+    stroke-width: 1;
+    stroke-dasharray: 2.5 3.5;
+    opacity: 0.6;
+  }
+
+  /* The interface plane: not a body, so it is never filled. */
+  .plane {
+    fill: none;
+    stroke: var(--slop-lettuce);
+    stroke-width: 1.6;
+    stroke-dasharray: 6 3.5;
+  }
+
+  /* Construction lines: the footprint is shared, the screw travels. */
+  .tie {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-dasharray: 2.5 3;
+    opacity: 0.6;
+  }
+
+  /* Load: the one place red is allowed in these six, and only where a force is
+     being applied or an interface has let go. */
+  .force {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+  }
+  .force-head {
+    fill: var(--slop-tomato);
+    stroke: none;
+  }
+  /* Where the load lands. A long dash, because a rhombus this shallow turns a
+     short dash pattern into a scatter of dots that reads as crumbs. */
+  .foot {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 1.2;
+    stroke-dasharray: 5 3.5;
+  }
+
+  /* The two faces of an interface that has opened. */
+  .opened {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 1.4;
+    stroke-dasharray: 4 3;
+  }
+  .extension {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 0.9;
+  }
+</style>

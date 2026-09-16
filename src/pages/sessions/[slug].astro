@@ -24,6 +24,7 @@ import SpecimenLabel from "../../components/course/SpecimenLabel.astro";
 import Stamp from "../../components/course/Stamp.astro";
 import WeekGlyph from "../../components/course/WeekGlyph.astro";
 import EvidenceSet from "../../components/week/EvidenceSet.astro";
+import LayerOrderExploded from "../../components/week/LayerOrderExploded.astro";
 import TestStation from "../../components/week/TestStation.astro";
 import TeachingTeam from "../../components/TeachingTeam.astro";
 import { courseMeta } from "../../course-config";
@@ -94,6 +95,11 @@ const ink = n === 11;
    imagery to the homepage and evidence-based specimen cases; this is the
    second of those, and the only one in twelve weeks. */
 const hasEvidence = n === 11;
+/* Week 8's subject is layer adjacency, and the reference gives it a pair of
+   exploded stacks rather than the shared test station: the station asks a
+   reader to change one condition, and this week's question is what changes
+   when nothing is added or removed at all. */
+const hasLayerOrder = n === 8;
 const nn = String(n).padStart(2, "0");
 ---
 
@@ -155,9 +161,11 @@ const nn = String(n).padStart(2, "0");
   {/* --- 2. The test station --------------------------------------------- */}
   <section class="band band--alt" aria-labelledby="stn-title">
     <div class="inner">
-      <p class="eyebrow eyebrow--ruled">Test station {nn}</p>
-      <h2 id="stn-title" class="xl">The apparatus.</h2>
-      <TestStation week={n} />
+      <p class="eyebrow eyebrow--ruled">{hasLayerOrder ? "Assembly bay" : `Test station ${nn}`}</p>
+      <h2 id="stn-title" class="xl">
+        {hasLayerOrder ? "The same layers, reordered." : "The apparatus."}
+      </h2>
+      {hasLayerOrder ? <LayerOrderExploded /> : <TestStation week={n} />}
     </div>
   </section>
 

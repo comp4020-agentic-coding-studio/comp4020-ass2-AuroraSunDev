@@ -9,6 +9,9 @@ ownTitle: true
 ---
 
 import ManualContents from "../../components/manual/ManualContents.astro";
+import VocabularyGrid from "../../components/manual/VocabularyGrid.astro";
+import FailureFamilyGrid from "../../components/manual/FailureFamilyGrid.astro";
+import ProtocolStep from "../../components/manual/ProtocolStep.astro";
 import "../../styles/manual.css";
 
 <div class="manual">
@@ -43,6 +46,14 @@ person.
 
 </div>
 
+<VocabularyGrid />
+
+<div class="slop-measure">
+
+The nine terms in full, with the sense each carries in this course:
+
+</div>
+
 | Term | Definition in this course |
 | --- | --- |
 | Specimen | The whole assembly under test, identified before anything is applied to it. One specimen, one identifier, one record. |
@@ -64,6 +75,8 @@ one week, and every later week reuses the vocabulary rather than inventing its
 own.
 
 </div>
+
+<FailureFamilyGrid />
 
 | Family | What moves | First visible sign | Where it is taught |
 | --- | --- | --- | --- |
@@ -91,6 +104,24 @@ defensible than choosing one.
 
 Seven steps, in this order, for every test in the course. The order is the
 method: steps one and two are what make step six possible.
+
+</div>
+
+{/* The first three steps drawn, as the reference sets them. Not all seven:
+    a strip of seven marks is a second copy of the list below it, and these
+    three are the ones the method actually turns on --- steps one and two are
+    what make the comparison in step six possible. The full seven follow in
+    text. */}
+<ol class="protocol" role="list">
+  <li class="protocol-step"><span class="protocol-n mono">01</span><span class="protocol-fig" aria-hidden="true"><ProtocolStep name="identify" /></span><span class="protocol-t">Identify<span class="protocol-g">Document what is present.</span></span></li>
+  <li class="protocol-step"><span class="protocol-n mono">02</span><span class="protocol-fig" aria-hidden="true"><ProtocolStep name="condition" /></span><span class="protocol-t">Condition<span class="protocol-g">Record the state before loading.</span></span></li>
+  <li class="protocol-step"><span class="protocol-n mono">03</span><span class="protocol-fig" aria-hidden="true"><ProtocolStep name="load" /></span><span class="protocol-t">Load<span class="protocol-g">Apply the declared load case.</span></span></li>
+  <li class="protocol-step protocol-step--more"><span class="protocol-g">Steps 04&#8211;07 follow below.</span></li>
+</ol>
+
+<div class="slop-measure">
+
+All seven steps, in order:
 
 1. **Identify.** Give the specimen an identifier and record what it is made of,
    in stack order, before anything is applied. An unidentified specimen cannot

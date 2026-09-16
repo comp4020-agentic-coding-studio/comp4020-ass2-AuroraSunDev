@@ -1,0 +1,125 @@
+---
+/**
+ * The four marks on the observation protocol: identify, condition, load,
+ * record.
+ *
+ * These are the only drawings in the manual that are deliberately *not*
+ * axonometric. The protocol is a sequence of actions a reader performs, not a
+ * set of specimens, and drawing the steps as little solid bodies would say the
+ * opposite --- that each step is a thing with a near face and a far one. So
+ * they are flat, single-stroke, unfilled and small: the same instrument as the
+ * figures, held much closer to the page.
+ *
+ * They are also all charcoal. Red is reserved on this site for a load being
+ * applied or an interface letting go, and a protocol step is neither: the
+ * third step is where a reader applies the declared load, but the mark stands
+ * for the instruction, not for the force. Making it red would spend the one
+ * colour that has to still mean something by the failure-notation section.
+ *
+ * The step number and the step's name are the page's text. Nothing is lettered
+ * here, which is why `record` is a ruled sheet with no writing on it.
+ */
+import { HAIRLINE } from "../../lib/axonometric";
+
+export type StepName = "identify" | "condition" | "load" | "record";
+
+interface Props {
+  name: StepName;
+  /** Set where the mark is not accompanied by the step name in page text. */
+  labelled?: boolean;
+}
+const { name, labelled = false } = Astro.props;
+
+/** What each mark shows, for the cases where it stands on its own. */
+const ALT: Record<StepName, string> = {
+  identify: "A magnifier.",
+  condition: "An eye.",
+  load: "An arrow pointing down onto a rule.",
+  record: "A ruled sheet with one corner turned.",
+};
+
+const alt: string | undefined = ALT[name];
+if (!alt) {
+  throw new Error(
+    `ProtocolStep: unknown name "${name}". Expected one of ${Object.keys(ALT).join(", ")}.`,
+  );
+}
+---
+
+<svg
+  class:list={["ps", `ps--${name}`]}
+  viewBox="0 0 44 44"
+  width="44"
+  height="44"
+  role={labelled ? "img" : "presentation"}
+  aria-label={labelled ? alt : undefined}
+  focusable="false"
+>
+  {/* IDENTIFY --- document what is present. The lens is empty: the step is
+      looking, and what is found is the reader's to write down. */}
+  {name === "identify" && (
+    <g>
+      <circle class="mark" cx="18" cy="18" r="11.5" {...HAIRLINE} />
+      <path class="mark" d="M26.2 26.2 L38 38" {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* CONDITION --- record the state before loading. An eye rather than a
+      thermometer or a scale, because condition here is whatever is observable,
+      not one instrument's reading. */}
+  {name === "condition" && (
+    <g>
+      <path class="mark" d="M4 22 Q22 7 40 22 Q22 37 4 22 Z" {...HAIRLINE} />
+      <circle class="mark" cx="22" cy="22" r="5.5" {...HAIRLINE} />
+      <circle class="pupil" cx="22" cy="22" r="1.9" />
+    </g>
+  )}
+
+  {/* LOAD --- apply the declared load. The rule beneath the arrow is the
+      declaration: a load with nothing to bear on is not a load case. */}
+  {name === "load" && (
+    <g>
+      <path class="mark" d="M22 4 V28 M15.6 21.4 L22 28 L28.4 21.4" {...HAIRLINE} />
+      <path class="mark" d="M7 35 H37" {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* RECORD --- the sheet, ruled and blank. The turned corner says it is one
+      sheet of many, which is what an evidence record is. */}
+  {name === "record" && (
+    <g>
+      <path class="mark" d="M9 5 H29 L36 12 V39 H9 Z" {...HAIRLINE} />
+      <path class="mark" d="M29 5 V12 H36" {...HAIRLINE} />
+      <path class="rule" d="M14 20 H31 M14 26 H31 M14 32 H26" {...HAIRLINE} />
+    </g>
+  )}
+</svg>
+
+<style>
+  .ps {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* One weight, no fill, no tone: a step marker is an instruction, not a body. */
+  .mark {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+  }
+  .pupil {
+    fill: var(--slop-charcoal);
+    stroke: none;
+  }
+  /* The sheet's rules are lighter than its edge: they are what is written on,
+     not what holds. */
+  .rule {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.1;
+    opacity: 0.6;
+  }
+</style>

@@ -195,3 +195,116 @@ body:has(.manual)::after {
   background: var(--slop-ink);
   color: var(--slop-paper-on-ink);
 }
+
+/* --- The drawn figures -------------------------------------------------- *
+ *
+ * Three grids, one per chapter that has a figure set. They share a rule: the
+ * drawing sits beside its term, never under a caption that could be scrolled
+ * away from it, because the drawing is what makes the term recognisable on a
+ * bench and the term is what makes the drawing mean anything.
+ */
+
+.vocab-grid,
+.fam-grid {
+  list-style: none;
+  margin: var(--slop-space-md) 0 var(--slop-space-lg);
+  padding: 0;
+  display: grid;
+  gap: var(--slop-space-md) var(--slop-space-lg);
+  grid-template-columns: 1fr;
+}
+@media (width >= 620px) {
+  .vocab-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fam-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (width >= 1000px) {
+  .vocab-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.vocab-item,
+.fam-cell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--slop-space-sm);
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  padding-top: var(--slop-space-sm);
+  min-width: 0;
+}
+
+.vocab-fig,
+.fam-fig { display: block; }
+.vocab-fig svg,
+.fam-fig svg,
+.protocol-fig svg { display: block; }
+
+.vocab-term { display: block; }
+.vocab-gloss,
+.fam-line {
+  display: block;
+  font-size: var(--at-font-size-sm);
+  color: var(--at-text-secondary);
+  margin-top: 0.1rem;
+}
+
+.fam-name {
+  display: block;
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.01em;
+  color: var(--slop-tomato);
+  text-transform: uppercase;
+}
+
+.fam-grid-wrap { margin-bottom: var(--slop-space-lg); }
+
+/* The four drawn as a tidy set look more official than they are. The chapter
+   says so in prose; the figure says so too, where the figure is what gets
+   screenshotted out of context. */
+.fam-caveat {
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  color: var(--slop-toast);
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  padding-top: var(--slop-space-xs);
+  margin: 0;
+}
+
+/* --- The protocol strip -------------------------------------------------- */
+
+.protocol {
+  list-style: none;
+  margin: var(--slop-space-md) 0 var(--slop-space-lg);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--slop-space-md) var(--slop-space-lg);
+  align-items: start;
+}
+
+.protocol-step {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--slop-space-xs) var(--slop-space-sm);
+  flex: 1 1 14rem;
+  min-width: 0;
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  padding-top: var(--slop-space-sm);
+}
+
+.protocol-n { color: var(--slop-toast); font-size: var(--at-font-size-sm); }
+.protocol-t { font-weight: 600; min-width: 0; }
+.protocol-g {
+  display: block;
+  font-weight: 400;
+  font-size: var(--at-font-size-sm);
+  color: var(--at-text-secondary);
+  margin-top: 0.1rem;
+}
+
+.protocol-step--more {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+}

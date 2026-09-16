@@ -1,0 +1,40 @@
+---
+/**
+ * The six drawn terms at the head of the manual's vocabulary chapter.
+ *
+ * The chapter defines nine terms, and the table below this grid is still the
+ * exact definition of all nine. These six are the ones a reader has to be able
+ * to picture before the rest of the manual makes sense --- what a specimen is,
+ * where its boundary and its interfaces are, what counts as a load, what
+ * failure means here, and what a load case declares. A drawing settles those
+ * faster than a sentence, and the sentence is beside it either way.
+ *
+ * The gloss under each term is deliberately shorter than the table's row: this
+ * is an index into the chapter, not a second definition that could drift out
+ * of step with the first.
+ */
+import ManualIcon from "./ManualIcon.astro";
+
+const TERMS = [
+  { name: "specimen", term: "Specimen", gloss: "The assembled system under test." },
+  { name: "boundary", term: "Boundary", gloss: "The limits of the system of interest." },
+  { name: "interface", term: "Interface", gloss: "The plane where two components meet." },
+  { name: "load", term: "Load", gloss: "The controlled action applied to the system." },
+  { name: "failure", term: "Failure", gloss: "The condition at which the system no longer satisfies its intent." },
+  { name: "load-case", term: "Load case", gloss: "The declared combination of load, setup and success criteria." },
+] as const;
+---
+
+<ul class="vocab-grid" role="list">
+  {TERMS.map((t) => (
+    <li class="vocab-item">
+      <span class="vocab-fig" aria-hidden="true">
+        <ManualIcon name={t.name} />
+      </span>
+      <span class="vocab-text">
+        <b class="vocab-term">{t.term}</b>
+        <span class="vocab-gloss">{t.gloss}</span>
+      </span>
+    </li>
+  ))}
+</ul>

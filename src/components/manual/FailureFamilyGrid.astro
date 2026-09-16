@@ -1,0 +1,48 @@
+---
+/**
+ * The four failure families, drawn.
+ *
+ * The table beneath this grid is the precise record --- what moves, the first
+ * visible sign, and the week each family is taught in. What the table cannot
+ * do is show that the four are different *shapes* of failure rather than four
+ * words, and that is the thing a student has to recognise on a bench in front
+ * of a specimen they have never seen before.
+ *
+ * The drawings therefore differ in geometry first: something travels sideways,
+ * something advances through a body, something loses height, something opens
+ * outward. Colour repeats what the geometry already says and is never the only
+ * carrier.
+ *
+ * The disclaimer that these are the course's own model and not a professional
+ * classification sits immediately below, in the chapter itself. Drawing them
+ * as a tidy set of four makes them look more official than they are, so the
+ * caption here says so too rather than leaving it to the prose.
+ */
+import FailureFamilyFigure from "./FailureFamilyFigure.astro";
+
+const FAMILIES = [
+  { family: "slip", name: "Slip", line: "Interfaces lose grip." },
+  { family: "soak", name: "Soak", line: "Moisture crosses a boundary." },
+  { family: "crush", name: "Crush", line: "Components exceed useful load." },
+  { family: "splay", name: "Splay", line: "Contents escape laterally." },
+] as const;
+---
+
+<div class="fam-grid-wrap">
+  <ul class="fam-grid" role="list">
+    {FAMILIES.map((f) => (
+      <li class="fam-cell">
+        <span class="fam-fig" aria-hidden="true">
+          <FailureFamilyFigure family={f.family} />
+        </span>
+        <span class="fam-text">
+          <b class="fam-name display">{f.name}</b>
+          <span class="fam-line">{f.line}</span>
+        </span>
+      </li>
+    ))}
+  </ul>
+  <p class="fam-caveat mono">
+    Course working model — not a professional standard.
+  </p>
+</div>

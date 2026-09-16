@@ -1,0 +1,910 @@
+---
+/**
+ * Week 8's layer-order comparison: the same five layers, built twice.
+ *
+ * The week's question is why one material set behaves differently when it is
+ * reordered, and the thing it has to teach is that adjacency --- which layer
+ * touches which --- rather than layer identity is what carries load, movement
+ * and moisture. A drawing can only teach that if a reader can satisfy
+ * themselves that the two stacks really are the same set. So both are exploded
+ * from one projection, at one pitch, with one texture per material, and the
+ * only difference available to find between them is where the binding layer
+ * sits. Any other difference --- a different angle, a different scale, a
+ * prettier slab on the right --- would offer a second explanation for the
+ * change in behaviour, which is exactly the confusion the week exists to
+ * remove. That is why every coordinate comes out of src/lib/axon-week8.ts and
+ * none is tuned here.
+ *
+ * WHY THE LABELS ARE NOT IN THE SVG. The layer names *are* the content: the
+ * whole comparison is one list of six names, read twice, and the reader's job
+ * is to notice that the two lists hold the same names in a different order. So
+ * they are HTML text --- selectable, translatable, searchable, set in the
+ * site's own faces and able to wrap on a phone. The SVG is geometry and
+ * nothing else and is `role="presentation"`; the labels and the caption carry
+ * the meaning. Each label is placed from the same constants that place its
+ * slab, so the text and the drawing cannot drift apart when the pitch changes.
+ *
+ * WHY THE PHONE LAYOUT RECOMPOSES. Two stacks side by side become two
+ * unreadable ribbons if they are merely shrunk, and the comparison dies with
+ * them: each slab has to stay wide enough that its texture is still a texture.
+ * Below 900px the stacks go one above the other, each keeping its full-width
+ * drawing and its labels beside it, and the rearrange arrow turns to point
+ * down the page --- the same reading order, rotated.
+ *
+ * WHY THE ADJACENCY NOTES ARE FLAT. The notes drop the projection on purpose.
+ * They are not about a stack; they are about a contact, and a contact is best
+ * seen edge-on, where the two materials meet on a single line. Changing the
+ * viewpoint is the signal that the question has changed.
+ *
+ * Colour is the third channel at most. The binding layer is green because
+ * green on this site is a state that is holding, but it is also the only
+ * solid slab in the set and the only one labelled as having moved; the soak
+ * finding is red, but it is also three arrows crossing a boundary and the
+ * word "increased". Nothing here needs colour to be read.
+ *
+ * No client-side JavaScript: there is no state to change. Both orders are on
+ * screen at once, which is the comparison.
+ */
+import {
+  AXON_THICKNESS_RATIO,
+  at,
+  planGrid,
+  polyline,
+  slabFaces,
+  slabHalfWidth,
+  slabTopHeight,
+  topFace,
+} from "../../lib/axon-week8";
+
+/** Which layer is relocated between the baseline and the revised order. */
+type MovedLayer = "binding";
+/** Whether the adjacency findings are drawn beside the stacks. */
+type NotesMode = "panel" | "omit";
+
+interface Props {
+  /**
+   * The relocated layer. Only the binding layer's move is recorded, because
+   * it is the one the week's teaching rests on; anything else throws rather
+   * than silently drawing the baseline twice.
+   */
+  moved?: MovedLayer;
+  /**
+   * Set to "omit" where the page already prints the two adjacency findings as
+   * prose, so a reader is not told the same thing twice.
+   */
+  notes?: NotesMode;
+}
+
+const { moved = "binding", notes = "panel" } = Astro.props;
+
+const NOTES_MODES = ["panel", "omit"] as const;
+if (!NOTES_MODES.includes(notes)) {
+  throw new Error(
+    `LayerOrderExploded: unknown notes mode "${notes}"; expected one of ${NOTES_MODES.join(", ")}`,
+  );
+}
+
+/* --- The materials ------------------------------------------------------ *
+ *
+ * Five layers, each with one drawn treatment, so a layer is identifiable from
+ * its texture before its label is read. Thickness is a multiple of the shared
+ * ratio rather than a free number: the outer layers are the thickest thing in
+ * the set in both stacks, which is part of what makes the two stacks legible
+ * as the same set.
+ */
+type Texture = "plain" | "lattice" | "chunks" | "wave" | "solid";
+
+interface Material {
+  name: string;
+  texture: Texture;
+  /** Multiple of AXON_THICKNESS_RATIO. */
+  thickness: number;
+}
+
+const MATERIALS = {
+  outer: { name: "Outer layer", texture: "plain", thickness: 1.2 },
+  support: { name: "Support layer", texture: "lattice", thickness: 0.55 },
+  loose: { name: "Loose layer", texture: "chunks", thickness: 0.7 },
+  moist: { name: "Moist layer", texture: "wave", thickness: 0.5 },
+  binding: { name: "Binding layer", texture: "solid", thickness: 0.9 },
+} as const satisfies Record<string, Material>;
+
+type MaterialId = keyof typeof MATERIALS;
+
+/** Top to bottom, as assembled. */
+const BASELINE: MaterialId[] = [
+  "outer",
+  "support",
+  "loose",
+  "moist",
+  "binding",
+  "outer",
+];
+
+/* Each recorded reordering names the revised stack and the two contacts it
+   changes. The findings live with the reordering that produces them, so a new
+   reordering cannot be added without also stating what it does. */
+interface Reordering {
+  order: MaterialId[];
+  findings: {
+    pair: "binding-loose" | "moist-outer";
+    verdict: "accepted" | "rejected";
+    text: string;
+  }[];
+}
+
+const REORDERINGS: Record<MovedLayer, Reordering> = {
+  binding: {
+    order: ["outer", "support", "binding", "loose", "moist", "outer"],
+    findings: [
+      {
+        pair: "binding-loose",
+        verdict: "accepted",
+        text: "Binding beside loose: slip risk reduced.",
+      },
+      {
+        pair: "moist-outer",
+        verdict: "rejected",
+        text: "Moist beside outer: soak risk increased.",
+      },
+    ],
+  },
+};
+
+const reordering = REORDERINGS[moved];
+if (!reordering) {
+  throw new Error(
+    `LayerOrderExploded: no reordering recorded for a moved "${moved}" layer; ` +
+      `recorded: ${Object.keys(REORDERINGS).join(", ")}`,
+  );
+}
+
+const STACKS = [
+  { key: "baseline", name: "Baseline order", order: BASELINE, revised: false },
+  { key: "revised", name: "Revised order", order: reordering.order, revised: true },
+] as const;
+
+/* --- The geometry ------------------------------------------------------- *
+ *
+ * SPAN is the plan size of every slab, so the stack has one footprint. PITCH
+ * clears the thickest slab plus the tallest lid, which is what keeps the
+ * exploded slabs from overlapping: with six slabs at one pitch the two stacks
+ * are exactly the same height and their labels line up across the gap, so the
+ * reader can read the two orders as rows.
+ */
+const SPAN = 86;
+const HALF = slabHalfWidth(SPAN);
+const LID_H = slabTopHeight(SPAN);
+const BASE_T = SPAN * AXON_THICKNESS_RATIO;
+const THICKEST = BASE_T * 1.2;
+const PITCH = LID_H + THICKEST + 6;
+const PAD = 6;
+
+const VB_X = -(HALF + PAD);
+const VB_W = 2 * (HALF + PAD);
+const VB_Y = -(LID_H + 5);
+const VB_H = LID_H + 5 + 5 * PITCH + THICKEST + PAD + 1;
+
+/** Screen thickness of one material's slab. */
+const thicknessOf = (id: MaterialId) => BASE_T * MATERIALS[id].thickness;
+
+/* Scattered chunks for the loose layer: real small slabs in the same
+   projection, raised so they sit on the lid rather than sink into it. Far
+   chunks are drawn first so the near ones overlap them correctly. */
+const CHUNK_SPAN = 11;
+const CHUNK_T = 1.8;
+const CHUNK_PLAN: [number, number][] = [
+  [14, 20],
+  [38, 12],
+  [66, 12],
+  [62, 24],
+  [26, 28],
+  [22, 46],
+  [48, 44],
+  [70, 52],
+  [12, 66],
+  [34, 70],
+  [58, 68],
+  [50, 54],
+];
+const CHUNKS = [...CHUNK_PLAN].sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+
+/* The moist layer's front: a wave surveyed in the plan, not a squiggle drawn
+   on the screen, so it lies in the lid like everything else.
+ *
+ * It is traced along the lid's short diagonal --- the one plan direction this
+ * projection maps to a horizontal screen line --- and oscillates by adding the
+ * same offset to both plan axes, which this projection maps to a purely
+ * vertical one. So the front crosses the layer squarely, in the plane of the
+ * lid, rather than wandering off up one of the axes. */
+const WAVE_INSET = 12;
+const WAVE_RUN = SPAN - 2 * WAVE_INSET;
+const WAVE_AMP = 8;
+const WAVE_STEPS = 30;
+
+/** A point on the front, `s` from 0 to 1 across the lid, `lift` off the wave. */
+const frontPoint = (origin: { x: number; y: number }, s: number, lift = 0) => {
+  const swell = WAVE_AMP * Math.sin(s * Math.PI * 3) + lift;
+  return at(
+    origin,
+    WAVE_INSET + s * WAVE_RUN + swell,
+    SPAN - WAVE_INSET - s * WAVE_RUN + swell,
+  );
+};
+
+const wavePoints = (origin: { x: number; y: number }) =>
+  Array.from({ length: WAVE_STEPS + 1 }, (_, k) => frontPoint(origin, k / WAVE_STEPS));
+
+/* Droplets sit just ahead of the front, on the dry side of it. */
+const DROPLETS = [0.22, 0.5, 0.78];
+
+/** Where a layer's label sits: on its slab's own centre line. */
+const labelPercent = (i: number, id: MaterialId) => {
+  const y = i * PITCH - LID_H / 2 + thicknessOf(id) / 2;
+  return Math.round(((y - VB_Y) / VB_H) * 10000) / 100;
+};
+
+/* The assembly axis: the two outermost corners of the stack, carried down as
+   construction lines. Dashed, because they are not edges of anything. */
+const AXIS_TOP = -LID_H / 2 + thicknessOf("outer");
+const AXIS_BOTTOM = 5 * PITCH - LID_H / 2;
+const AXIS = `M${-HALF} ${AXIS_TOP} V${AXIS_BOTTOM} M${HALF} ${AXIS_TOP} V${AXIS_BOTTOM}`;
+
+const VERDICT_WORD = { accepted: "Accepted", rejected: "Rejected" } as const;
+---
+
+<figure class="lox">
+  {
+    STACKS.map((stack) => (
+      <div class:list={["lox-stack", `lox-stack--${stack.key}`]}>
+        <p class:list={["lox-order-name", stack.revised && "lox-order-name--revised"]}>
+          {stack.name}
+        </p>
+
+        <div class="lox-order">
+          <div class="lox-draw">
+            <svg
+              class="lox-svg"
+              viewBox={`${VB_X} ${VB_Y} ${VB_W} ${VB_H}`}
+              role="presentation"
+              focusable="false"
+            >
+              <path class="lox-axis" d={AXIS} />
+
+              {/* Drawn bottom slab first. The viewpoint is above the stack, so
+                  an upper slab is nearer the eye than a lower one and has to be
+                  painted last wherever the two meet. The labels are HTML, so
+                  nothing is lost by reversing the drawing order here. */}
+              {stack.order
+                .map((id, i) => ({ id, i }))
+                .reverse()
+                .map(({ id, i }) => {
+                  const origin = { x: 0, y: i * PITCH };
+                  const t = thicknessOf(id);
+                  const f = slabFaces(origin, SPAN, t);
+                  return (
+                    <g class:list={["lox-slab", `lox-slab--${id}`]}>
+                      <path
+                        class="lox-face lox-face--left"
+                        d={f.left}
+                        vector-effect="non-scaling-stroke"
+                      />
+                      <path
+                        class="lox-face lox-face--right"
+                        d={f.right}
+                        vector-effect="non-scaling-stroke"
+                      />
+                      <path
+                        class="lox-face lox-face--top"
+                        d={f.top}
+                        vector-effect="non-scaling-stroke"
+                      />
+
+                      {MATERIALS[id].texture === "lattice" && (
+                        <g>
+                          <path class="lox-lattice" d={planGrid(origin, SPAN, 6, 8)} />
+                          <path class="lox-lattice-edge" d={topFace(origin, SPAN, 8)} />
+                        </g>
+                      )}
+
+                      {MATERIALS[id].texture === "chunks" &&
+                        CHUNKS.map(([u, v]) => {
+                          const seat = at(origin, u, v, -CHUNK_T);
+                          const c = slabFaces(seat, CHUNK_SPAN, CHUNK_T);
+                          return (
+                            <g class="lox-chunk">
+                              <path class="lox-chunk-face" d={c.left} />
+                              <path class="lox-chunk-face" d={c.right} />
+                              <path class="lox-chunk-face lox-chunk-face--top" d={c.top} />
+                            </g>
+                          );
+                        })}
+
+                      {MATERIALS[id].texture === "wave" && (
+                        <g>
+                          <path class="lox-wave" d={polyline(wavePoints(origin))} />
+                          {DROPLETS.map((s) => {
+                            const p = frontPoint(origin, s, -14);
+                            return <circle class="lox-drop" cx={p.x} cy={p.y} r="3.1" />;
+                          })}
+                        </g>
+                      )}
+                    </g>
+                  );
+                })}
+            </svg>
+          </div>
+
+          {/* The order itself, as text. Leader lines are the list items' own
+              rules, so they scale with the type rather than with the drawing. */}
+          <ol class="lox-labels">
+            {stack.order.map((id, i) => (
+              <li
+                class:list={[
+                  "lox-label",
+                  stack.revised && id === moved && "lox-label--moved",
+                ]}
+                style={`top:${labelPercent(i, id)}%`}
+              >
+                <span class="lox-label-text">
+                  {MATERIALS[id].name}
+                  {stack.revised && id === moved && (
+                    <span class="lox-moved"> — moved</span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    ))
+  }
+
+  <div class="lox-move">
+    <p class="lox-move-word">Rearrange</p>
+    <svg class="lox-move-h" viewBox="0 0 120 24" role="presentation" focusable="false">
+      <path class="lox-move-line" d="M2 12 H100" vector-effect="non-scaling-stroke" />
+      <path class="lox-move-head" d="M99 5 L116 12 L99 19 Z" />
+    </svg>
+    <svg class="lox-move-v" viewBox="0 0 24 120" role="presentation" focusable="false">
+      <path class="lox-move-line" d="M12 2 V100" vector-effect="non-scaling-stroke" />
+      <path class="lox-move-head" d="M5 99 L12 116 L19 99 Z" />
+    </svg>
+  </div>
+
+  {
+    notes === "panel" && (
+      <div class="lox-notes">
+        <p class="lox-notes-name">Adjacency notes</p>
+        <ul class="lox-notes-list">
+          {reordering.findings.map((finding) => (
+            <li class:list={["lox-note", `lox-note--${finding.verdict}`]}>
+              {/* Seen edge-on: the question here is a contact, not a stack. */}
+              <svg
+                class="lox-pair"
+                viewBox="0 0 112 64"
+                role="presentation"
+                focusable="false"
+              >
+                <rect
+                  class="lox-pair-slab lox-pair-slab--upper"
+                  x="2"
+                  y="2"
+                  width="108"
+                  height="28"
+                  vector-effect="non-scaling-stroke"
+                />
+                <rect
+                  class="lox-pair-slab lox-pair-slab--lower"
+                  x="2"
+                  y="30"
+                  width="108"
+                  height="28"
+                  vector-effect="non-scaling-stroke"
+                />
+                <path
+                  class="lox-pair-contact"
+                  d="M2 30 H110"
+                  vector-effect="non-scaling-stroke"
+                />
+
+                {finding.pair === "binding-loose" && (
+                  <g>
+                    {/* Chunks held in place below a continuous film. */}
+                    <path
+                      class="lox-pair-chunk"
+                      d="M12 52 h13 l-3 -9 h-11 Z M34 52 h11 l-2 -9 h-10 Z M54 51 h12 l-3 -9 h-10 Z M76 52 h12 l-2 -10 h-11 Z M92 51 h11 l-2 -8 h-10 Z"
+                      vector-effect="non-scaling-stroke"
+                    />
+                  </g>
+                )}
+
+                {finding.pair === "moist-outer" && (
+                  <g>
+                    {/* Moisture arriving at, and crossing, the contact. */}
+                    <path
+                      class="lox-pair-wave"
+                      d="M6 14 q 10 -7 20 0 t 20 0 t 20 0 t 20 0 t 20 0"
+                      vector-effect="non-scaling-stroke"
+                    />
+                    <path
+                      class="lox-pair-soak"
+                      d="M28 22 V44 m-5 -7 l5 7 l5 -7 M56 22 V48 m-5 -7 l5 7 l5 -7 M84 22 V44 m-5 -7 l5 7 l5 -7"
+                      vector-effect="non-scaling-stroke"
+                    />
+                  </g>
+                )}
+              </svg>
+
+              <div class="lox-note-body">
+                <p class="lox-note-text">{finding.text}</p>
+                <p class="lox-verdict">
+                  <svg class="lox-mark" viewBox="0 0 20 20" role="presentation" focusable="false">
+                    {finding.verdict === "accepted" ? (
+                      <path
+                        class="lox-mark-line"
+                        d="M3 10 L8 16 L17 4"
+                        vector-effect="non-scaling-stroke"
+                      />
+                    ) : (
+                      <path
+                        class="lox-mark-line"
+                        d="M4 4 L16 16 M16 4 L4 16"
+                        vector-effect="non-scaling-stroke"
+                      />
+                    )}
+                  </svg>
+                  <span>{VERDICT_WORD[finding.verdict]}</span>
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <p class="lox-notes-name lox-notes-name--second">Assembly rationale</p>
+        <p class="lox-rationale">
+          Layer adjacency controls how loads, movement and moisture interact.
+          Reordering changes those interactions, and with them the behaviour of
+          the assembly.
+        </p>
+      </div>
+    )
+  }
+
+  <figcaption class="lox-cap">
+    The same five layers, exploded, assembled twice. Only the binding layer
+    moves: in the revised order it sits above the loose layer rather than below
+    the moist one. The material set is identical in both stacks, so every
+    difference in how the two assemblies behave is a difference in which layer
+    touches which.
+  </figcaption>
+</figure>
+
+<style>
+  /* --- Composition ----------------------------------------------------- *
+   *
+   * One column on a phone: baseline stack, arrow, revised stack, notes,
+   * caption --- the reading order the markup is already in. From 900px the two
+   * stacks sit either side of the arrow and the notes run full width beneath
+   * them; from 1280px there is room for the notes as a rail, which is where
+   * they belong, because they are read against both stacks at once.
+   */
+  .lox {
+    margin: 0;
+    display: grid;
+    gap: var(--slop-space-lg);
+    grid-template-areas:
+      "baseline"
+      "move"
+      "revised"
+      "notes"
+      "cap";
+  }
+
+  @media (width >= 900px) {
+    .lox {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      grid-template-areas:
+        "baseline move revised"
+        "notes    notes notes"
+        "cap      cap   cap";
+      column-gap: clamp(1rem, 2.5vw, 2.5rem);
+    }
+  }
+
+  @media (width >= 1280px) {
+    .lox {
+      grid-template-columns:
+        minmax(0, 1fr) auto minmax(0, 1fr)
+        minmax(16rem, 23rem);
+      grid-template-areas:
+        "baseline move revised notes"
+        "cap      cap  cap     cap";
+    }
+  }
+
+  .lox-stack--baseline { grid-area: baseline; }
+  .lox-stack--revised { grid-area: revised; }
+
+  /* --- The order's name ------------------------------------------------ */
+
+  .lox-order-name {
+    margin: 0 0 var(--slop-space-sm);
+    padding-bottom: 0.3rem;
+    border-bottom: var(--slop-rule-width) solid var(--slop-rule);
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slop-charcoal);
+  }
+  /* The revised order is the one under test. Red says so; the word "revised"
+     and the moved label below say it without the colour. */
+  .lox-order-name--revised {
+    color: var(--slop-tomato);
+    border-bottom-color: var(--slop-tomato);
+  }
+
+  /* --- Drawing and labels ---------------------------------------------- *
+   *
+   * Two cells in one row, so the label column's box is exactly as tall as the
+   * drawing beside it. The labels are positioned inside it as percentages of
+   * that height, taken from the same PITCH the slabs are placed with --- which
+   * is why the drawing may be any width without the labels sliding off their
+   * slabs.
+   */
+  .lox-order {
+    display: grid;
+    grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+    gap: clamp(0.5rem, 2vw, 1.25rem);
+  }
+
+  @media (width >= 900px) {
+    .lox-order {
+      grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+    }
+  }
+
+  .lox-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Hairlines throughout: one stroke weight, held at one device pixel however
+     far the drawing is scaled. */
+  .lox-svg path,
+  .lox-svg circle,
+  .lox-pair rect,
+  .lox-pair path,
+  .lox-mark path,
+  .lox-move-h path,
+  .lox-move-v path {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .lox-labels {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+  }
+
+  .lox-label {
+    position: absolute;
+    inset-inline: 0;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    color: var(--slop-charcoal);
+  }
+
+  /* The leader line. A rule on the list item rather than a line in the SVG,
+     so it starts where the type starts at every size. */
+  .lox-label::before {
+    content: "";
+    flex: 0 0 clamp(0.6rem, 12%, 2.25rem);
+    border-top: var(--slop-rule-width) solid var(--slop-charcoal);
+  }
+
+  .lox-label-text {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  /* The relocated layer, in the stack where it has moved. Green, because it is
+     the accepted arrangement --- but the word is there too. */
+  .lox-label--moved { color: var(--slop-lettuce); }
+  .lox-label--moved::before { border-top-color: var(--slop-lettuce); }
+  .lox-moved {
+    white-space: nowrap;
+    opacity: 0.85;
+  }
+
+  /* --- Slabs ------------------------------------------------------------ *
+   *
+   * Paper solids with charcoal edges: a drawing, not a rendering. The three
+   * faces separate by a wash rather than a hue, so the projection still reads
+   * in greyscale and in print.
+   */
+  .lox-face {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+  .lox-face--top { fill: color-mix(in srgb, var(--slop-charcoal) 3%, var(--slop-paper)); }
+  .lox-face--right { fill: color-mix(in srgb, var(--slop-charcoal) 9%, var(--slop-paper)); }
+  .lox-face--left { fill: color-mix(in srgb, var(--slop-charcoal) 16%, var(--slop-paper)); }
+
+  /* The binding layer: the one solid slab in the set, in the green that on
+     this site means a state that is holding. */
+  .lox-slab--binding .lox-face--top {
+    fill: color-mix(in srgb, var(--slop-lettuce) 72%, var(--slop-paper));
+  }
+  .lox-slab--binding .lox-face--right {
+    fill: color-mix(in srgb, var(--slop-lettuce) 84%, var(--slop-paper));
+  }
+  .lox-slab--binding .lox-face--left {
+    fill: var(--slop-lettuce);
+  }
+
+  /* The support layer: a lattice, because it carries load through a structure
+     rather than through bulk. */
+  .lox-lattice {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    opacity: 0.75;
+  }
+  .lox-lattice-edge {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+  }
+
+  /* The loose layer: discrete bodies, so it touches only where they touch. */
+  .lox-chunk-face {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+  .lox-chunk-face--top {
+    fill: color-mix(in srgb, var(--slop-charcoal) 6%, var(--slop-paper));
+  }
+
+  /* The moist layer: a front and its droplets, in the brown that on this site
+     means material condition. */
+  .lox-wave {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1;
+    stroke-linecap: round;
+  }
+  .lox-drop {
+    fill: color-mix(in srgb, var(--slop-toast) 24%, transparent);
+    stroke: var(--slop-toast);
+    stroke-width: 1;
+  }
+
+  /* Construction lines, not edges. */
+  .lox-axis {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-dasharray: 6 5;
+    opacity: 0.45;
+  }
+
+  /* --- The rearrange arrow --------------------------------------------- */
+
+  .lox-move {
+    grid-area: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--slop-space-sm);
+  }
+
+  .lox-move-word {
+    margin: 0;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slop-toast);
+  }
+
+  .lox-move-line {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
+  }
+  .lox-move-head {
+    fill: var(--slop-charcoal);
+    stroke: none;
+  }
+
+  /* One arrow for each composition: across the page when the stacks are side
+     by side, down it when they are not. */
+  .lox-move-h { display: none; }
+  .lox-move-v {
+    display: block;
+    width: 1.5rem;
+    height: auto;
+    flex: none;
+  }
+
+  @media (width >= 900px) {
+    .lox-move {
+      flex-direction: column;
+      /* Level with the stacks it acts on, rather than with their headings. */
+      align-self: center;
+    }
+    .lox-move-h {
+      display: block;
+      width: clamp(4.5rem, 7vw, 7.5rem);
+      height: auto;
+    }
+    .lox-move-v { display: none; }
+  }
+
+  /* --- Adjacency notes -------------------------------------------------- */
+
+  .lox-notes {
+    grid-area: notes;
+    min-width: 0;
+  }
+
+  @media (width >= 1280px) {
+    .lox-notes {
+      border-inline-start: var(--slop-rule-width) solid var(--slop-rule);
+      padding-inline-start: clamp(1rem, 2vw, 2rem);
+    }
+  }
+
+  .lox-notes-name {
+    margin: 0 0 var(--slop-space-sm);
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slop-lettuce);
+  }
+  .lox-notes-name--second {
+    margin-top: var(--slop-space-md);
+    padding-top: var(--slop-space-sm);
+    border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  }
+
+  .lox-notes-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--slop-space-md);
+  }
+
+  .lox-note {
+    display: grid;
+    grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+    gap: var(--slop-space-sm) var(--slop-space-md);
+    align-items: start;
+    padding-top: var(--slop-space-sm);
+    border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  }
+
+  .lox-pair {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .lox-pair-slab {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+  }
+  .lox-pair-contact {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
+  }
+
+  /* Accepted contact: a continuous film over discrete bodies. */
+  .lox-note--accepted .lox-pair-slab--upper {
+    fill: color-mix(in srgb, var(--slop-lettuce) 72%, var(--slop-paper));
+  }
+  /* The film is the contact itself, so the contact line carries it: heavier
+     and green, i.e. continuous and holding. */
+  .lox-note--accepted .lox-pair-contact {
+    stroke: var(--slop-lettuce);
+    stroke-width: 2.25;
+  }
+  .lox-pair-chunk {
+    fill: color-mix(in srgb, var(--slop-charcoal) 8%, var(--slop-paper));
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  /* Rejected contact: a front above it, and three crossings through it. */
+  .lox-pair-wave {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1;
+  }
+  .lox-pair-soak {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lox-note-body { min-width: 0; }
+
+  .lox-note-text {
+    margin: 0;
+    font-size: var(--at-font-size-sm);
+    line-height: 1.4;
+  }
+
+  .lox-verdict {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: var(--slop-space-xs) 0 0;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .lox-mark {
+    display: block;
+    width: 1.05rem;
+    height: auto;
+    flex: none;
+  }
+  .lox-mark-line {
+    fill: none;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lox-note--accepted .lox-verdict { color: var(--slop-lettuce); }
+  .lox-note--accepted .lox-mark-line { stroke: var(--slop-lettuce); }
+  .lox-note--rejected .lox-verdict { color: var(--slop-tomato); }
+  .lox-note--rejected .lox-mark-line { stroke: var(--slop-tomato); }
+
+  .lox-rationale {
+    margin: 0;
+    font-size: var(--at-font-size-sm);
+    line-height: 1.5;
+    max-width: 46ch;
+  }
+
+  /* --- Caption ---------------------------------------------------------- */
+
+  .lox-cap {
+    grid-area: cap;
+    margin: 0;
+    padding-top: var(--slop-space-sm);
+    border-top: var(--slop-rule-width) solid var(--slop-rule);
+    font-size: var(--at-font-size-sm);
+    line-height: 1.5;
+    max-width: var(--slop-measure);
+    color: var(--at-text-secondary);
+  }
+</style>

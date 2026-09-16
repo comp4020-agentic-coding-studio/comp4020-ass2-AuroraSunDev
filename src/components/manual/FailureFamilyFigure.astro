@@ -1,0 +1,563 @@
+---
+/**
+ * The four failure families, drawn as four states of one specimen.
+ *
+ * The families are a classification, so the drawings have to be comparable
+ * before they are attractive: same three layers, same projection, same slab
+ * thickness, same scale. What changes between them is only what the family
+ * names --- SLIP offsets each layer further than the one below it, SOAK moves a
+ * front across a boundary, CRUSH loses height, SPLAY loses plan containment.
+ * A reader should be able to tell two families apart with the captions covered.
+ *
+ * Each figure therefore carries its evidence in geometry first. CRUSH keeps the
+ * uncompressed stack as a dashed ghost, so "shorter" is measurable rather than
+ * asserted. SOAK draws the front as a dashed line that has already passed the
+ * interface and entered the slab below, so "crossed a boundary" is a position.
+ * SPLAY bows the filling's plan outward past the outer slabs, so the escape is
+ * an outline and not a colour. Red marks the load and the released interface;
+ * brown marks moisture. Neither is ever the only difference.
+ *
+ * No word is drawn: the family name, in the display face, and its one-line
+ * consequence are the page's text beside the figure.
+ */
+import type { P3 } from "../../lib/axonometric";
+import {
+  barbs,
+  box,
+  corners,
+  FILL,
+  frame,
+  HAIRLINE,
+  head,
+  project,
+  pt,
+  poly,
+  seg,
+  SLAB,
+  SPAN,
+  shaft,
+  UNIT,
+} from "../../lib/axonometric";
+
+export type FailureFamily = "slip" | "soak" | "crush" | "splay";
+
+interface Props {
+  family: FailureFamily;
+  /** Set where the drawing is not accompanied by the family name in page text. */
+  labelled?: boolean;
+}
+const { family, labelled = false } = Astro.props;
+
+/** Pixels per user unit, shared by the four, so the set is one magnification. */
+const SCALE = 1.7;
+
+const PLAN: P3 = [SPAN, SPAN, SLAB];
+const n2 = (n: number) => (Math.round(n * 100) / 100).toString();
+
+/* A screen-space point, optionally pushed down the page --- used where a body
+   is extruded vertically, which in this projection is a pure screen offset. */
+const sp = (p: P3, dy = 0): string => {
+  const [x, y] = project(p);
+  return `${n2(x)} ${n2(y + dy)}`;
+};
+
+/**
+ * A plan outline whose four edges bow outward at their midpoints.
+ *
+ * Squeezed filling does not leave a rectangular plan, and a rectangular one
+ * drawn slightly too large reads as a mis-cut layer rather than as material
+ * escaping. The projection is affine, so a quadratic through projected control
+ * points is the projection of the quadratic through the real ones --- the bow
+ * is genuinely in the horizontal plane, not a screen-space fudge.
+ */
+const NORMALS: readonly (readonly [number, number])[] = [
+  [0, -1],
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+];
+
+function planCorners(x0: number, y0: number, x1: number, y1: number, z: number): P3[] {
+  return [
+    [x0, y0, z],
+    [x1, y0, z],
+    [x1, y1, z],
+    [x0, y1, z],
+  ];
+}
+
+/** The control point for one bowed plan edge. Twice the bow: a quadratic
+    reaches half its control offset at the midpoint. */
+function bow(a: P3, b: P3, i: number, out: number, z: number): P3 {
+  const nrm = NORMALS[i];
+  return [(a[0] + b[0]) / 2 + nrm[0] * out * 2, (a[1] + b[1]) / 2 + nrm[1] * out * 2, z];
+}
+
+function pillowTop(x0: number, y0: number, x1: number, y1: number, z: number, out: number): string {
+  const c = planCorners(x0, y0, x1, y1, z);
+  let d = `M${pt(c[0])}`;
+  for (let i = 0; i < 4; i += 1) {
+    const a = c[i];
+    const b = c[(i + 1) % 4];
+    d += ` Q${pt(bow(a, b, i, out, z))} ${pt(b)}`;
+  }
+  return `${d} Z`;
+}
+
+/** The two faces of a bowed body that face the viewer, as one closed band. */
+function pillowBand(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  zTop: number,
+  t: number,
+  out: number,
+): string {
+  const c = planCorners(x0, y0, x1, y1, zTop);
+  const [, c1, c2, c3] = c;
+  const m1 = bow(c1, c2, 1, out, zTop);
+  const m2 = bow(c2, c3, 2, out, zTop);
+  const dz = t * UNIT;
+  return (
+    `M${sp(c1)} Q${sp(m1)} ${sp(c2)} Q${sp(m2)} ${sp(c3)} ` +
+    `L${sp(c3, dz)} Q${sp(m2, dz)} ${sp(c2, dz)} Q${sp(m1, dz)} ${sp(c1, dz)} Z`
+  );
+}
+
+/** A moisture front: irregular by nature, so it is the one line that waves. */
+function wavy(a: P3, b: P3, amp: number, humps: number): string {
+  const [ax, ay] = project(a);
+  const [bx, by] = project(b);
+  let d = `M${n2(ax)} ${n2(ay)}`;
+  for (let i = 1; i <= humps; i += 1) {
+    const t0 = (i - 1) / humps;
+    const t1 = i / humps;
+    const cx = ax + (bx - ax) * ((t0 + t1) / 2);
+    const cy = ay + (by - ay) * ((t0 + t1) / 2) + (i % 2 ? -amp : amp);
+    d += ` Q${n2(cx)} ${n2(cy)} ${n2(ax + (bx - ax) * t1)} ${n2(ay + (by - ay) * t1)}`;
+  }
+  return d;
+}
+
+/** A drop leaving the specimen: evidence that the moisture is not contained. */
+function drop(p: P3, size: number): string {
+  const [x, y] = project(p);
+  const top = y + 2;
+  return (
+    `M${n2(x)} ${n2(top)} C${n2(x - size * 0.52)} ${n2(top + size * 0.62)} ` +
+    `${n2(x - size * 0.46)} ${n2(top + size)} ${n2(x)} ${n2(top + size)} ` +
+    `C${n2(x + size * 0.46)} ${n2(top + size)} ${n2(x + size * 0.52)} ${n2(top + size * 0.62)} ` +
+    `${n2(x)} ${n2(top)} Z`
+  );
+}
+
+/** A support: the standard triangle, so the rig's reactions are declared. */
+function support(p: P3, size: number): string {
+  const [x, y] = project(p);
+  return `M${n2(x)} ${n2(y)} L${n2(x - size * 0.58)} ${n2(y + size)} L${n2(x + size * 0.58)} ${n2(y + size)} Z`;
+}
+
+/* --- SLIP: each layer displaced further than the one below --------------- */
+const SLIP_STEP = 0.22;
+const SLIP_BASE = box([0, 0, 0], PLAN);
+const SLIP_FILL = box([SLIP_STEP, 0, SLAB], [SPAN, SPAN, FILL]);
+const SLIP_TOP = box([SLIP_STEP * 2, 0, SLAB + FILL], PLAN);
+/* A couple, not a push: the two arrows are at different heights and point
+   opposite ways, which is the whole difference between slip and splay. */
+const SLIP_PAIRS: readonly (readonly [P3, P3])[] = [
+  [
+    [SLIP_STEP * 2 + SPAN + 0.08, 0.5, SLAB + FILL + SLAB / 2],
+    [2.16, 0.5, SLAB + FILL + SLAB / 2],
+  ],
+  [
+    [-0.08, 0.5, SLAB / 2],
+    [-0.72, 0.5, SLAB / 2],
+  ],
+];
+const SLIP_TRACK = SLIP_PAIRS.map(([a, b]) => seg(a, b)).join(" ");
+const SLIP_BARBS = SLIP_PAIRS.map(([a, b]) => barbs(a, b, 9)).join(" ");
+
+/* --- SOAK: a front that has already crossed the interface ---------------- */
+const SOAK_BASE = box([0, 0, 0], PLAN);
+const SOAK_FILL = box([0, 0, SLAB], [SPAN, SPAN, FILL]);
+const SOAK_TOP = box([0, 0, SLAB + FILL], PLAN);
+/* How far into the slab below the front has reached. */
+const SOAK_DEPTH = 0.15;
+const SOAK_WET = box([0, 0, SLAB - SOAK_DEPTH], [SPAN, SPAN, SOAK_DEPTH]);
+const SOAK_FRONT = poly([
+  [0, SPAN, SLAB - SOAK_DEPTH],
+  [SPAN, SPAN, SLAB - SOAK_DEPTH],
+  [SPAN, 0, SLAB - SOAK_DEPTH],
+]);
+const SOAK_LINE = wavy([-0.85, 0.5, SLAB + FILL / 2], [1.85, 0.5, SLAB + FILL / 2], 4.5, 8);
+const SOAK_DROP = drop([0.62, SPAN, 0], 11);
+
+/* --- CRUSH: height lost between two platens ------------------------------ */
+/* Squeezed thin, and the filling has gone sideways rather than got thicker ---
+   so the stack really is shorter, which is the only claim this figure makes. */
+const CR_THIN = SLAB * 0.58;
+const CR_FILL_T = FILL;
+const CR_BOW = 0.16;
+const CR_SEAT = 0.1;
+/* The platens are barely wider than the specimen, so the filling driven past
+   the plan stands outside them --- that overhang is the figure's second piece
+   of evidence, after the lost height. */
+const CR_PLATEN_LOW = box([-0.04, -0.04, 0], [1.08, 1.08, CR_SEAT]);
+const CR_BASE = box([0, 0, CR_SEAT], [SPAN, SPAN, CR_THIN]);
+const CR_FILL_TOP = CR_SEAT + CR_THIN + CR_FILL_T;
+const CR_TOP = box([0, 0, CR_FILL_TOP], [SPAN, SPAN, CR_THIN]);
+const CR_STACK_TOP = CR_FILL_TOP + CR_THIN;
+const CR_PLATEN_UP = box([-0.04, -0.04, CR_STACK_TOP], [1.08, 1.08, CR_SEAT]);
+/* The height the specimen went in at. A dashed outline of the whole original
+   stack cannot be used here: it would end up inside the upper platen, where it
+   reads as a pattern on the plate rather than as a former height. So the
+   evidence is a dimension, set out to the left along the screen horizontal ---
+   which in this projection is the plan diagonal --- with the was-height line
+   dashed and the is-height line solid. */
+const CR_WAS = CR_SEAT + SLAB + FILL + SLAB;
+const CR_DIM_A: P3 = [-0.2, 1.2, 0];
+const CR_DIM_B: P3 = [-0.34, 1.34, 0];
+const at = (p: P3, z: number): P3 => [p[0], p[1], z];
+const CR_EXT_WAS = seg(at(CR_DIM_A, CR_WAS), at(CR_DIM_B, CR_WAS));
+const CR_EXT_IS = seg(at(CR_DIM_A, CR_STACK_TOP), at(CR_DIM_B, CR_STACK_TOP));
+const CR_DIM_LINE = seg(at(CR_DIM_B, CR_WAS), at(CR_DIM_B, CR_STACK_TOP));
+const CR_DIM_BARBS = [
+  barbs(at(CR_DIM_B, CR_STACK_TOP), at(CR_DIM_B, CR_WAS), 4),
+  barbs(at(CR_DIM_B, CR_WAS), at(CR_DIM_B, CR_STACK_TOP), 4),
+].join(" ");
+const CR_TAIL: P3 = [0.5, 0.5, 1.62];
+const CR_TIP: P3 = [0.5, 0.5, CR_STACK_TOP + CR_SEAT + 0.2];
+const CR_SUPPORTS = [support([1.06, -0.06, 0], 9), support([-0.06, 1.06, 0], 9)].join(" ");
+
+/* --- SPLAY: plan containment lost ---------------------------------------- */
+const SP_OVER = 0.22;
+const SP_BOW = 0.13;
+const SP_BASE = box([0, 0, 0], PLAN);
+const SP_TOP = box([0, 0, SLAB + FILL], PLAN);
+const SP_MID = SLAB + FILL / 2;
+/* Outward along the two plan diagonals, which project to the screen
+   horizontal --- so the arrows leave from the two corners where the filling
+   visibly stands furthest past the slabs. */
+const SP_PAIRS: readonly (readonly [P3, P3])[] = [
+  [
+    [1.24, -0.24, SP_MID],
+    [1.54, -0.54, SP_MID],
+  ],
+  [
+    [-0.24, 1.24, SP_MID],
+    [-0.54, 1.54, SP_MID],
+  ],
+];
+const SP_TRACK = SP_PAIRS.map(([a, b]) => seg(a, b)).join(" ");
+const SP_BARBS = SP_PAIRS.map(([a, b]) => barbs(a, b, 9)).join(" ");
+interface Spec {
+  alt: string;
+  bounds: P3[];
+}
+
+const FAMILIES: Record<FailureFamily, Spec> = {
+  slip: {
+    alt: "Three layers of one specimen displaced sideways, each further than the one below, with opposed arrows at the top and bottom layers.",
+    bounds: [
+      ...corners([0, 0, 0], [SPAN + SLIP_STEP * 2, SPAN, SLAB + FILL + SLAB]),
+      [2.16, 0.5, 0],
+      [-0.72, 0.5, 0],
+    ],
+  },
+  soak: {
+    alt: "A three-layer specimen with the middle layer saturated, a wavy front crossing the figure at that level, the front already advanced into the slab below, and a drop leaving the lower edge.",
+    bounds: [
+      ...corners([0, 0, 0], [SPAN, SPAN, SLAB + FILL + SLAB]),
+      [-0.85, 0.5, 0],
+      [1.85, 0.5, 0],
+      [0.62, SPAN, -0.26],
+    ],
+  },
+  crush: {
+    alt: "A specimen compressed between two platens: the layers are thinner than the dashed outline of the specimen as it went in, the filling has been squeezed past the edges, and a heavy arrow bears down on the upper platen.",
+    bounds: [
+      ...corners([-0.16, -0.16, -0.18], [1.32, 1.32, CR_STACK_TOP + CR_SEAT + 0.18]),
+      CR_TAIL,
+      at(CR_DIM_B, CR_WAS),
+    ],
+  },
+  splay: {
+    alt: "A three-layer specimen whose filling bows out past both outer slabs on every side, with arrows leaving the two widest corners.",
+    bounds: [
+      ...corners([-SP_OVER, -SP_OVER, 0], [SPAN + SP_OVER * 2, SPAN + SP_OVER * 2, SLAB + FILL + SLAB]),
+      [1.54, -0.54, 0],
+      [-0.54, 1.54, 0],
+    ],
+  },
+};
+
+const spec: Spec | undefined = FAMILIES[family];
+if (!spec) {
+  throw new Error(
+    `FailureFamilyFigure: unknown family "${family}". Expected one of ${Object.keys(FAMILIES).join(", ")}.`,
+  );
+}
+
+const fr = frame(spec.bounds, 12);
+const uid = `ff-${family}`;
+---
+
+<svg
+  class:list={["ff", `ff--${family}`]}
+  viewBox={fr.viewBox}
+  width={Math.round(fr.width * SCALE)}
+  height={Math.round(fr.height * SCALE)}
+  role={labelled ? "img" : "presentation"}
+  aria-label={labelled ? spec.alt : undefined}
+  focusable="false"
+>
+  <defs>
+    <pattern id={`${uid}-crumb`} width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle class="crumb" cx="2.8" cy="3.4" r="1" />
+      <circle class="crumb" cx="8.6" cy="8.1" r="0.8" />
+      <circle class="crumb" cx="9.2" cy="2.2" r="0.55" />
+    </pattern>
+    <pattern id={`${uid}-wet`} width="9" height="9" patternUnits="userSpaceOnUse">
+      <circle class="wetdot" cx="2.2" cy="2.6" r="1.1" />
+      <circle class="wetdot" cx="6.6" cy="6.2" r="0.9" />
+    </pattern>
+  </defs>
+
+  {/* SLIP --- the interfaces have let go, so each layer has travelled its own
+      distance. The step between layers is the measurement. */}
+  {family === "slip" && (
+    <g>
+      <path class="face face--side" d={SLIP_BASE.side} {...HAIRLINE} />
+      <path class="face face--front" d={SLIP_BASE.front} {...HAIRLINE} />
+      <path class="face face--top" d={SLIP_BASE.top} {...HAIRLINE} />
+      <path class="texture" d={SLIP_BASE.outline} fill={`url(#${uid}-crumb)`} />
+      <path class="edge" d={SLIP_BASE.outline} {...HAIRLINE} />
+      <path class="edge" d={SLIP_BASE.seams} {...HAIRLINE} />
+
+      <path class="face face--side face--released" d={SLIP_FILL.side} {...HAIRLINE} />
+      <path class="face face--front face--released" d={SLIP_FILL.front} {...HAIRLINE} />
+      <path class="face face--top face--released" d={SLIP_FILL.top} {...HAIRLINE} />
+      <path class="edge" d={SLIP_FILL.outline} {...HAIRLINE} />
+      <path class="edge" d={SLIP_FILL.seams} {...HAIRLINE} />
+
+      <path class="face face--side" d={SLIP_TOP.side} {...HAIRLINE} />
+      <path class="face face--front" d={SLIP_TOP.front} {...HAIRLINE} />
+      <path class="face face--top" d={SLIP_TOP.top} {...HAIRLINE} />
+      <path class="texture" d={SLIP_TOP.outline} fill={`url(#${uid}-crumb)`} />
+      <path class="edge" d={SLIP_TOP.outline} {...HAIRLINE} />
+      <path class="edge" d={SLIP_TOP.seams} {...HAIRLINE} />
+
+      <path class="force force--track" d={SLIP_TRACK} {...HAIRLINE} />
+      <path class="force" d={SLIP_BARBS} {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* SOAK --- one boundary, and a front that is now on the far side of it. The
+      drop is the part a reader can check without cutting the specimen open. */}
+  {family === "soak" && (
+    <g>
+      <path class="face face--side" d={SOAK_BASE.side} {...HAIRLINE} />
+      <path class="face face--front" d={SOAK_BASE.front} {...HAIRLINE} />
+      <path class="face face--top" d={SOAK_BASE.top} {...HAIRLINE} />
+      <path class="texture" d={SOAK_BASE.outline} fill={`url(#${uid}-crumb)`} />
+      {/* The saturated depth of the slab below the interface. */}
+      <path class="face face--side face--damp" d={SOAK_WET.side} {...HAIRLINE} />
+      <path class="face face--front face--damp" d={SOAK_WET.front} {...HAIRLINE} />
+      <path class="texture" d={SOAK_WET.outline} fill={`url(#${uid}-wet)`} />
+      <path class="edge" d={SOAK_BASE.outline} {...HAIRLINE} />
+      <path class="edge" d={SOAK_BASE.seams} {...HAIRLINE} />
+      <path class="front" d={SOAK_FRONT} {...HAIRLINE} />
+
+      <path class="face face--side face--soaked" d={SOAK_FILL.side} {...HAIRLINE} />
+      <path class="face face--front face--soaked" d={SOAK_FILL.front} {...HAIRLINE} />
+      <path class="texture" d={SOAK_FILL.outline} fill={`url(#${uid}-wet)`} />
+      <path class="edge" d={SOAK_FILL.outline} {...HAIRLINE} />
+      <path class="edge" d={SOAK_FILL.seams} {...HAIRLINE} />
+
+      <path class="face face--side" d={SOAK_TOP.side} {...HAIRLINE} />
+      <path class="face face--front" d={SOAK_TOP.front} {...HAIRLINE} />
+      <path class="face face--top" d={SOAK_TOP.top} {...HAIRLINE} />
+      <path class="texture" d={SOAK_TOP.outline} fill={`url(#${uid}-crumb)`} />
+      <path class="edge" d={SOAK_TOP.outline} {...HAIRLINE} />
+      <path class="edge" d={SOAK_TOP.seams} {...HAIRLINE} />
+
+      <path class="moisture" d={SOAK_LINE} {...HAIRLINE} />
+      <path class="drop" d={SOAK_DROP} {...HAIRLINE} />
+    </g>
+  )}
+
+  {/* CRUSH --- the load is declared, the platens are the setup, and the
+      evidence is height: three thinner layers inside the outline of the
+      specimen that went in. */}
+  {family === "crush" && (
+    <g>
+      <path class="platen platen--side" d={CR_PLATEN_LOW.side} {...HAIRLINE} />
+      <path class="platen platen--front" d={CR_PLATEN_LOW.front} {...HAIRLINE} />
+      <path class="platen platen--top" d={CR_PLATEN_LOW.top} {...HAIRLINE} />
+      <path class="edge" d={CR_PLATEN_LOW.outline} {...HAIRLINE} />
+      <path class="edge" d={CR_PLATEN_LOW.seams} {...HAIRLINE} />
+
+      <path class="face face--side" d={CR_BASE.side} {...HAIRLINE} />
+      <path class="face face--front" d={CR_BASE.front} {...HAIRLINE} />
+      <path class="edge" d={CR_BASE.outline} {...HAIRLINE} />
+
+      {/* Filling squeezed past the slabs: bowed plan, not a bigger rectangle. */}
+      <path class="face face--released" d={pillowBand(-0.16, -0.16, 1.16, 1.16, CR_FILL_TOP, CR_FILL_T, CR_BOW)} {...HAIRLINE} />
+      <path class="face face--released face--top" d={pillowTop(-0.16, -0.16, 1.16, 1.16, CR_FILL_TOP, CR_BOW)} {...HAIRLINE} />
+      <path class="edge" d={pillowBand(-0.16, -0.16, 1.16, 1.16, CR_FILL_TOP, CR_FILL_T, CR_BOW)} {...HAIRLINE} />
+      <path class="edge" d={pillowTop(-0.16, -0.16, 1.16, 1.16, CR_FILL_TOP, CR_BOW)} {...HAIRLINE} />
+
+      <path class="face face--side" d={CR_TOP.side} {...HAIRLINE} />
+      <path class="face face--front" d={CR_TOP.front} {...HAIRLINE} />
+      <path class="face face--top" d={CR_TOP.top} {...HAIRLINE} />
+      <path class="edge" d={CR_TOP.outline} {...HAIRLINE} />
+      <path class="edge" d={CR_TOP.seams} {...HAIRLINE} />
+
+      <path class="platen platen--side" d={CR_PLATEN_UP.side} {...HAIRLINE} />
+      <path class="platen platen--front" d={CR_PLATEN_UP.front} {...HAIRLINE} />
+      <path class="platen platen--top" d={CR_PLATEN_UP.top} {...HAIRLINE} />
+      <path class="edge" d={CR_PLATEN_UP.outline} {...HAIRLINE} />
+      <path class="edge" d={CR_PLATEN_UP.seams} {...HAIRLINE} />
+
+      <path class="ghost" d={CR_EXT_WAS} {...HAIRLINE} />
+      <path class="dim" d={CR_EXT_IS} {...HAIRLINE} />
+      <path class="dim" d={`${CR_DIM_LINE} ${CR_DIM_BARBS}`} {...HAIRLINE} />
+
+      <path class="support" d={CR_SUPPORTS} {...HAIRLINE} />
+      <path class="force" d={shaft(CR_TAIL, CR_TIP, 17)} {...HAIRLINE} />
+      <path class="force-head" d={head(CR_TAIL, CR_TIP, 17)} />
+    </g>
+  )}
+
+  {/* SPLAY --- nothing has broken and nothing is shorter: what has been lost is
+      the plan. The filling's outline is past the slabs on every side. */}
+  {family === "splay" && (
+    <g>
+      <path class="face face--side" d={SP_BASE.side} {...HAIRLINE} />
+      <path class="face face--front" d={SP_BASE.front} {...HAIRLINE} />
+      <path class="face face--top" d={SP_BASE.top} {...HAIRLINE} />
+      <path class="texture" d={SP_BASE.outline} fill={`url(#${uid}-crumb)`} />
+      <path class="edge" d={SP_BASE.outline} {...HAIRLINE} />
+      <path class="edge" d={SP_BASE.seams} {...HAIRLINE} />
+
+      <path class="face face--released" d={pillowBand(-SP_OVER, -SP_OVER, SPAN + SP_OVER, SPAN + SP_OVER, SLAB + FILL, FILL, SP_BOW)} {...HAIRLINE} />
+      <path class="face face--released face--top" d={pillowTop(-SP_OVER, -SP_OVER, SPAN + SP_OVER, SPAN + SP_OVER, SLAB + FILL, SP_BOW)} {...HAIRLINE} />
+      <path class="edge" d={pillowBand(-SP_OVER, -SP_OVER, SPAN + SP_OVER, SPAN + SP_OVER, SLAB + FILL, FILL, SP_BOW)} {...HAIRLINE} />
+      <path class="edge" d={pillowTop(-SP_OVER, -SP_OVER, SPAN + SP_OVER, SPAN + SP_OVER, SLAB + FILL, SP_BOW)} {...HAIRLINE} />
+
+      <path class="face face--side" d={SP_TOP.side} {...HAIRLINE} />
+      <path class="face face--front" d={SP_TOP.front} {...HAIRLINE} />
+      <path class="face face--top" d={SP_TOP.top} {...HAIRLINE} />
+      <path class="texture" d={SP_TOP.outline} fill={`url(#${uid}-crumb)`} />
+      <path class="edge" d={SP_TOP.outline} {...HAIRLINE} />
+      <path class="edge" d={SP_TOP.seams} {...HAIRLINE} />
+
+      <path class="force force--track" d={SP_TRACK} {...HAIRLINE} />
+      <path class="force" d={SP_BARBS} {...HAIRLINE} />
+    </g>
+  )}
+</svg>
+
+<style>
+  .ff {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .edge {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    stroke-linejoin: miter;
+  }
+
+  .face { stroke: none; }
+  .face--top { fill: color-mix(in srgb, var(--slop-charcoal) 2%, var(--slop-paper)); }
+  .face--front { fill: color-mix(in srgb, var(--slop-charcoal) 9%, var(--slop-paper)); }
+  .face--side { fill: color-mix(in srgb, var(--slop-charcoal) 16%, var(--slop-paper)); }
+
+  /* The layer at the released interface, or the one being extruded. */
+  .face--released { fill: color-mix(in srgb, var(--slop-tomato) 30%, var(--slop-paper)); }
+  .face--released.face--side { fill: color-mix(in srgb, var(--slop-tomato) 44%, var(--slop-paper)); }
+  .face--released.face--top { fill: color-mix(in srgb, var(--slop-tomato) 20%, var(--slop-paper)); }
+
+  /* Moisture: material condition, so brown --- and never red, because a wet
+     specimen has not yet failed. */
+  .face--soaked { fill: color-mix(in srgb, var(--slop-toast) 42%, var(--slop-paper)); }
+  .face--soaked.face--side { fill: color-mix(in srgb, var(--slop-toast) 56%, var(--slop-paper)); }
+  .face--damp { fill: color-mix(in srgb, var(--slop-toast) 20%, var(--slop-paper)); }
+  .face--damp.face--side { fill: color-mix(in srgb, var(--slop-toast) 30%, var(--slop-paper)); }
+
+  .texture { stroke: none; }
+  .crumb { fill: color-mix(in srgb, var(--slop-charcoal) 34%, transparent); }
+  .wetdot { fill: color-mix(in srgb, var(--slop-toast) 58%, transparent); }
+
+  /* The platens belong to the rig, not the specimen: darker, and never red,
+     because they are the setup rather than the load. */
+  .platen--top { fill: color-mix(in srgb, var(--slop-charcoal) 12%, var(--slop-paper)); }
+  .platen--front { fill: color-mix(in srgb, var(--slop-charcoal) 24%, var(--slop-paper)); }
+  .platen--side { fill: color-mix(in srgb, var(--slop-charcoal) 34%, var(--slop-paper)); }
+  .platen { stroke: none; }
+
+  .support {
+    fill: color-mix(in srgb, var(--slop-charcoal) 88%, transparent);
+    stroke: none;
+  }
+
+  /* Where the specimen used to reach. Dashed, so the was-height and the
+     is-height differ in line style and not only in position. */
+  .ghost {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+    opacity: 0.55;
+  }
+
+  /* A measurement, not a force: charcoal, thin, and barbed at both ends. */
+  .dim {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    stroke-linejoin: miter;
+  }
+
+  /* The front's position, which is the whole claim in SOAK. */
+  .front {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.6;
+    stroke-dasharray: 5 3;
+  }
+  .moisture {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.5;
+  }
+  .drop {
+    fill: color-mix(in srgb, var(--slop-toast) 24%, var(--slop-paper));
+    stroke: var(--slop-toast);
+    stroke-width: 1.4;
+  }
+
+  /* Load and release. */
+  .force {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 2;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+  }
+  /* A displacement rather than a force: dash-dot, the drafting convention for
+     a line of travel. */
+  .force--track {
+    stroke-width: 1.8;
+    stroke-dasharray: 10 3.5 2 3.5;
+  }
+  .force-head {
+    fill: var(--slop-tomato);
+    stroke: none;
+  }
+</style>
