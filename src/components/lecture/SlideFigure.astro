@@ -122,26 +122,35 @@ const wetTop = (y: number, h: number, depth: number) => y + h - depth;
       <rect class="layer" x="180" y="216" width="420" height="56" />
       <rect x="180" y="216" width="420" height="56" fill="url(#sf-pore3)" stroke="none" />
 
+      {/* The annotation column sits at 632, not 672: at 672 it leaves 228
+          units for labels that measure up to 239, so the longest ran past
+          the 900-unit viewBox and was clipped on the slide. Shortening the
+          leaders by 40 gives the whole set margin instead of shaving one
+          string at a time. Measured in user units, not guessed. */}
       {/* 01 the layer: a route through the material. */}
       <circle class="callout" cx="300" cy="148" r="15" />
       <text class="callout-n" x="300" y="154" text-anchor="middle">01</text>
-      <path class="leader leader--long" d="M315 148 H660" />
-      <text class="ann ann--head" x="672" y="142">The layer</text>
-      <text class="ann" x="672" y="166">Porous. Liquid travels through it.</text>
+      <path class="leader leader--long" d="M315 148 H620" />
+      <text class="ann ann--head" x="632" y="142">The layer</text>
+      <text class="ann" x="632" y="166">Porous. Liquid travels through it.</text>
 
       {/* 02 the interface: a route along the join. */}
       <circle class="callout" cx="430" cy="196" r="15" />
       <text class="callout-n" x="430" y="202" text-anchor="middle">02</text>
-      <path class="leader leader--long" d="M445 196 H660" />
-      <text class="ann ann--head" x="672" y="190">The interface</text>
-      <text class="ann" x="672" y="214">A join. Liquid travels along it.</text>
+      <path class="leader leader--long" d="M445 196 H620" />
+      <text class="ann ann--head" x="632" y="190">The interface</text>
+      <text class="ann" x="632" y="214">A join. Liquid travels along it.</text>
 
       {/* 03 the exposed edge: the shortest route in. */}
       <circle class="callout callout--hot" cx="180" cy="244" r="15" />
       <text class="callout-n callout-n--hot" x="180" y="250" text-anchor="middle">03</text>
-      <path class="leader leader--long" d="M195 296 H660 M180 259 V296" />
-      <text class="ann ann--head" x="672" y="290">The exposed edge</text>
-      <text class="ann" x="672" y="314">No layer to cross first. The shortest route in.</text>
+      <path class="leader leader--long" d="M195 296 H620 M180 259 V296" />
+      <text class="ann ann--head" x="632" y="290">The exposed edge</text>
+      {/* The longest label in the set, and two lines even after the column
+          moved: the break costs nothing and keeps the string off the edge.
+          Same break the penetration-depth label uses above. */}
+      <text class="ann" x="632" y="314">No layer to cross.</text>
+      <text class="ann" x="632" y="334">The shortest route in.</text>
 
       <path class="edgemark" d="M180 120 V272" />
       <text class="note" x="884" y="386" text-anchor="end">Three things called "the boundary"</text>
@@ -345,7 +354,9 @@ const wetTop = (y: number, h: number, depth: number) => y + h - depth;
       <path class="axis" d="M120 320 H840" />
       <path class="axis" d="M120 320 V50" />
       <text class="ann" x="480" y="358" text-anchor="middle">Elapsed time (min)</text>
-      <text class="ann" x="112" y="44" text-anchor="end">Penetration depth (mm)</text>
+      {/* Left-aligned on the axis it labels. Anchored end at 112 it began at
+          -62 and lost its first word off the left of the viewBox. */}
+      <text class="ann" x="120" y="44">Penetration depth (mm)</text>
 
       <path class="dimtick" d="M240 320 v9 M360 320 v9 M480 320 v9 M600 320 v9 M720 320 v9" />
       <text class="axnum" x="240" y="342" text-anchor="middle">5</text>
@@ -454,14 +465,18 @@ const wetTop = (y: number, h: number, depth: number) => y + h - depth;
       ))}
       <text class="ann ann--ok" x="20" y="222">Three equivalent routes. Same artefact leaves the session.</text>
 
-      <path class="chain" d="M330 112 H380 m-8 -6 l8 6 l-8 6" />
+      <path class="chain" d="M330 112 H350 m-8 -6 l8 6 l-8 6" />
 
       {/* The protocol itself. */}
       {[
-        { x: 390, t: "Declare", s: "one variable" },
-        { x: 520, t: "Condition", s: "three + control" },
-        { x: 650, t: "Read", s: "at stated times" },
-        { x: 780, t: "Compare", s: "and state limits" },
+        /* Shifted left 30 from where these began. The last step's sub-label
+           ran to 908 in a 900-unit viewBox and lost its final letter; the
+           shift keeps the 20-unit gap, so the chain geometry below is
+           unchanged, and leaves the label 22 units clear. */
+        { x: 360, t: "Declare", s: "one variable" },
+        { x: 490, t: "Condition", s: "three + control" },
+        { x: 620, t: "Read", s: "at stated times" },
+        { x: 750, t: "Compare", s: "and state limits" },
       ].map((s, i) => (
         <g>
           <rect class="step" x={s.x} y="82" width="110" height="60" />
@@ -474,11 +489,12 @@ const wetTop = (y: number, h: number, depth: number) => y + h - depth;
 
       {/* The safety branch the plan requires on this flow. */}
       <path class="chain chain--safety" d="M445 142 V270 H820" />
-      <rect class="safety" x="390" y="270" width="480" height="70" />
-      <text class="step-t" x="408" y="298">Safety branch</text>
-      <text class="ann" x="408" y="320">
-        No specimen is eaten. No cutting without supplied pre-cut stock or supervision.
-      </text>
+      <rect class="safety" x="360" y="270" width="500" height="86" />
+      <text class="step-t" x="378" y="298">Safety branch</text>
+      {/* Two lines. On one it measured 585 units from x=408 and ran 93 past
+          the viewBox --- by far the worst clip in the set. */}
+      <text class="ann" x="378" y="320">No specimen is eaten. No cutting without supplied</text>
+      <text class="ann" x="378" y="340">pre-cut stock or supervision.</text>
       <text class="note" x="884" y="386" text-anchor="end">Week 4 — absorption observation</text>
     </svg>
   )}
