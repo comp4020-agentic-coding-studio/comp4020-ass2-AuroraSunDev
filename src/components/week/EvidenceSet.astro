@@ -1,0 +1,123 @@
+---
+/**
+ * Week 11's evidence set --- the only photographic specimen imagery on the
+ * site outside the homepage.
+ *
+ * plan.md permits macro evidence photography where it is "analytical, tightly
+ * cropped, and annotated", and confines realistic specimen imagery to the
+ * homepage and evidence-based specimen cases. This is such a case: the Failure
+ * Autopsy week works from an evidence set the student did not produce.
+ *
+ * The annotation is not a caption for decoration --- it is the week's method.
+ * Each item states what is *observed*, and the set as a whole states what is
+ * *not established*, which is the order the three occurred in. That separation
+ * of observed from inferred from unknown is exactly what the Failure Autopsy
+ * brief marks, so the page rehearses it rather than describing it.
+ *
+ * The items are lettered A, B and C, never numbered: a number reads as a
+ * position in a sequence, and the sequence is the open question.
+ */
+import { Image } from "astro:assets";
+import tornEdge from "../../assets/images/evidence/evidence-a-torn-edge.png";
+import wettedBoundary from "../../assets/images/evidence/evidence-b-wetted-boundary.png";
+import displacedLayer from "../../assets/images/evidence/evidence-c-displaced-layer.png";
+
+/* Each entry's `observed` is written to survive a hostile read: it says what
+   is in the frame and stops. Anything about cause, order or mechanism belongs
+   in `notEstablished`, which is the honest other half of the record. */
+const ITEMS = [
+  {
+    letter: "A",
+    src: tornEdge,
+    name: "Torn edge",
+    observed:
+      "The upper layer has parted. The break is irregular and fibrous: crumb " +
+      "strands still bridge the gap, torn cell walls stand open, and detached " +
+      "crumb has collected below the break.",
+    notEstablished:
+      "Whether the layer was torn by handling or failed under load.",
+    alt:
+      "Macro photograph of a torn edge through bread crumb. The break runs " +
+      "across the frame and is ragged rather than cut, with stretched strands " +
+      "of crumb bridging the gap, open torn cell walls, and loose crumbs " +
+      "fallen below it.",
+  },
+  {
+    letter: "B",
+    src: wettedBoundary,
+    name: "Wetted boundary",
+    observed:
+      "A cut face shows saturated crumb below and dry crumb above. The " +
+      "boundary is diffuse rather than sharp, and darkening reaches further " +
+      "up the larger cells than the smaller ones.",
+    notEstablished:
+      "How long the boundary took to reach this position, and whether it was " +
+      "still advancing when the assembly failed.",
+    alt:
+      "Macro photograph of a cut face through bread crumb. The lower part is " +
+      "dark and collapsed where liquid has soaked in, the upper part is pale " +
+      "and open-celled, and the uneven boundary between them runs across the " +
+      "frame with fingers of darkening reaching up into the dry crumb.",
+  },
+  {
+    letter: "C",
+    src: displacedLayer,
+    name: "Displaced layer",
+    observed:
+      "The middle layers sit out of register with the bread above and below " +
+      "and overhang it. The film at the interface is drawn out and glossy in " +
+      "the direction of the displacement.",
+    notEstablished:
+      "Whether the interface was already lubricated before the displacement, " +
+      "or was made so by it.",
+    alt:
+      "Macro photograph of the edge of a layered assembly seen from the side. " +
+      "A pale smeared film and a red-brown layer have slid sideways out of " +
+      "alignment with the bread above and below, and overhang it.",
+  },
+] as const;
+---
+
+<div class="ev-set">
+  <ol class="ev-items">
+    {ITEMS.map((item) => (
+      <li class="ev-item">
+        <figure class="ev-fig">
+          {/* Widths cover the one-up, two-up and three-up compositions the
+              grid below resolves to. */}
+          <Image
+            src={item.src}
+            alt={item.alt}
+            widths={[320, 520, 760]}
+            sizes="(min-width: 1100px) 30vw, (min-width: 700px) 45vw, 90vw"
+            format="avif"
+            class="ev-img"
+          />
+          <figcaption class="ev-cap">
+            <p class="ev-h">
+              <span class="ev-letter display" aria-hidden="true">{item.letter}</span>
+              <span class="ev-name">Item {item.letter} — {item.name}</span>
+            </p>
+            <p class="ev-obs">
+              <span class="ev-k mono">Observed</span>
+              {item.observed}
+            </p>
+            <p class="ev-unk">
+              <span class="ev-k mono ev-k--unk">Not established</span>
+              {item.notEstablished}
+            </p>
+          </figcaption>
+        </figure>
+      </li>
+    ))}
+  </ol>
+
+  {/* The point of the set. Stated as a limitation rather than a puzzle: the
+      three items are each an observation, and the order is not one. */}
+  <p class="ev-note">
+    <b>These three items are one specimen, and they establish no order.</b>
+    Each was recorded after the assembly had already failed, so nothing in the
+    set shows which came first. A reconstruction that puts them in a sequence
+    is making a claim, and the claim needs an argument the evidence can carry.
+  </p>
+</div>

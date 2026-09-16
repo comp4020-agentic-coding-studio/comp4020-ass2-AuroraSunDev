@@ -476,3 +476,98 @@
   .week .wk-nav .wn-mid { justify-items: center; text-align: center; }
   .week .wk-nav .wn-end { justify-items: end; text-align: right; }
 }
+
+/* --- 2b. The evidence set (Week 11 only) -------------------------------- *
+ *
+ * Three macro records side by side on desktop, one above another on the
+ * phone. Each keeps its photograph and its annotation together in one figure,
+ * because a caption that can be scrolled away from its image stops being an
+ * annotation and becomes a paragraph about a picture.
+ */
+
+.week .ev-set { margin-top: clamp(1.5rem, 3vw, 2.5rem); }
+
+.week .ev-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .week .ev-items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) {
+  .week .ev-items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.week .ev-fig { margin: 0; }
+
+/* A square crop at every width: these are macro records, and a record that
+   changes shape with the viewport is harder to compare against its neighbour. */
+.week .ev-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: var(--slop-rule-width) solid var(--slop-rule);
+  /* Below 640px the theme bleeds `figure > img` past both page margins with a
+     negative margin-inline, which is right for a prose illustration and wrong
+     here: these are ruled records that have to stay aligned with the caption
+     that annotates them. The width above already wins on specificity, so
+     without this reset the image keeps its correct width at the wrong
+     position --- 36px left of its own figure. */
+  margin-inline: 0;
+}
+
+.week .ev-cap { margin-top: var(--slop-space-sm); }
+
+.week .ev-h {
+  display: flex;
+  align-items: baseline;
+  gap: var(--slop-space-xs);
+  margin: 0 0 var(--slop-space-xs);
+}
+.week .ev-letter {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--slop-charcoal);
+}
+.week .ev-name { font-weight: 600; }
+
+.week .ev-obs,
+.week .ev-unk {
+  margin: 0 0 var(--slop-space-xs);
+  font-size: 0.975rem;
+  line-height: 1.5;
+}
+
+/* The two halves of the record are told apart by a word, not by a colour:
+   the key is spelled out in both cases, and the dashed rule on the unknown
+   repeats the distinction in line style for anyone who cannot see the hue. */
+.week .ev-k {
+  display: block;
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--slop-toast);
+  border-top: var(--slop-rule-width) solid var(--slop-toast);
+  padding-top: 0.2rem;
+  margin-bottom: 0.25rem;
+}
+.week .ev-k--unk {
+  color: var(--slop-tomato);
+  border-top-style: dashed;
+  border-top-color: var(--slop-tomato);
+}
+
+.week .ev-note {
+  max-width: var(--slop-measure);
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  padding-top: var(--slop-space-md);
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+}
+.week .ev-note b { display: block; margin-bottom: 0.35rem; }

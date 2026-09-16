@@ -24,6 +24,34 @@
  * prompt must keep the subject clear of the crop. See `crop` on each job.
  */
 
+/**
+ * Shared framing for the Week 11 evidence set.
+ *
+ * plan.md permits macro evidence photography only where it stays "analytical,
+ * tightly cropped, and annotated", and lists what it may show: crumbs, torn
+ * fibres, compression marks, displaced layers, moisture boundaries. These
+ * three items are each one of those, photographed as a forensic record of a
+ * specimen that has already failed.
+ *
+ * Macro crops are the one thing this model frames well --- its bias is to fill
+ * the frame, which is what a tight crop wants --- so unlike the social card,
+ * these are used as generated, with no compositing step.
+ *
+ * Each item deliberately shows ONE observation and nothing about when it
+ * happened. That is the week's whole subject: three observations that do not
+ * establish an order. A prompt here must never stage a sequence, show a
+ * before-and-after, or make one item look like the cause of another.
+ */
+const EVIDENCE_RULES = [
+  "An extreme macro forensic evidence photograph, shot flat-on at high",
+  "magnification so the subject fills the whole frame and is cropped by the",
+  "edges. Clinical, flat, even lighting of the kind used for laboratory",
+  "evidence records --- no mood, no warmth, no shallow dreamy blur.",
+  "The specimen has already failed and is being documented after the fact.",
+  "It is dry, cold, handled and unappetising: this is a record of a failure,",
+  "not a picture of food. Nothing in the frame suggests a meal.",
+].join(" ");
+
 /** Shared negative constraints, appended to every prompt. */
 const HOUSE_RULES = [
   "Photographed as laboratory documentation, not food photography.",
@@ -81,6 +109,66 @@ export const JOBS = {
       "floor, no horizon line, no reflection and no cast shadow. The compositor",
       "trims this background away, so any shadow or gradient in it becomes a",
       "visible grey box on the finished card.",
+      HOUSE_RULES,
+    ].join(" "),
+  },
+  /* --- Week 11, the evidence set --------------------------------------- *
+   *
+   * Three items from one failed assembly, specimen 114. They are numbered
+   * A, B and C rather than 1, 2, 3 on purpose: a number reads as a position in
+   * a sequence, and the order these occurred in is exactly what the evidence
+   * does not establish. The page that shows them makes that explicit.
+   */
+
+  "evidence-a-torn-edge": {
+    out: "src/assets/images/evidence/evidence-a-torn-edge.png",
+    size: "1024x1024",
+    quality: "high",
+    prompt: [
+      EVIDENCE_RULES,
+      "SUBJECT: the torn edge of a slice of bread where it has pulled apart.",
+      "The break runs across the frame. Along it the crumb structure is ragged",
+      "and fibrous: stretched strands of crumb still bridge the gap in places,",
+      "torn cell walls stand open, and loose crumbs sit where they fell.",
+      "The tear is irregular, not a knife cut --- no clean straight edge.",
+      "Fill the frame with the tear itself at high magnification.",
+      HOUSE_RULES,
+    ].join(" "),
+  },
+
+  "evidence-b-wetted-boundary": {
+    out: "src/assets/images/evidence/evidence-b-wetted-boundary.png",
+    size: "1024x1024",
+    quality: "high",
+    prompt: [
+      EVIDENCE_RULES,
+      "SUBJECT: a cut face through a slice of bread, showing a moisture front.",
+      "The lower part of the crumb is darkened, translucent and collapsed where",
+      "liquid has soaked in; the upper part is pale, dry and open-celled. The",
+      "boundary between wet and dry is visible but uneven and diffuse, running",
+      "roughly horizontally across the frame, with fingers of darkening",
+      "reaching up into the dry crumb along larger cells.",
+      "CROP IN HARD on that boundary: magnify until only crumb is in the frame",
+      "and the boundary spans it edge to edge. No crust, no corner, no outline",
+      "of a slice and no background is visible anywhere --- the frame must not",
+      "show that this is a slice of bread, only the wetted crumb itself.",
+      HOUSE_RULES,
+    ].join(" "),
+  },
+
+  "evidence-c-displaced-layer": {
+    out: "src/assets/images/evidence/evidence-c-displaced-layer.png",
+    size: "1024x1024",
+    quality: "high",
+    prompt: [
+      EVIDENCE_RULES,
+      "SUBJECT: the edge of a stack of layers that have slid out of alignment.",
+      "Seen from the side at high magnification: a bread layer, then a pale",
+      "smeared film, then a red-brown layer, then bread. The middle layers have",
+      "slid sideways out of register so their edges no longer line up with the",
+      "bread above and below, and they overhang. The pale film is smeared and",
+      "drawn out in the direction of the slide, and its surface is glossy.",
+      "Fill the frame with the layer edges at high magnification.",
       HOUSE_RULES,
     ].join(" "),
   },

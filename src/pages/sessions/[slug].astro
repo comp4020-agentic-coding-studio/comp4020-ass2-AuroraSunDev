@@ -23,6 +23,7 @@ import ArchiveRule from "../../components/course/ArchiveRule.astro";
 import SpecimenLabel from "../../components/course/SpecimenLabel.astro";
 import Stamp from "../../components/course/Stamp.astro";
 import WeekGlyph from "../../components/course/WeekGlyph.astro";
+import EvidenceSet from "../../components/week/EvidenceSet.astro";
 import TestStation from "../../components/week/TestStation.astro";
 import TeachingTeam from "../../components/TeachingTeam.astro";
 import { courseMeta } from "../../course-config";
@@ -88,6 +89,11 @@ const lectureHref = lecture
    returns to laboratory white with the final rig. plan.md makes this rare on
    purpose --- one page in twelve. */
 const ink = n === 11;
+/* Week 11 works from an evidence set the student did not produce, so it is
+   the one week that carries photographs. plan.md confines realistic specimen
+   imagery to the homepage and evidence-based specimen cases; this is the
+   second of those, and the only one in twelve weeks. */
+const hasEvidence = n === 11;
 const nn = String(n).padStart(2, "0");
 ---
 
@@ -154,6 +160,16 @@ const nn = String(n).padStart(2, "0");
       <TestStation week={n} />
     </div>
   </section>
+
+  {hasEvidence && (
+    <section class="band" aria-labelledby="ev-title">
+      <div class="inner">
+        <p class="eyebrow eyebrow--ruled">Evidence set — specimen 114</p>
+        <h2 id="ev-title" class="xl">Three observations. No order.</h2>
+        <EvidenceSet />
+      </div>
+    </section>
+  )}
 
   {/* --- 3-6. Concept, failure, investigation, reading ------------------- */}
   <section class="band" aria-labelledby="body-title">
