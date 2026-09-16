@@ -21,16 +21,16 @@ export const siteConfig = defineSiteConfig({
   ...slopBranding,
   name: "Slop University",
 
-  // Weeks leads: the semester schedule is the spine of the course and the
-  // route a marker opening non-adjacent weeks needs first.
-  // `Course` and `Field Manual` join this list in the phase that builds them
-  // --- the build's link checker fails on a nav entry with no page behind it.
+  // The order plan.md sets for the desktop header: the course specification,
+  // then the semester, then the graded work, then the methods. Lectures,
+  // policies and people follow, because a marker reaches those from the pages
+  // that cite them rather than from the bar.
   links: [
+    { text: "Course", href: "/course/" },
     { text: sessionLabels.plural, href: "/sessions/" },
     { text: "Assessments", href: "/assessments/" },
-    { text: "Lectures", href: "/lectures/" },
+    { text: "Field Manual", href: "/field-manual/" },
     { text: "Policies", href: "/policies/" },
-    { text: "People", href: "/people/" },
   ],
 
   // The course's visual system is a materials-testing laboratory: true white

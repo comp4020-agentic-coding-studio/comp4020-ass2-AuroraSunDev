@@ -109,3 +109,61 @@ export function weekHref(week: Week, existing: ReadonlySet<string>): string | un
 }
 
 export const TOTAL_WEIGHT = ASSESSMENTS.reduce((sum, a) => sum + a.weight, 0);
+
+/** The weeks index groups the middle of the semester differently from the
+ *  homepage --- plan.md specifies Phase II as weeks 4-6 and Phase III as 7-10
+ *  in the "Weeks Index" section, against 4-7 and 8-10 in the homepage's
+ *  "Semester Load Path". That is a deliberate difference of view: the homepage
+ *  rail is a load path with four stages, the index is a reading structure for
+ *  twelve rows. Both are stated here so neither page invents its own. */
+export interface IndexPhase extends Phase {
+  /** One short line: what the phase does to the specimen. */
+  line: string;
+  /** The phase glyph drawn beside it on the phone composition. */
+  glyph: "define" | "expose" | "assemble" | "diagnose";
+}
+
+export const INDEX_PHASES: IndexPhase[] = [
+  { numeral: "I", name: "Define", weeks: [1, 3], glyph: "define",
+    line: "Establish the structure." },
+  { numeral: "II", name: "Expose the Forces", weeks: [4, 6], glyph: "expose",
+    line: "Introduce load and environment." },
+  { numeral: "III", name: "Assemble and Transport", weeks: [7, 10], glyph: "assemble",
+    line: "Build, move and stress the system." },
+  { numeral: "IV", name: "Diagnose and Prove", weeks: [11, 12], glyph: "diagnose",
+    line: "Find failure. Prove the limit." },
+];
+
+/** The phase a week belongs to in the index's grouping. */
+export const indexPhaseOf = (week: number): IndexPhase =>
+  INDEX_PHASES.find((p) => week >= p.weeks[0] && week <= p.weeks[1])!;
+
+/** Every week's dominant artefact --- the thing that leaves the session, and
+ *  the subject of the miniature technical glyph on the index. plan.md's
+ *  curriculum table is the source; no two weeks share one. */
+export const WEEK_ARTEFACTS: Record<number, { artefact: string; glyph: string; alt: string }> = {
+  1: { artefact: "Classification Field Note", glyph: "classify",
+       alt: "A dashed boundary drawn around a layered specimen: the criterion under dispute." },
+  2: { artefact: "Compression Record", glyph: "beam",
+       alt: "A specimen spanning two supports, deflected under a central load." },
+  3: { artefact: "Interface Comparison", glyph: "slip",
+       alt: "A hatched layer with opposed shear arrows on either face." },
+  4: { artefact: "Absorption Observation", glyph: "moisture",
+       alt: "A stippled moisture front advancing through a boundary." },
+  5: { artefact: "Load-Path Annotation", glyph: "loadpath",
+       alt: "A load path traced down through a stack to its support." },
+  6: { artefact: "Interface Incident Report", glyph: "interface",
+       alt: "A continuous interface layer between two outer layers, thinning to a film." },
+  7: { artefact: "Thermal Comparison", glyph: "thermal",
+       alt: "The same specimen condition plotted at three time points." },
+  8: { artefact: "Assembly Rationale", glyph: "order",
+       alt: "A four-layer stack with one layer displaced to a new position." },
+  9: { artefact: "Geometry Analysis", glyph: "cut",
+       alt: "A cut line through a specimen, with force lines at the new free edges." },
+  10: { artefact: "Transport Test", glyph: "transport",
+        alt: "A specimen inside a packaging boundary, tilted, with a route trace." },
+  11: { artefact: "Failure Autopsy", glyph: "autopsy",
+        alt: "Evidence fragments joined by a branching causal chain." },
+  12: { artefact: "Defended Final System", glyph: "final",
+        alt: "A specimen in a compression rig under a declared load, held." },
+};

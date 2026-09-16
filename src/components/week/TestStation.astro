@@ -1,0 +1,727 @@
+---
+/**
+ * One teaching week's test station: the artefact that makes its page unlike
+ * the other eleven.
+ *
+ * plan.md's "Distinct Weekly Test-Station Behaviour" table gives every week a
+ * station character and one local state change. This component is all twelve.
+ * The shared information order lives in the week page; the station is what
+ * stops twelve weeks reading as one template with the nouns swapped.
+ *
+ * HOW THE STATE CHANGE WORKS, and why there is no JavaScript in it.
+ *
+ * Each station is a radio group. The options are real `<input type="radio">`
+ * elements with visible `<label>`s, and CSS shows the panel whose position
+ * matches the checked input:
+ *
+ *   input:nth-of-type(2):checked ~ .st-panels .st-panel:nth-child(2)
+ *
+ * That gives keyboard operation, focus, and screen-reader announcement for
+ * free, because a radio group already has all three. It also means:
+ *
+ *   - there is no animation anywhere, so `prefers-reduced-motion` has nothing
+ *     to suppress and the station is identical with motion off. plan.md asks
+ *     for "an immediate static before/after diagram with the same labels";
+ *     every state here IS that diagram;
+ *   - with CSS disabled every state renders at once, labelled, in order --- a
+ *     legible fallback rather than an empty box;
+ *   - each state's reading is printed as text beside the drawing, so nothing
+ *     is carried by the picture alone.
+ *
+ * The first option is checked, so a station always opens on a real state
+ * rather than on an empty prompt.
+ */
+interface Props {
+  week: number;
+}
+const { week } = Astro.props;
+const uid = `st${week}`;
+
+/** One selectable state: its control label, and the reading it produces. */
+interface State {
+  label: string;
+  /** What this state shows, in words. Printed, not hidden. */
+  reading: string;
+}
+
+/* Every station's states, and the sentence the station is asking with them. */
+const STATIONS: Record<number, { name: string; prompt: string; states: State[] }> = {
+  1: {
+    name: "Classification desk",
+    prompt: "Choose the criterion. The boundary moves, and so does what it excludes.",
+    states: [
+      { label: "Enclosure", reading: "Admits the filled roll. Excludes the open-faced assembly, which has no upper layer to enclose with." },
+      { label: "Two outer layers", reading: "Admits the triple-decker. Excludes the wrap, whose single layer is folded rather than paired." },
+      { label: "Held in the hand", reading: "Admits the wrap and the open-faced assembly. Admits a great many things nobody would call a sandwich." },
+    ],
+  },
+  2: {
+    name: "Horizontal compression bench",
+    prompt: "Advance the load. Watch where the behaviour changes, not how far it bends.",
+    states: [
+      { label: "Load step 1", reading: "Deflection 4 mm. The layer returns to its original line when unloaded — elastic." },
+      { label: "Load step 2", reading: "Deflection 11 mm. Still recovering, but the recovery is no longer complete." },
+      { label: "Load step 3", reading: "Deflection 19 mm and a hinge at mid-span. The layer does not return — plastic. Record this step, not the deflection." },
+    ],
+  },
+  3: {
+    name: "Slippage ramp",
+    prompt: "Raise the ramp. One interface lets go before the others.",
+    states: [
+      { label: "5°", reading: "No measurable displacement. Friction at every interface exceeds the component of weight along the ramp." },
+      { label: "15°", reading: "Displacement 3 mm, all of it at one interface. The others have not moved." },
+      { label: "25°", reading: "Displacement 14 mm. The interface that moved first is still the only one moving — grip is a property of the join, not of the stack." },
+    ],
+  },
+  4: {
+    name: "Translucent moisture laboratory",
+    prompt: "Advance the clock. The front moves; nothing else is touched.",
+    states: [
+      { label: "t = 0", reading: "Penetration 0 mm. The boundary is dry and the layer carries its own geometry." },
+      { label: "t = 5 min", reading: "Penetration 8 mm. The front is irregular, because the pore network is." },
+      { label: "t = 15 min", reading: "Penetration 18 mm. Tripling the time did not triple the depth — the advance is slowing, as a capillary model predicts." },
+    ],
+  },
+  5: {
+    name: "Exploded load-path station",
+    prompt: "Focus one layer. The path either runs through it or goes around it.",
+    states: [
+      { label: "Support layer", reading: "The path runs through it. Remove it and the load has no route to the lower boundary." },
+      { label: "Loose layer", reading: "The path goes around it. It adds weight to the assembly and carries none of it." },
+      { label: "Binding layer", reading: "The path runs through it in shear rather than in compression — it holds the stack together laterally." },
+    ],
+  },
+  6: {
+    name: "Sequential incident recorder",
+    prompt: "Step the frames. One layer changes role between the first and the last.",
+    states: [
+      { label: "Frame 1", reading: "The interface layer is continuous and thick. It binds: the two outer layers move together." },
+      { label: "Frame 2", reading: "The layer has thinned and spread. Grip has fallen but the stack still moves as one." },
+      { label: "Frame 3", reading: "The layer is a film. It lubricates: the outer layers move independently. Same material, opposite structural role." },
+    ],
+  },
+  7: {
+    name: "Thermal timeline",
+    prompt: "Read the same specimen at three times. Nothing is animated between them.",
+    states: [
+      { label: "0 min", reading: "Warm throughout. The interface is dry and the outer layer is at its stiffest." },
+      { label: "20 min", reading: "A gradient has formed. Condensation has appeared at the cooling boundary — moisture the specimen brought with it." },
+      { label: "40 min", reading: "Uniform and cool. The condensation has wetted the lower boundary; the thermal event is over and its moisture is not." },
+    ],
+  },
+  8: {
+    name: "Layer-order assembly bay",
+    prompt: "Reorder the categories. The material set does not change.",
+    states: [
+      { label: "Moist against outer", reading: "Soak risk raised: the moist layer shares a boundary with a porous outer layer and has a direct route into it." },
+      { label: "Binding between", reading: "Soak risk lowered, slip risk lowered: the binding layer now separates moist from outer and grips the loose layer." },
+      { label: "Loose at the edge", reading: "Splay risk raised: the loose layer reaches an exposed edge with nothing bracing it." },
+    ],
+  },
+  9: {
+    name: "Cutting-geometry drawing board",
+    prompt: "Select the cut. Supports, spans and exposed edges all change.",
+    states: [
+      { label: "Intact", reading: "One span, two supports, two exposed edges. Load at the centre is carried by the full width." },
+      { label: "Halved", reading: "Two spans, each half the length. Deflection at the centre of each falls sharply, and two new free edges are created." },
+      { label: "Quartered", reading: "Four short spans and six exposed edges. Stiffer under load, and far more boundary for contents to leave by." },
+    ],
+  },
+  10: {
+    name: "Packaging and transport dossier",
+    prompt: "Follow the route. Each stage records a different disturbance.",
+    states: [
+      { label: "Tilt", reading: "Packaging braces the stack laterally. Displacement 2 mm against 11 mm unpackaged — the wrapper is carrying shear." },
+      { label: "Compression", reading: "Packaging transmits the load rather than absorbing it. Height loss is the same wrapped as unwrapped." },
+      { label: "Enclosure", reading: "Packaging retains the moisture the specimen gives off. It protected the geometry and created a soak condition." },
+    ],
+  },
+  11: {
+    name: "Failure-autopsy room",
+    prompt: "Admit one fragment at a time. Watch which branches survive.",
+    states: [
+      { label: "Fragment A", reading: "Displaced layers and a wetted lower boundary. Three causes remain consistent with this alone." },
+      { label: "Fragment B", reading: "An intact packaging seal. Pre-transit handling is ruled out; two causes remain." },
+      { label: "Fragment C", reading: "A dry upper layer. Nothing in the record separates lubrication at the interface from shear off the softened layer. Two branches stay live." },
+    ],
+  },
+  12: {
+    name: "Final test rig and defence bench",
+    prompt: "Read the record in order. The failure is part of it.",
+    states: [
+      { label: "Declared", reading: "Load case: one-handed use, 20 minutes after assembly, carried upright. Stated before the first test, not after it." },
+      { label: "Failed", reading: "Splay at the exposed edge under one-handed load at 14 minutes. Recorded, dimensioned, and kept." },
+      { label: "Defended", reading: "Binding layer moved to brace the loose layer at the edge. Held for the declared 20 minutes across three repeats. Held under this condition — not in general." },
+    ],
+  },
+};
+
+const station = STATIONS[week];
+if (!station) throw new Error(`TestStation: no station defined for week ${week}`);
+const n = station.states.length;
+
+/* Drawing constants shared by every station, so twelve stations are twelve
+   views of one laboratory rather than twelve unrelated pictures. */
+const VB = "0 0 760 340";
+/** A wavy band between two depths: a soft material in section. */
+const wave = (top: number, bottom: number, x0: number, x1: number) => {
+  const seg = (x1 - x0) / 4;
+  const q = seg / 2;
+  return (
+    `M${x0} ${top} q ${q} -5 ${seg} 0 t ${seg} 0 t ${seg} 0 t ${seg} 0 ` +
+    `L${x1} ${bottom} q ${-q} 5 ${-seg} 0 t ${-seg} 0 t ${-seg} 0 t ${-seg} 0 Z`
+  );
+};
+---
+
+<div class:list={["st", `st--w${week}`]}>
+  <fieldset class="st-set">
+    <legend class="st-legend">
+      <span class="st-name mono">{station.name}</span>
+      <span class="st-prompt">{station.prompt}</span>
+    </legend>
+
+    {station.states.map((s, i) => (
+      <input
+        class="st-radio"
+        type="radio"
+        name={uid}
+        id={`${uid}-${i + 1}`}
+        checked={i === 0}
+      />
+    ))}
+
+    <div class="st-labels">
+      {station.states.map((s, i) => (
+        <label class="st-label" for={`${uid}-${i + 1}`}>
+          <span class="st-label-n mono">{String(i + 1).padStart(2, "0")}</span>
+          <span class="st-label-t">{s.label}</span>
+        </label>
+      ))}
+    </div>
+
+    <div class="st-panels" data-states={n}>
+      {station.states.map((s, i) => {
+        /* `k` is the state index: every drawing below is one function of it,
+           which is what keeps a week's three states recognisably the same
+           apparatus at three settings. */
+        const k = i;
+        return (
+          <div class="st-panel">
+            <figure class="st-fig">
+              <svg viewBox={VB} role="presentation" focusable="false">
+                <defs>
+                  <pattern id={`${uid}-${k}-pore`} width="13" height="13" patternUnits="userSpaceOnUse">
+                    <circle class="pore" cx="3.5" cy="4" r="2.4" />
+                    <circle class="pore" cx="9.5" cy="9.5" r="1.6" />
+                  </pattern>
+                  <pattern id={`${uid}-${k}-hatch`} width="7" height="7" patternUnits="userSpaceOnUse"
+                           patternTransform="rotate(38)">
+                    <line class="hatch" x1="0" y1="0" x2="0" y2="7" />
+                  </pattern>
+                </defs>
+
+                {/* --- 01 Classification desk ---------------------------- */}
+                {week === 1 && (
+                  <g>
+                    {/* Three disputed specimens, always all three on the desk.
+                        The criterion draws a boundary around the ones it
+                        admits, and the excluded one is struck. */}
+                    {[
+                      { x: 40, name: "Filled roll", admits: [0, 1, 2] },
+                      { x: 288, name: "Triple-decker", admits: [0, 1, 2] },
+                      { x: 536, name: "Wrap", admits: [2] },
+                    ].map((sp) => {
+                      const inside = sp.admits.includes(k);
+                      return (
+                        <g>
+                          <rect class="rule-box" x={sp.x} y="96" width="184" height="26" />
+                          <path class="mat" d={wave(122, 150, sp.x, sp.x + 184)} />
+                          <rect class="rule-box" x={sp.x} y="150" width="184" height="26" />
+                          {/* The criterion's boundary: dashed, because it is an
+                              argument rather than a measured edge. */}
+                          {inside ? (
+                            <rect class="bound" x={sp.x - 14} y="82" width="212" height="108" />
+                          ) : (
+                            <path class="strike" d={`M${sp.x - 10} 186 L${sp.x + 194} 86`} />
+                          )}
+                          <text class:list={["lab", !inside && "lab--out"]} x={sp.x + 92} y="216" text-anchor="middle">
+                            {sp.name}
+                          </text>
+                          <text class:list={["lab", "lab--v", inside ? "lab--ok" : "lab--no"]} x={sp.x + 92} y="240" text-anchor="middle">
+                            {inside ? "admitted" : "excluded"}
+                          </text>
+                        </g>
+                      );
+                    })}
+                    <path class="bench" d="M24 274 H736" />
+                    <text class="ann" x="24" y="304">
+                      {k === 2
+                        ? "The criterion admits all three — and much else besides."
+                        : "One specimen falls outside the boundary this criterion draws."}
+                    </text>
+                  </g>
+                )}
+
+                {/* --- 02 Compression bench ------------------------------ */}
+                {week === 2 && (
+                  <g>
+                    {/* The undeflected line stays on the drawing as the datum
+                        every deflection is measured from. */}
+                    <path class="ghost" d="M150 120 H610" />
+                    {(() => {
+                      const d = [26, 62, 104][k];
+                      const hinge = k === 2;
+                      return (
+                        <g>
+                          <path class="mat-line" d={`M150 120 q 230 ${d * 2} 460 0`} />
+                          {hinge && (
+                            <g>
+                              <circle class="hinge" cx="380" cy={120 + d} r="9" />
+                              <text class="ann ann--fail" x="398" y={128 + d}>Hinge formed</text>
+                            </g>
+                          )}
+                          <path class="dim" d={`M380 120 V${120 + d} m-5 5 l5 -5 l5 5 m-5 ${d - 10} l-5 -5 l5 5 l5 -5`} />
+                          <text class="dimlab" x="366" y={118 + d / 2} text-anchor="end">
+                            {[4, 11, 19][k]} mm
+                          </text>
+                          {/* The recovery trace: what the layer came back to
+                              after the load was removed. */}
+                          <path class="trace" d={`M150 120 q 230 ${[4, 18, 74][k]} 460 0`} />
+                        </g>
+                      );
+                    })()}
+                    <path class="force" d={`M380 40 V${96} m-7 -9 l7 9 l7 -9`} />
+                    <text class="ann ann--fail" x="398" y="66">{["1 N", "2 N", "4 N"][k]}</text>
+                    <path class="support" d="M120 176 H180 M580 176 H640" />
+                    <path class="dimtick" d="M150 120 V176 M610 120 V176" />
+                    <text class="ann" x="120" y="206">Support</text>
+                    <text class="ann" x="580" y="206">Support</text>
+                    <path class="hair" d="M24 244 H736" />
+                    <text class="ann" x="24" y="274">Datum — unloaded line</text>
+                    <text class="ann ann--wet" x="240" y="274">Recovery trace — where it returned to</text>
+                  </g>
+                )}
+
+                {/* --- 03 Slippage ramp ---------------------------------- */}
+                {week === 3 && (
+                  <g>
+                    {(() => {
+                      const ang = [5, 15, 25][k];
+                      const disp = [0, 22, 92][k];
+                      return (
+                        <g transform={`rotate(-${ang} 120 240)`}>
+                          <path class="bench" d="M60 240 H700" />
+                          <path class="hatchline" d={Array.from({ length: 22 }, (_, j) => `M${72 + j * 29} 240 l-14 16`).join(" ")} />
+                          <rect class="rule-box" x="200" y="150" width="240" height="26" />
+                          {/* Only the layer above the low-grip interface has
+                              moved. Its displacement is dimensioned against
+                              the layer below, which has not. */}
+                          <rect class="mat" x={200 + disp} y="176" width="240" height="30" />
+                          <rect x={200 + disp} y="176" width="240" height="30" fill={`url(#${uid}-${k}-hatch)`} stroke="none" />
+                          <rect class="rule-box" x="200" y="206" width="240" height="26" />
+                          <path class="dim" d={`M440 196 H${440 + disp}`} />
+                          {disp > 0 && <path class="dim" d={`M${434 + disp} 190 l6 6 l-6 6`} />}
+                        </g>
+                      );
+                    })()}
+                    <text class="ann" x="24" y="52">Ramp angle</text>
+                    <text class="dimlab" x="24" y="80">{[5, 15, 25][k]}°</text>
+                    <text class="ann" x="24" y="300">
+                      Displacement at the low-grip interface: {[0, 3, 14][k]} mm
+                    </text>
+                  </g>
+                )}
+
+                {/* --- 04 Moisture laboratory ---------------------------- */}
+                {week === 4 && (
+                  <g>
+                    {(() => {
+                      const depth = [0, 44, 98][k];
+                      const top = 60;
+                      const h = 170;
+                      const base = top + h;
+                      const fy = base - depth;
+                      return (
+                        <g>
+                          <rect class="rule-box" x="220" y={top} width="300" height={h} />
+                          <rect x="220" y={top} width="300" height={h} fill={`url(#${uid}-${k}-pore)`} stroke="none" />
+                          {depth > 0 && (
+                            <g>
+                              <path class="wet" d={`M220 ${base} H520 V${fy} q -30 -14 -60 0 t -60 0 t -60 0 t -60 0 t -60 0 Z`} />
+                              <path class="frontline" d={`M220 ${fy} q 30 -14 60 0 t 60 0 t 60 0 t 60 0 t 60 0`} />
+                            </g>
+                          )}
+                          <path class="dimtick" d={`M170 ${base} H220 M170 ${fy} H220`} />
+                          <path class="dim" d={`M188 ${base} V${fy} m-5 5 l5 -5 l5 5`} />
+                          <text class="dimlab" x="162" y={(base + fy) / 2 + 6} text-anchor="end">
+                            {[0, 8, 18][k]} mm
+                          </text>
+                          <path class="bench" d={`M200 ${base} H540`} />
+                          {/* The overlay the week actually produces: each
+                              earlier front stays on the sheet. */}
+                          {k > 0 && <path class="ghost" d={`M220 ${base - 44} H520`} />}
+                          {k > 1 && <text class="ann ann--wet" x="540" y={base - 40}>t = 5 front</text>}
+                        </g>
+                      );
+                    })()}
+                    <text class="ann" x="24" y="52">Acetate overlay — earlier fronts are kept</text>
+                    <text class="ann ann--wet" x="24" y="300">
+                      Penetration depth at {["t = 0", "t = 5 min", "t = 15 min"][k]}: {[0, 8, 18][k]} mm
+                    </text>
+                  </g>
+                )}
+
+                {/* --- 05 Exploded load path ----------------------------- */}
+                {week === 5 && (
+                  <g>
+                    {/* Four layers, exploded. The focused layer is drawn solid
+                        and the load path is drawn through or around it. */}
+                    {[
+                      { y: 70, name: "Outer layer", idx: -1 },
+                      { y: 130, name: "Support layer", idx: 0 },
+                      { y: 190, name: "Loose layer", idx: 1 },
+                      { y: 250, name: "Binding layer", idx: 2 },
+                    ].map((L) => (
+                      <g>
+                        <rect
+                          class:list={["rule-box", L.idx === k && "is-focus"]}
+                          x="200" y={L.y} width="300" height="30"
+                        />
+                        {L.idx === k && (
+                          <rect x="200" y={L.y} width="300" height="30" fill={`url(#${uid}-${k}-hatch)`} stroke="none" />
+                        )}
+                        <path class="leader" d={`M500 ${L.y + 15} H540`} />
+                        <text class:list={["ann", L.idx === k && "ann--head"]} x="550" y={L.y + 20}>{L.name}</text>
+                      </g>
+                    ))}
+                    <path class="force" d="M350 26 V62 m-7 -9 l7 9 l7 -9" />
+                    {/* The path: through the focused layer, or around it. */}
+                    <path
+                      class="path"
+                      d={
+                        k === 1
+                          ? "M350 100 V160 L286 205 V310"
+                          : k === 2
+                            ? "M350 100 V190 M350 220 V250 L316 265 L350 280 V310"
+                            : "M350 100 V310"
+                      }
+                    />
+                    <path class="support" d="M310 310 H390" />
+                    <text class="ann" x="24" y="300">
+                      {["Load path runs through the support layer.",
+                        "Load path diverts around the loose layer — it carries none of the load.",
+                        "Load path passes the binding layer in shear, not compression."][k]}
+                    </text>
+                  </g>
+                )}
+
+                {/* --- 06 Incident recorder ------------------------------ */}
+                {week === 6 && (
+                  <g>
+                    {(() => {
+                      const thick = [16, 8, 3][k];
+                      const slip = [0, 0, 54][k];
+                      return (
+                        <g>
+                          <text class="lab" x="24" y="52">FRAME {k + 1} / 3</text>
+                          <rect class="rule-box" x={200 + slip} y="110" width="320" height="34" />
+                          <rect
+                            class="film-band"
+                            x="200" y="144" width="320" height={thick}
+                          />
+                          <rect class="rule-box" x="200" y={144 + thick} width="320" height="34" />
+                          {slip > 0 && (
+                            <g>
+                              <path class="dim" d={`M520 127 H${520 + slip} m-6 -6 l6 6 l-6 6`} />
+                              <text class="ann ann--fail" x={528 + slip} y="132">Independent movement</text>
+                            </g>
+                          )}
+                          <path class="dim" d={`M170 144 V${144 + thick}`} />
+                          <text class="dimlab" x="162" y={150 + thick} text-anchor="end">{[2.0, 0.9, 0.3][k]} mm</text>
+                          <text class="ann ann--head" x="200" y={210 + thick}>
+                            {["Binder", "Transitional", "Lubricant"][k]}
+                          </text>
+                        </g>
+                      );
+                    })()}
+                    <path class="hair" d="M24 250 H736" />
+                    {[0, 1, 2].map((f) => (
+                      <g>
+                        <rect class:list={["frame-tick", f === k && "is-on"]} x={24 + f * 60} y="268" width="48" height="10" />
+                      </g>
+                    ))}
+                    <text class="ann" x="220" y="280">Same material. Opposite structural role.</text>
+                  </g>
+                )}
+
+                {/* --- 07 Thermal timeline ------------------------------- */}
+                {week === 7 && (
+                  <g>
+                    {(() => {
+                      const grad = k;
+                      return (
+                        <g>
+                          <rect class="rule-box" x="200" y="80" width="300" height="40" />
+                          <rect
+                            class="thermo"
+                            x="200" y="120" width="300" height="50"
+                            style={`opacity:${[0.85, 0.5, 0.15][k]}`}
+                          />
+                          <rect class="rule-box" x="200" y="170" width="300" height="40" />
+                          {/* Condensation appears at the cooling boundary at
+                              the middle reading, and has wetted the lower
+                              boundary by the last. */}
+                          {grad >= 1 && (
+                            <path class="drop" d="M240 214 v12 M290 216 v10 M340 214 v12 M390 216 v10 M440 214 v12" />
+                          )}
+                          {grad === 2 && <path class="wet" d="M200 198 H500 V210 H200 Z" />}
+                          <path class="bench" d="M180 226 H520" />
+                          <path class="leader" d="M500 100 H540 M500 145 H540 M500 190 H540" />
+                          <text class="ann" x="550" y="105">Outer layer</text>
+                          <text class="ann ann--fail" x="550" y="150">Warm zone</text>
+                          <text class="ann" x="550" y="195">Outer layer</text>
+                        </g>
+                      );
+                    })()}
+                    <text class="lab" x="24" y="52">READING {k + 1} — {["0 min", "20 min", "40 min"][k]}</text>
+                    {/* Three discrete readings, marked on one axis. Nothing is
+                        drawn between them, because nothing was measured. */}
+                    <path class="axis" d="M24 280 H736" />
+                    {[0, 1, 2].map((t) => (
+                      <circle class:list={["node", t === k && "is-on"]} cx={90 + t * 300} cy="280" r="7" />
+                    ))}
+                    <text class="ann" x="24" y="312">Discrete readings — no continuous record exists</text>
+                  </g>
+                )}
+
+                {/* --- 08 Layer-order assembly bay ----------------------- */}
+                {week === 8 && (
+                  <g>
+                    {(() => {
+                      /* The same four categories in three orders. The names
+                         move; the material set does not. */
+                      const ORDERS = [
+                        ["Outer", "Moist", "Binding", "Loose", "Outer"],
+                        ["Outer", "Binding", "Moist", "Loose", "Outer"],
+                        ["Outer", "Moist", "Binding", "Outer", "Loose"],
+                      ];
+                      const order = ORDERS[k];
+                      return (
+                        <g>
+                          {order.map((name, j) => {
+                            const y = 56 + j * 46;
+                            const kind =
+                              name === "Moist" ? "wetlayer" : name === "Binding" ? "bindlayer" : name === "Loose" ? "looselayer" : "outerlayer";
+                            const edgeRisk = k === 2 && name === "Loose";
+                            return (
+                              <g>
+                                <rect
+                                  class:list={["rule-box", `is-${kind}`]}
+                                  x={edgeRisk ? 300 : 200}
+                                  y={y}
+                                  width="300"
+                                  height="34"
+                                />
+                                <path class="leader" d={`M${edgeRisk ? 600 : 500} ${y + 17} H${640}`} />
+                                <text class="ann" x="650" y={y + 22}>{name}</text>
+                                {edgeRisk && (
+                                  <path class="force" d={`M296 ${y + 17} H256 m6 -6 l-6 6 l6 6`} />
+                                )}
+                              </g>
+                            );
+                          })}
+                          <text class="ann ann--head" x="24" y="52">ORDER {k + 1} / 3</text>
+                          <text class:list={["ann", k === 1 ? "ann--ok" : "ann--fail"]} x="24" y="300">
+                            {["Adjacency: moist | outer — direct route in",
+                              "Adjacency: binding | moist and binding | loose — both risks reduced",
+                              "Adjacency: loose at exposed edge — unbraced"][k]}
+                          </text>
+                        </g>
+                      );
+                    })()}
+                  </g>
+                )}
+
+                {/* --- 09 Cutting-geometry board ------------------------- */}
+                {week === 9 && (
+                  <g>
+                    {(() => {
+                      const cuts = [[], [380], [290, 380, 470]][k];
+                      return (
+                        <g>
+                          <rect class="rule-box" x="200" y="110" width="360" height="30" />
+                          <path class="mat" d={wave(140, 176, 200, 560)} />
+                          <rect class="rule-box" x="200" y="176" width="360" height="30" />
+                          {cuts.map((cx) => (
+                            <g>
+                              <path class="cutline" d={`M${cx} 90 V226`} />
+                              {/* Each cut makes two new free edges, and each
+                                  free edge gets its own force line. */}
+                              <path class="force" d={`M${cx - 8} 158 H${cx - 34} m8 -6 l-8 6 l8 6`} />
+                              <path class="force" d={`M${cx + 8} 158 H${cx + 34} m-8 -6 l8 6 l-8 6`} />
+                            </g>
+                          ))}
+                          <path class="support" d="M180 226 H580" />
+                          <path class="force" d="M380 40 V84 m-7 -9 l7 9 l7 -9" />
+                          <text class="ann" x="24" y="52">{["INTACT", "HALVED", "QUARTERED"][k]}</text>
+                          <text class="ann" x="24" y="286">
+                            Spans: {[1, 2, 4][k]} · Exposed edges: {[2, 4, 6][k]}
+                          </text>
+                          <text class="ann ann--fail" x="24" y="312">
+                            {["Full width carries the central load.",
+                              "Each half is stiffer. Two new free edges.",
+                              "Stiffest under load. Most boundary to leave by."][k]}
+                          </text>
+                        </g>
+                      );
+                    })()}
+                  </g>
+                )}
+
+                {/* --- 10 Transport dossier ------------------------------ */}
+                {week === 10 && (
+                  <g>
+                    {(() => {
+                      const tilt = k === 0 ? -14 : 0;
+                      const squash = k === 1 ? 14 : 0;
+                      return (
+                        <g>
+                          <g transform={`rotate(${tilt} 380 160)`}>
+                            {/* The packaging boundary: a structural member in
+                                its own right, drawn heavier than the layers. */}
+                            <rect class="pack" x="200" y={92 + squash / 2} width="360" height={150 - squash} />
+                            <rect class="rule-box" x="222" y={110 + squash / 2} width="316" height={30 - squash / 3} />
+                            <path class="mat" d={wave(146, 178, 222, 538)} />
+                            <rect class="rule-box" x="222" y="182" width="316" height={30 - squash / 3} />
+                            {k === 2 && (
+                              <g>
+                                <path class="drop" d="M250 104 v14 M300 106 v12 M480 104 v14 M510 106 v12" />
+                                <path class="wet" d="M222 206 H538 V216 H222 Z" />
+                              </g>
+                            )}
+                          </g>
+                          {k === 1 && <path class="force" d="M380 40 V84 m-7 -9 l7 9 l7 -9" />}
+                          {k === 0 && <path class="force" d="M620 150 H660 m-8 -7 l8 7 l-8 7" />}
+                          <text class="ann" x="24" y="52">
+                            STAGE {k + 1} / 3 — {["TILT", "COMPRESSION", "ENCLOSURE"][k]}
+                          </text>
+                        </g>
+                      );
+                    })()}
+                    {/* The route trace: the three stages are one journey, and
+                        the stage on screen is marked on it. */}
+                    <path class="route" d="M40 296 q 90 -26 180 0 t 180 0 t 180 0 t 120 0" />
+                    {[0, 1, 2].map((t) => (
+                      <circle class:list={["node", t === k && "is-on"]} cx={110 + t * 240} cy={t === 1 ? 288 : 292} r="8" />
+                    ))}
+                    <text class="ann" x="24" y="330">Route trace — one journey, three recorded disturbances</text>
+                  </g>
+                )}
+
+                {/* --- 11 Failure-autopsy room --------------------------- */}
+                {week === 11 && (
+                  <g>
+                    {/* Fragments are admitted cumulatively: each one closes a
+                        branch, and the last leaves two open. */}
+                    {[0, 1, 2].map((f) => (
+                      <g>
+                        <rect
+                          class:list={["frag", f <= k && "is-in"]}
+                          x="36" y={70 + f * 84} width="150" height="66"
+                        />
+                        <text class:list={["lab", f > k && "lab--out"]} x="46" y={94 + f * 84}>
+                          {["FRAGMENT A", "FRAGMENT B", "FRAGMENT C"][f]}
+                        </text>
+                        <text class:list={["ann", f > k && "lab--out"]} x="46" y={118 + f * 84}>
+                          {["Layers displaced", "Seal intact", "Upper layer dry"][f]}
+                        </text>
+                      </g>
+                    ))}
+
+                    {[
+                      { y: 84, name: "Handled before transit", out: k >= 1 },
+                      { y: 168, name: "Interface lubricated", out: false },
+                      { y: 252, name: "Layer above softened", out: false },
+                    ].map((c) => (
+                      <g>
+                        <rect class:list={["cause", c.out && "is-out"]} x="300" y={c.y - 26} width="230" height="52" />
+                        <text class:list={["ann", c.out && "lab--out"]} x="316" y={c.y + 4}>{c.name}</text>
+                        {c.out && <path class="strike" d={`M310 ${c.y} H520`} />}
+                        <path class:list={["chain", c.out && "is-out"]} d={`M530 ${c.y} H600 L648 168`} />
+                      </g>
+                    ))}
+
+                    <rect class="obs" x="606" y="140" width="126" height="56" />
+                    <text class="lab" x="618" y="162">OBSERVED</text>
+                    <text class="ann" x="618" y="184">Separation</text>
+
+                    <text class:list={["ann", k === 2 ? "ann--fail" : "ann--head"]} x="36" y="326">
+                      {k === 0
+                        ? "Three causes remain consistent with the record."
+                        : k === 1
+                          ? "One cause ruled out. Two remain."
+                          : "Two branches stay live. Nothing recorded separates them."}
+                    </text>
+                  </g>
+                )}
+
+                {/* --- 12 Final rig and defence bench -------------------- */}
+                {week === 12 && (
+                  <g>
+                    {(() => {
+                      const splay = k === 1 ? 46 : 0;
+                      const braced = k === 2;
+                      return (
+                        <g>
+                          <path class="frame" d="M200 46 H560 M212 46 V266 M548 46 V266" />
+                          <rect class="platen" x="300" y="76" width="160" height="16" />
+                          <path class="screw" d="M380 46 V76" />
+                          <rect class="rule-box" x={240 - splay / 2} y="118" width={320 + splay} height="30" />
+                          <path class="mat" d={wave(148, 186, 240 - splay, 560 + splay)} />
+                          <rect class="rule-box" x={240 - splay / 2} y="186" width={320 + splay} height="30" />
+                          {braced && (
+                            <g>
+                              <path class="bind" d="M240 152 H560 M240 182 H560" />
+                              <text class="ann ann--ok" x="570" y="172">Binding layer braces the edge</text>
+                            </g>
+                          )}
+                          {splay > 0 && (
+                            <g>
+                              <path class="force" d={`M232 167 H190 m8 -7 l-8 7 l8 7`} />
+                              <text class="ann ann--fail" x="36" y="172">Splay at 14 min</text>
+                            </g>
+                          )}
+                          <path class="support" d="M200 240 H560" />
+                        </g>
+                      );
+                    })()}
+                    <text class="lab" x="36" y="52">{["DECLARED", "FAILED", "DEFENDED"][k]}</text>
+                    {k === 2 && <path class="held" d="M620 250 l14 18 l30 -40" />}
+                    <path class="hair" d="M36 292 H724" />
+                    <text
+                      class:list={["ann", k === 1 && "ann--fail", k === 2 && "ann--ok"]}
+                      x="36" y="322"
+                    >
+                      {["Load case declared before the first test.",
+                        "First failure recorded, dimensioned and kept.",
+                        "Held under this condition. Not in general."][k]}
+                    </text>
+                  </g>
+                )}
+              </svg>
+
+              {/* The state's reading, as text. This is what a screen reader,
+                  a printout and a reader with images off all get, and it is
+                  the same information the drawing carries. */}
+              <figcaption class="st-read">
+                <span class="st-read-k mono">Reading {String(i + 1).padStart(2, "0")} — {s.label}</span>
+                <span class="st-read-t">{s.reading}</span>
+              </figcaption>
+            </figure>
+          </div>
+        );
+      })}
+    </div>
+  </fieldset>
+</div>

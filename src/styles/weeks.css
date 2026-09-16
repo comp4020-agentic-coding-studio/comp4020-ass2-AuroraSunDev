@@ -1,0 +1,484 @@
+/* The weeks index.
+ *
+ * Two compositions of the same twelve records, not one scaled to fit.
+ *
+ * Desktop is a ruled register: seven columns, a header row, and one continuous
+ * structural line running down the milestone column with a station on it for
+ * every week. Phase breaks are rules across the register, so the four phases
+ * are divisions of one path rather than four separate lists.
+ *
+ * Phone is a vertical load track: the line moves to the left edge, the week
+ * number and its fields stack against it, and the artefact glyph sits to the
+ * right of the title where the reference puts it. The header row is dropped
+ * entirely --- a column heading eight rows above the value it names is not a
+ * label, so on the phone each field carries its own.
+ */
+
+/* One set of column definitions, shared by the header row and every week row,
+   so a value is always under the heading that names it. Eight tracks:
+   rail | week | date | title | question | milestone | artefact | action.
+   Declared on the page, not on the list: the header row is the list's sibling,
+   and a variable set on the list would be out of scope for it. */
+.weeks {
+  --wk-cols: 2.25rem 4.25rem 6rem minmax(0, 19fr) minmax(0, 16fr) 14.5rem 7.5rem 9.5rem;
+  --wk-gap: clamp(0.6rem, 1.2vw, 1.5rem);
+}
+
+/* --- The four phases --------------------------------------------------- */
+
+.weeks .phases {
+  list-style: none;
+  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.weeks .phase {
+  display: grid;
+  /* Phone: numeral, glyph, then the name and its line in a column. */
+  grid-template-columns: 3rem auto minmax(0, 1fr);
+  grid-template-areas:
+    "num glyph name"
+    "num glyph line"
+    "num glyph weeks";
+  column-gap: 1rem;
+  align-items: center;
+  padding-block: 0.9rem;
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+
+.weeks .phase-arrow { display: none; }
+.weeks .phase-num {
+  grid-area: num;
+  align-self: center;
+  color: var(--slop-toast);
+  /* Phone: a Roman numeral at display size, not a wrapped label. "Phase III"
+     in a 2.5rem column broke across three lines. */
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+}
+/* The word, hidden from sight but not from a screen reader, below the width
+   where it fits beside the numeral. */
+.weeks .phase-num-w {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (width >= 900px) {
+  .weeks .phase-num { font-size: var(--at-font-size-xs); }
+  .weeks .phase-num-w {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+  }
+}
+.weeks .phase-glyph {
+  grid-area: glyph;
+  display: block;
+  width: 74px;
+  padding-inline-end: 1rem;
+  border-inline-end: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.weeks .phase-glyph .wg { width: 74px; }
+
+.weeks .phase-name {
+  grid-area: name;
+  font-size: clamp(1.05rem, 2.2vw, 1.4rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--slop-lettuce);
+}
+.weeks .phase-line {
+  grid-area: line;
+  font-size: 0.9375rem;
+  color: var(--at-text-secondary);
+}
+.weeks .phase-weeks {
+  grid-area: weeks;
+  color: var(--slop-charcoal);
+  opacity: 0.7;
+}
+
+/* --- Desktop: four phases in one row ----------------------------------- */
+@media (width >= 900px) {
+  .weeks .phases {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  }
+
+  .weeks .phase {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "num" "name" "line" "weeks";
+    row-gap: 0.25rem;
+    align-items: start;
+    padding: 1.25rem 2.5rem 1.25rem 0;
+    border-top: 0;
+    border-inline-start: var(--slop-rule-width) solid var(--slop-rule-hair);
+    padding-inline-start: 1.25rem;
+  }
+  .weeks .phase:first-child {
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+
+  /* The path direction between phases, on the divider itself. */
+  .weeks .phase-arrow {
+    display: block;
+    position: absolute;
+    inset-inline-start: -0.72em;
+    top: 50%;
+    translate: 0 -50%;
+    background: var(--slop-paper);
+    padding-block: 0.15em;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--slop-charcoal);
+  }
+
+  /* The glyph is the phone composition's way of telling the phases apart; on
+     desktop the name has room to be read, so the drawing is redundant ink. */
+  .weeks .phase-glyph { display: none; }
+}
+
+/* --- The register: column headings ------------------------------------- */
+
+.weeks .colheads { display: none; }
+
+@media (width >= 1100px) {
+  .weeks .colheads {
+    display: grid;
+    grid-template-columns: var(--wk-cols);
+    column-gap: var(--wk-gap);
+    align-items: end;
+    padding-block: 0.6rem;
+    border-bottom: var(--slop-rule-heavy) solid var(--slop-rule);
+  }
+  .weeks .colhead {
+    color: var(--slop-charcoal);
+    opacity: 0.66;
+  }
+  /* Column 1 is the drawn rail, which has no heading. */
+  .weeks .colheads .colhead:first-child { grid-column: 2; }
+  .weeks .colhead--ms { grid-column: 6; }
+  .weeks .colhead--art { text-align: center; }
+  .weeks .colhead--act { text-align: right; }
+}
+
+/* --- The register: twelve rows ----------------------------------------- */
+
+.weeks .wk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.weeks .wk {
+  position: relative;
+  display: grid;
+  /* Phone: the rail on the left, then everything stacked against it. */
+  grid-template-columns: 2.25rem 4.25rem minmax(0, 1fr) auto;
+  /* The glyph shares row 1 with the date; the title then spans both content
+     columns. Holding the glyph across two rows squeezed the title into a
+     130px column and broke it over five lines. */
+  grid-template-areas:
+    "rail n date  art"
+    "rail n title title"
+    "rail n q     q"
+    "rail ms ms   ms"
+    "rail act act act";
+  column-gap: 0.75rem;
+  row-gap: 0.35rem;
+  padding-block: 1.1rem;
+  border-bottom: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+
+/* The structural line. It is one line per row, drawn edge to edge of the row's
+   block box, so twelve rows read as one continuous path however tall each row
+   turns out to be. */
+.weeks .wk-rail {
+  grid-area: rail;
+  position: relative;
+  justify-self: center;
+  /* Stretch, explicitly: with `align-items: center` on the row this element
+     would take its content height, which is zero, and the line would be a
+     dot's worth of nothing. */
+  align-self: stretch;
+  width: 2px;
+  /* Reach past the row's padding into its neighbours so the line does not
+     break at every rule. */
+  margin-block: -1.1rem;
+  background: var(--slop-charcoal);
+}
+/* The first station opens the path and the last closes it, so neither line
+   runs off into nothing. */
+.weeks .wk:first-of-type .wk-rail { margin-block-start: 0; }
+.weeks .wk--last .wk-rail { margin-block-end: 0; }
+
+.weeks .wk-dot {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 2.1rem;
+  translate: -50% -50%;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--slop-charcoal);
+  border-radius: 50%;
+  background: var(--slop-paper);
+}
+/* A station with a submission due at it. Filled and red --- a declared load.
+   The weight and title are printed beside it, so the fill is the second
+   channel and never the only one. */
+.weeks .wk-dot--ms {
+  border-color: var(--slop-tomato);
+  background: var(--slop-tomato);
+}
+
+.weeks .wk-n {
+  grid-area: n;
+  margin: 0;
+  font-size: clamp(2.5rem, 7vw, 3.25rem);
+  line-height: 0.85;
+  letter-spacing: -0.01em;
+}
+
+.weeks .wk-date {
+  grid-area: date;
+  color: var(--slop-charcoal);
+  opacity: 0.66;
+  align-self: start;
+}
+/* Two forms of the same date: the register wants it short, the phone row has
+   space for the long one. Exactly one is in the accessibility tree at a time,
+   because the hidden one is `display: none`, not merely invisible. */
+.weeks .wk-date--long { display: inline; }
+.weeks .wk-date--short { display: none; }
+
+.weeks .wk-title {
+  grid-area: title;
+  margin: 0;
+  font-family: var(--slop-font-body);
+  font-size: clamp(1.15rem, 3.4vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0;
+  text-wrap: pretty;
+}
+/* A week title is a title first and a link second: charcoal with a charcoal
+   underline, which is how the references set it, and which leaves red to mean
+   the row's primary action. */
+.weeks .wk-title a {
+  color: var(--slop-charcoal);
+  text-decoration-color: var(--slop-charcoal);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.weeks .wk-title a:hover {
+  color: var(--slop-tomato);
+  text-decoration-color: var(--slop-tomato);
+}
+
+/* Week 4's deck notation. A boxed word, not a coloured pill: the box is the
+   handbook tab of the archive layer, and the word carries the meaning. */
+.weeks .wk-deck {
+  display: inline-block;
+  margin-inline-start: 0.6rem;
+  padding: 0.15em 0.45em;
+  border: var(--slop-rule-width) solid var(--slop-lettuce);
+  color: var(--slop-lettuce);
+  font-size: 0.6875rem;
+  vertical-align: 0.18em;
+  white-space: nowrap;
+}
+
+.weeks .wk-q {
+  grid-area: q;
+  margin: 0.15rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--at-text-secondary);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+.weeks .wk-ms {
+  grid-area: ms;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0;
+  min-height: 0;
+}
+.weeks .wk-ms:empty { display: none; }
+/* On the phone the milestone gets its own filled marker inside the row,
+   aligned to the rail, so the record reads as attached to the path. */
+.weeks .wk-ms-mark {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--slop-tomato);
+  flex: 0 0 auto;
+}
+.weeks .wk-ms a,
+.weeks .wk-ms span.mono {
+  color: var(--slop-tomato);
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+.weeks .wk-ms .pending { color: var(--slop-charcoal); }
+
+.weeks .wk-art {
+  grid-area: art;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: start;
+}
+.weeks .wk-art .wg { width: 72px; }
+/* The artefact's name is the record; on the phone the row is already dense, so
+   the drawing carries it and the name is available in the week page. */
+.weeks .wk-art-name { display: none; }
+
+.weeks .wk-act { grid-area: act; margin: 0; }
+.weeks .wk-act .linkline { min-height: 44px; }
+
+/* A phase division across the whole register. */
+.weeks .phase-break {
+  padding: 1.5rem 0 0.4rem;
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+  margin-top: 1rem;
+}
+.weeks .phase-break:first-child { margin-top: 0; }
+.weeks .phase-break .mono {
+  color: var(--slop-lettuce);
+  letter-spacing: 0.12em;
+}
+
+/* --- Desktop: the ruled register --------------------------------------- */
+@media (width >= 1100px) {
+  .weeks .wk {
+    grid-template-columns: var(--wk-cols);
+    grid-template-areas: "rail n date title q ms art act";
+    column-gap: var(--wk-gap);
+    row-gap: 0;
+    align-items: center;
+    padding-block: 0.9rem;
+  }
+
+  /* The rail moves out of column 1 and into the milestone column, where the
+     reference draws it: the line a milestone hangs off is the same line the
+     stations sit on. Column 1 keeps its width so the numbers stay off the
+     page edge. */
+  .weeks .wk-rail {
+    grid-area: ms;
+    justify-self: start;
+    margin-block: -0.9rem;
+    margin-inline-start: -0.5rem;
+  }
+  .weeks .wk-dot { top: 50%; }
+
+  .weeks .wk-n {
+    grid-area: n;
+    font-size: 2.6rem;
+    text-align: left;
+  }
+
+  .weeks .wk-date--long { display: none; }
+  .weeks .wk-date--short { display: inline; }
+
+  .weeks .wk-title {
+    grid-area: title;
+    font-size: 1.3rem;
+  }
+
+  .weeks .wk-q {
+    grid-area: q;
+    margin: 0;
+    font-size: 0.9375rem;
+    max-width: none;
+  }
+
+  .weeks .wk-ms {
+    grid-area: ms;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+  /* The station dot on the rail is the marker here; a second one inside the
+     record would be the same fact drawn twice. */
+  .weeks .wk-ms-mark { display: none; }
+
+  .weeks .wk-art { grid-area: art; }
+  .weeks .wk-art .wg { width: 104px; }
+  .weeks .wk-art-name {
+    display: block;
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-align: center;
+    color: var(--slop-toast);
+    text-transform: none;
+  }
+
+  .weeks .wk-act {
+    grid-area: act;
+    justify-self: end;
+  }
+
+  .weeks .phase-break {
+    display: grid;
+    grid-template-columns: var(--wk-cols);
+    column-gap: var(--wk-gap);
+    padding: 1.6rem 0 0.5rem;
+  }
+  .weeks .phase-break .mono { grid-column: 2 / -1; }
+}
+
+/* --- Legend ------------------------------------------------------------- */
+
+.weeks .legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+  margin: 0 0 2rem;
+}
+.weeks .legend-item > dt {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+.weeks .legend-item > dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--at-text-secondary);
+  max-width: 34ch;
+}
+
+.weeks .lg { flex: 0 0 auto; }
+.weeks .lg--station,
+.weeks .lg--ms {
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--slop-charcoal);
+  border-radius: 50%;
+}
+.weeks .lg--ms { border-color: var(--slop-tomato); background: var(--slop-tomato); }
+.weeks .lg--deck {
+  padding: 0.15em 0.45em;
+  border: var(--slop-rule-width) solid var(--slop-lettuce);
+  color: var(--slop-lettuce);
+  font-size: 0.6875rem;
+}
+.weeks .lg--art { width: 64px; }
+.weeks .lg--art .wg { width: 64px; }
+
+.weeks .weeks-next { margin: 0 0 1rem; }

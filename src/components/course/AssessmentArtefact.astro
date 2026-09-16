@@ -1,0 +1,371 @@
+---
+/**
+ * The dominant artefact for one assessment, drawn as the instrument the task
+ * produces.
+ *
+ * plan.md requires the four assessment detail pages to differ in their opening
+ * artefact --- an observation sheet, a three-condition comparison bench, a
+ * forensic evidence board, and a load-case brief with its iteration record ---
+ * and requires the overview's four bands to be bands rather than promotional
+ * cards. These are the drawings that do both jobs, so the artefact a student
+ * meets on the overview is the same one that opens its brief.
+ *
+ * Every drawing is a blank instrument. None of them is filled in with values,
+ * because a filled-in sheet would be fabricated evidence on a site whose whole
+ * argument is that evidence has to be earned.
+ */
+interface Props {
+  /** The assessment slug, from src/lib/semester.ts. */
+  slug: "field-log" | "component-test" | "failure-autopsy" | "final";
+  /** Set where the drawing is the only description of the artefact. */
+  labelled?: boolean;
+}
+const { slug, labelled = false } = Astro.props;
+
+const ALT: Record<string, string> = {
+  "field-log":
+    "A blank observation sheet: fields for the item and date, a sketch panel, ruled notes, and lines for the test conditions and the observer.",
+  "component-test":
+    "A three-condition comparison bench: three identical press rigs labelled A, B and C on one base, with a blank log sheet beside them.",
+  "failure-autopsy":
+    "A forensic evidence board: four pinned evidence fragments joined by a causal chain that branches, with one branch left unresolved.",
+  final:
+    "A load-case brief beside an iteration record: four stages — declare, test, fail, revise — leading to a defended result.",
+};
+
+/** A run of ruled writing lines. */
+const rules = (x: number, y: number, w: number, n: number, gap: number) =>
+  Array.from({ length: n }, (_, i) => `M${x} ${y + i * gap} H${x + w}`).join(" ");
+---
+
+<svg
+  class:list={["aa", `aa--${slug}`]}
+  viewBox="0 0 560 264"
+  role={labelled ? "img" : "presentation"}
+  aria-label={labelled ? ALT[slug] : undefined}
+  focusable="false"
+>
+  {/* --- 01 -- the observation sheet ----------------------------------- */}
+  {slug === "field-log" && (
+    <g>
+      <rect class="sheet" x="8" y="8" width="544" height="248" rx="6" />
+      <text class="hd" x="28" y="38">OBSERVATION SHEET</text>
+      <path class="hair" d="M28 50 H532" />
+
+      <text class="fld" x="28" y="74">ITEM</text>
+      <path class="line" d="M68 76 H372" />
+      <text class="fld" x="392" y="74">DATE</text>
+      <path class="line" d="M432 76 H464 M472 76 H504 M512 76 H532" />
+
+      {/* The sketch panel: the entry's annotated drawing goes here, which is
+          why it is the largest field on the sheet. */}
+      <rect class="panel" x="28" y="92" width="256" height="118" />
+      <text class="fld fld--in" x="38" y="110">SKETCH</text>
+
+      <text class="fld fld--in" x="304" y="110">NOTES</text>
+      <path class="line" d={rules(304, 122, 228, 6, 16)} />
+
+      <text class="fld" x="28" y="232">CONDITIONS</text>
+      <path class="line" d="M108 234 H284" />
+      <text class="fld" x="304" y="232">OBSERVER</text>
+      <path class="line" d="M376 234 H532" />
+    </g>
+  )}
+
+  {/* --- 02 -- the three-condition comparison bench --------------------- */}
+  {slug === "component-test" && (
+    <g>
+      <text class="hd" x="176" y="28">TEST BENCH</text>
+
+      {["A", "B", "C"].map((label, i) => {
+        const x = 24 + i * 126;
+        return (
+          <g>
+            <text class="fld" x={x + 50} y="52" text-anchor="middle">CONDITION {label}</text>
+            {/* The frame. Three identical rigs: the point of the drawing is
+                that the apparatus is the constant. */}
+            <rect class="frame" x={x} y="62" width="100" height="10" />
+            <path class="frame-leg" d={`M${x + 6} 72 V196 M${x + 94} 72 V196`} />
+            {/* The screw and platen that apply the declared load. */}
+            <path class="screw" d={`M${x + 50} 72 V108`} />
+            <rect class="platen" x={x + 30} y="108" width="40" height="12" />
+            {/* The specimen, hatched: a material, not a meal. */}
+            <rect class="spec" x={x + 24} y="128" width="52" height="24" />
+            <path
+              class="spec-hatch"
+              d={Array.from({ length: 6 }, (_, j) => `M${x + 26 + j * 9} 152 l9 -24`).join(" ")}
+            />
+            <rect class="platen" x={x + 20} y="152" width="60" height="12" />
+            <path class="frame-leg" d={`M${x + 50} 164 V184`} />
+          </g>
+        );
+      })}
+
+      {/* One base under all three rigs: same bench, same datum. */}
+      <rect class="base" x="14" y="196" width="362" height="16" />
+      <path class="hair" d="M14 222 H376" />
+      <text class="fld" x="14" y="242">ONE DECLARED VARIABLE · THREE CONDITIONS</text>
+
+      {/* The log sheet the bench feeds. */}
+      <g>
+        <rect class="clip" x="446" y="16" width="34" height="12" rx="3" />
+        <rect class="sheet" x="404" y="26" width="148" height="212" rx="4" />
+        <text class="hd hd--sm" x="420" y="50">LOG SHEET</text>
+        <path class="hair" d="M420 58 H536" />
+        {["COMPONENT", "DATE", "OPERATOR", "NOTES"].map((f, i) => (
+          <g>
+            <text class="fld fld--xs" x="420" y={80 + i * 26}>{f}</text>
+            <path class="line" d={`M420 ${86 + i * 26} H536`} />
+          </g>
+        ))}
+        <path class="line" d={rules(420, 194, 116, 3, 16)} />
+      </g>
+    </g>
+  )}
+
+  {/* --- 03 -- the forensic evidence board ------------------------------ */}
+  {slug === "failure-autopsy" && (
+    <g>
+      <rect class="board" x="8" y="8" width="544" height="248" />
+      <text class="hd" x="28" y="36">EVIDENCE BOARD — CASE 11</text>
+      <path class="hair" d="M28 48 H532" />
+
+      {/* Four fragments, pinned. Each is a piece of a record, not a picture of
+          a sandwich: a section, a measurement, a photograph, a note. */}
+      {[
+        { x: 32, y: 68, w: 96, h: 64, kind: "section" },
+        { x: 32, y: 158, w: 96, h: 64, kind: "measure" },
+        { x: 196, y: 88, w: 92, h: 60, kind: "photo" },
+        { x: 196, y: 172, w: 92, h: 48, kind: "note" },
+      ].map((f) => (
+        <g>
+          <rect class="frag" x={f.x} y={f.y} width={f.w} height={f.h} />
+          <circle class="pin" cx={f.x + f.w / 2} cy={f.y + 6} r="4" />
+          {f.kind === "section" && (
+            <g>
+              <path class="line" d={`M${f.x + 10} ${f.y + 26} H${f.x + f.w - 10}`} />
+              <path class="wetline" d={`M${f.x + 10} ${f.y + 40} H${f.x + f.w - 10}`} />
+              <path class="line" d={`M${f.x + 10} ${f.y + 52} H${f.x + f.w - 10}`} />
+            </g>
+          )}
+          {f.kind === "measure" && (
+            <g>
+              <path class="dim" d={`M${f.x + 16} ${f.y + 24} V${f.y + 50} m-4 4 l4 -4 l4 4 m-4 ${-30} l-4 4 l4 -4 l4 4`} />
+              <path class="line" d={rules(f.x + 34, f.y + 28, 48, 3, 12)} />
+            </g>
+          )}
+          {f.kind === "photo" && (
+            <g>
+              <path class="crop" d={`M${f.x} ${f.y} h8 M${f.x} ${f.y} v8 M${f.x + f.w} ${f.y + f.h} h-8 M${f.x + f.w} ${f.y + f.h} v-8`} />
+              <path class="failline" d={`M${f.x + 16} ${f.y + 40} L${f.x + 40} ${f.y + 24} L${f.x + 74} ${f.y + 42}`} />
+            </g>
+          )}
+          {f.kind === "note" && <path class="line" d={rules(f.x + 10, f.y + 18, 72, 3, 12)} />}
+        </g>
+      ))}
+
+      {/* The causal chain, read left to right, branching where the evidence
+          does not settle which branch happened. */}
+      <path class="chain" d="M296 118 H360 L400 96 H452" />
+      <path class="chain chain--alt" d="M360 118 L400 168 H436" />
+      <circle class="node" cx="360" cy="118" r="5" />
+      <circle class="node" cx="452" cy="96" r="5" />
+      {/* An open node: a branch nothing recorded resolves. */}
+      <circle class="node node--open" cx="436" cy="168" r="5" />
+
+      <text class="fld fld--xs" x="380" y="80">PROBABLE</text>
+      <text class="fld fld--xs fld--hot" x="380" y="196">UNRESOLVED</text>
+      <path class="hair" d="M296 224 H532" />
+      <text class="fld" x="296" y="244">COMPETING EXPLANATION REQUIRED</text>
+    </g>
+  )}
+
+  {/* --- 04 -- the load-case brief and its iteration record ------------- */}
+  {slug === "final" && (
+    <g>
+      {/* The brief: the declared condition the design answers to. */}
+      <rect class="sheet" x="8" y="8" width="204" height="248" rx="4" />
+      <text class="hd hd--sm" x="26" y="34">LOAD-CASE BRIEF</text>
+      <path class="hair" d="M26 44 H194" />
+      {["DECLARED USE", "DURATION", "HANDLING", "CONSTRAINTS"].map((f, i) => (
+        <g>
+          <text class="fld fld--xs" x="26" y={70 + i * 34}>{f}</text>
+          <path class="line" d={`M26 ${76 + i * 34} H194`} />
+        </g>
+      ))}
+      <rect class="panel" x="26" y="196" width="168" height="44" />
+      <text class="fld fld--in" x="36" y="214">EXPLODED DIAGRAM</text>
+
+      {/* The iteration record: the four stages, and the one that is allowed to
+          be a failure. */}
+      <text class="hd hd--sm" x="244" y="34">ITERATION RECORD</text>
+      <path class="hair" d="M244 44 H532" />
+      {[
+        { t: "Declare", y: 66, state: "ok" },
+        { t: "Test", y: 112, state: "ok" },
+        { t: "Fail", y: 158, state: "fail" },
+        { t: "Revise", y: 204, state: "rev" },
+      ].map((s, i) => (
+        <g>
+          <rect class:list={["step", `step--${s.state}`]} x="244" y={s.y} width="180" height="32" />
+          <text class="fld fld--in" x="258" y={s.y + 21}>{String(i + 1).padStart(2, "0")} {s.t.toUpperCase()}</text>
+          {i < 3 && <path class="chain" d={`M334 ${s.y + 32} V${s.y + 46} m-4 -6 l4 6 l4 -6`} />}
+        </g>
+      ))}
+
+      {/* The defence: where the record ends, and the only place a held state
+          is claimed. */}
+      <path class="chain" d="M424 220 H464" />
+      <rect class="step step--held" x="446" y="140" width="86" height="80" />
+      <text class="fld fld--in fld--ok" x="458" y="170">DEFENDED</text>
+      <path class="held" d="M462 188 l10 12 l22 -28" />
+      <text class="fld fld--xs" x="244" y="254">A DOCUMENTED FAILURE IS EVIDENCE</text>
+    </g>
+  )}
+</svg>
+
+<style>
+  .aa {
+    display: block;
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+  }
+
+  /* --- Sheets, boards and panels ---------------------------------------- */
+
+  .sheet,
+  .board,
+  .panel,
+  .frag,
+  .step,
+  .clip {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.8;
+  }
+  .board { fill: color-mix(in srgb, var(--slop-charcoal) 4%, var(--slop-paper)); stroke-width: 2.2; }
+  .panel { stroke-width: 1.4; }
+  .frag { stroke-width: 1.6; }
+  .clip { fill: color-mix(in srgb, var(--slop-charcoal) 16%, var(--slop-paper)); }
+
+  /* A blank field. Hairlines, because they are ruled writing lines rather than
+     structural edges. */
+  .line,
+  .hair {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.1;
+  }
+  .line { opacity: 0.5; }
+  .hair { stroke-width: 1.6; }
+
+  /* --- The bench -------------------------------------------------------- */
+
+  .frame,
+  .platen,
+  .base {
+    fill: color-mix(in srgb, var(--slop-charcoal) 10%, var(--slop-paper));
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.8;
+  }
+  .base { fill: color-mix(in srgb, var(--slop-charcoal) 18%, var(--slop-paper)); }
+  .frame-leg,
+  .screw {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 2.4;
+  }
+  .screw { stroke-width: 3.4; }
+
+  .spec {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.8;
+  }
+  /* Hatched rather than tinted: the specimen under test is a material sample,
+     and every condition on the bench holds the same one. */
+  .spec-hatch {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1;
+    opacity: 0.55;
+    clip-path: inset(0);
+  }
+
+  /* --- Evidence --------------------------------------------------------- */
+
+  .pin {
+    fill: var(--slop-tomato);
+    stroke: none;
+  }
+  .wetline {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 2.4;
+  }
+  .failline {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .crop {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+  }
+  .dim {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.2;
+  }
+
+  .chain {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* The branch the evidence does not settle: dashed, and terminating in an
+     open node, with UNRESOLVED printed beside it. */
+  .chain--alt { stroke-dasharray: 5 4; opacity: 0.8; }
+  .node { fill: var(--slop-charcoal); stroke: none; }
+  .node--open {
+    fill: var(--slop-paper);
+    stroke: var(--slop-tomato);
+    stroke-width: 2.2;
+  }
+
+  /* --- Iteration states -------------------------------------------------- */
+
+  /* Each state is named in the box. The ink is the second channel. */
+  .step--fail { stroke: var(--slop-tomato); stroke-width: 2.4; }
+  .step--rev { stroke: var(--slop-toast); stroke-dasharray: 7 4; }
+  .step--held { stroke: var(--slop-lettuce); stroke-width: 2.4; }
+  .held {
+    fill: none;
+    stroke: var(--slop-lettuce);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* --- Type ------------------------------------------------------------- */
+
+  .hd,
+  .fld {
+    font-family: var(--slop-font-mono);
+    fill: var(--slop-charcoal);
+    letter-spacing: 0.06em;
+  }
+  .hd { font-size: 15px; font-weight: 600; }
+  .hd--sm { font-size: 13px; }
+  .fld { font-size: 11px; opacity: 0.72; }
+  .fld--in { opacity: 0.85; }
+  .fld--xs { font-size: 10px; }
+  .fld--hot { fill: var(--slop-tomato); opacity: 1; }
+  .fld--ok { fill: var(--slop-lettuce); opacity: 1; }
+</style>

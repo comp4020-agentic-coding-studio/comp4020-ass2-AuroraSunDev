@@ -1,0 +1,266 @@
+---
+/**
+ * The assessment overview.
+ *
+ * Its job (plan.md, "Assessment Overview") is to show that four submissions
+ * total 100%, explain their progression, and give direct access to every
+ * brief. So the 100% is stated at full size next to a capability path, and
+ * each assessment is a full-width band carrying its own artefact --- not four
+ * promotional cards, and not a repeat of the homepage's load axis.
+ *
+ * The weights and dates come from the assessments collection where the entry
+ * exists, and from the semester table where it does not, so the page never
+ * states a weight that disagrees with the brief it links to.
+ */
+import BaseLayout from "astro-theme-university/layouts/BaseLayout.astro";
+import { getPublishedCollection } from "astro-course-university/content";
+import { withBase } from "astro-theme-university/url";
+import ArchiveRule from "../../components/course/ArchiveRule.astro";
+import AssessmentArtefact from "../../components/course/AssessmentArtefact.astro";
+import { courseMeta } from "../../course-config";
+import { formatCourseDate } from "../../lib/dates";
+import { ASSESSMENTS, TOTAL_WEIGHT, WEEKS } from "../../lib/semester";
+import { siteConfig } from "../../site-config";
+import "../../styles/page.css";
+import "../../styles/assessments.css";
+
+const entries = await getPublishedCollection("assessments");
+const byId = new Map(entries.map((e) => [e.id, e]));
+
+const sessions = await getPublishedCollection("sessions");
+const builtWeeks = new Set(sessions.map((s) => s.id));
+
+/* The preparation span for each task, from plan.md's alignment: Weeks 1-3
+   prepare the Field Log, 4-6 the Component Test, 7-11 the Failure Autopsy, and
+   the whole semester the final. */
+const PREP: Record<string, [number, number]> = {
+  "field-log": [1, 3],
+  "component-test": [4, 6],
+  "failure-autopsy": [7, 11],
+  final: [1, 12],
+};
+
+/* One line each, saying what the task does rather than selling it. */
+const LINE: Record<string, string> = {
+  "field-log": "Document the assembly. Record what is there.",
+  "component-test": "Test one component. Control the conditions.",
+  "failure-autopsy": "Reconstruct the sequence. Keep the doubt.",
+  final: "Design to a declared load. Defend the result.",
+};
+
+const weekTitle = (n: number) => WEEKS.find((w) => w.week === n)!;
+const weekHref = (n: number) => {
+  const w = weekTitle(n);
+  return builtWeeks.has(w.slug) ? withBase(`/sessions/${w.slug}/`) : undefined;
+};
+
+const rows = ASSESSMENTS.map((a, i) => {
+  const entry = byId.get(a.slug);
+  return {
+    ...a,
+    n: String(i + 1).padStart(2, "0"),
+    /* The brief is the authority on its own weight and due date once it
+       exists; the semester table is the fallback while it does not. */
+    weight: entry ? Number(entry.data.weight) : a.weight,
+    due: entry ? entry.data.due : a.due,
+    href: entry ? withBase(`/assessments/${a.slug}/`) : undefined,
+    prep: PREP[a.slug],
+    line: LINE[a.slug],
+    /* The required submission components, read from the brief's own spec so
+       the overview cannot promise something the brief does not ask for. */
+    spec: (entry?.data.spec ?? []) as string[],
+  };
+});
+
+const stated = rows.reduce((sum, r) => sum + r.weight, 0);
+---
+
+<BaseLayout
+  title={`Assessment — ${courseMeta.code}`}
+  description={`Four submissions totalling ${TOTAL_WEIGHT}%: observe a system, isolate a variable, diagnose a failure, then defend a design. Weights, due dates, what counts as evidence, and every brief.`}
+  {...siteConfig}
+  mainAttrs={{ class: "slop-page assess" }}
+>
+  {/* --- Title, total and the capability path --------------------------- */}
+  <section class="band band--tight" aria-labelledby="as-title">
+    <div class="inner">
+      <h1 id="as-title" class="page-title">Four submissions. One structural argument.</h1>
+      <p class="lede">
+        Observe a system, isolate a variable, diagnose a failure, then defend a
+        design.
+      </p>
+
+      <div class="total">
+        <p class="total-fig">
+          <span class="total-k">Total assessment</span>
+          <b class="total-n display">{stated}%</b>
+        </p>
+
+        {/* The progression, drawn as one path with four stations. The word at
+            each station is the capability the task certifies, and each station
+            also announces the submission it stands for. */}
+        <div class="total-path">
+          <ol class="caps" aria-label="The assessment progression">
+            <li class="caps-line" aria-hidden="true"></li>
+            {rows.map((r) => (
+              <li class="cap">
+                <span class="cap-name display">{r.capability}</span>
+                <span class="cap-dot" aria-hidden="true"></span>
+                <span class="visually-hidden">
+                  — {r.title}, {r.weight}%
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p class="caps-note mono">Evidence load increases across the semester.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* --- Four bands ------------------------------------------------------ */}
+  <section class="band band--flush" aria-labelledby="bands-title">
+    <div class="inner">
+      <h2 id="bands-title" class="visually-hidden">The four submissions</h2>
+
+      <ol class="bands">
+        {rows.map((r) => (
+          <li class="ab">
+            <p class="ab-n display">{r.n}</p>
+
+            <div class="ab-id">
+              <h3 class="ab-t">
+                {r.href ? <a href={r.href}>{r.title}</a> : <span class="pending">{r.title}</span>}
+              </h3>
+              <p class="ab-line">{r.line}</p>
+            </div>
+
+            <p class="ab-w display">
+              {r.weight}%
+              <span class="visually-hidden"> of the total mark</span>
+            </p>
+
+            <p class="ab-cap mono">{r.capability}</p>
+
+            <p class="ab-prep">
+              <span class="ab-k mono">Prepared by</span>
+              {r.prep[0] === 1 && r.prep[1] === 12 ? (
+                <a href={withBase("/sessions/")}>All twelve weeks</a>
+              ) : (
+                <>
+                  {weekHref(r.prep[0]) ? (
+                    <a href={weekHref(r.prep[0])}>Week {r.prep[0]}</a>
+                  ) : (
+                    <span class="pending">Week {r.prep[0]}</span>
+                  )}
+                  <span aria-hidden="true">–</span>
+                  {weekHref(r.prep[1]) ? (
+                    <a href={weekHref(r.prep[1])}>Week {r.prep[1]}</a>
+                  ) : (
+                    <span class="pending">Week {r.prep[1]}</span>
+                  )}
+                </>
+              )}
+            </p>
+
+            <p class="ab-due">
+              <span class="ab-k mono">Due</span>
+              <span class="mono">{formatCourseDate(r.due)}</span>
+              <span class="ab-dueweek mono">end of Week {r.dueWeek}</span>
+            </p>
+
+            <p class="ab-act">
+              {r.href ? (
+                <a class="linkline" href={r.href}>Read the brief<span aria-hidden="true">→</span></a>
+              ) : (
+                <span class="pending">Read the brief <em>in preparation</em></span>
+              )}
+            </p>
+
+            <figure class="ab-fig">
+              <AssessmentArtefact slug={r.slug as any} />
+              <figcaption class="ab-figcap mono">{r.summary}</figcaption>
+            </figure>
+
+            {r.spec.length > 0 && (
+              <div class="ab-spec">
+                <p class="ab-k mono">What a marker checks</p>
+                <ul>
+                  {r.spec.slice(0, 3).map((line) => <li>{line}</li>)}
+                </ul>
+              </div>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  {/* --- Evidence, and what is not assessed ----------------------------- */}
+  <section class="band band--alt" aria-labelledby="ev-title">
+    <div class="inner">
+      <div class="ev">
+        <div>
+          <p class="eyebrow eyebrow--ruled">Standard</p>
+          <h2 id="ev-title" class="xl">What counts as evidence.</h2>
+          <ul class="ev-list ev-list--in">
+            <li><b>An annotated diagram</b> — with its labels tied to what was observed.</li>
+            <li><b>A measurement</b> — with the condition and the time it was taken under.</li>
+            <li><b>A comparison table</b> — with the variable declared and the constants named.</li>
+            <li><b>An observation record</b> — separating observed, inferred and unknown.</li>
+            <li><b>A failure sequence</b> — in the order the evidence supports, not the order that reads well.</li>
+            <li><b>A stated limitation</b> — what this method cannot establish.</li>
+            <li><b>A justified revision</b> — the change, and the evidence that prompted it.</li>
+          </ul>
+          <p>
+            The method definitions and recording sheets are in the{" "}
+            <a href={withBase("/field-manual/")}>Field Manual</a>.
+          </p>
+        </div>
+
+        <div>
+          <p class="eyebrow eyebrow--ruled">Excluded</p>
+          <h2 class="xl">What is not assessed.</h2>
+          <ul class="ev-list ev-list--out">
+            <li>Taste.</li>
+            <li>Ingredient expense.</li>
+            <li>Culinary skill.</li>
+            <li>Whether the specimen was consumed.</li>
+            <li>Visual attractiveness, in the absence of evidence.</li>
+          </ul>
+          <p class="ev-hard">
+            A failed physical test can receive strong marks when it is well
+            designed, honestly documented and carefully interpreted. A
+            successful-looking specimen with no evidence cannot.
+          </p>
+          <p>
+            Fabricated measurements and undocumented claims do not count as
+            evidence. The rules are in{" "}
+            <a href={withBase("/policies/#assessment-fairness")}>assessment fairness</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* --- Equivalent participation and where to go ----------------------- */}
+  <section class="band band--last" aria-labelledby="eq-title">
+    <div class="inner">
+      <h2 id="eq-title" class="eyebrow eyebrow--ruled">Before you start any of them</h2>
+      <p class="assess-eq">
+        Every practical task in this course can be completed with a physical
+        specimen, a non-food analogue, or the supplied evidence pack. All three
+        routes assess the same learning outcome and are marked against the same
+        criteria. No student is required to prepare, purchase, handle or consume
+        food.
+      </p>
+      <ul class="assess-next">
+        <li><a href={withBase("/policies/")}>Policies and participation</a></li>
+        <li><a href={withBase("/field-manual/")}>Field Manual: methods and evidence</a></li>
+        <li><a href={withBase("/sessions/")}>The twelve teaching weeks</a></li>
+        <li><a href={withBase("/course/")}>Course guide and learning outcomes</a></li>
+      </ul>
+      <ArchiveRule label={`${courseMeta.code} / assessment / ${stated}% declared`} />
+    </div>
+  </section>
+</BaseLayout>

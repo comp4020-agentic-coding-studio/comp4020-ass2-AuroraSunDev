@@ -1,0 +1,374 @@
+---
+/**
+ * The miniature artefact glyph for one teaching week.
+ *
+ * Twelve drawings, one per week, each showing that week's dominant artefact
+ * rather than an attractive sandwich --- plan.md's anti-recipe rule for the
+ * weeks index is explicit that these are classifiers, force lines, moisture
+ * fronts, thermal timelines and autopsy evidence. No two weeks share one, so
+ * the index cannot read as twelve interchangeable rows.
+ *
+ * Every glyph is presentational: the artefact's name is printed beside it in
+ * text, and `WEEK_ARTEFACTS[week].alt` in src/lib/semester.ts carries a
+ * description for anywhere the drawing is the only thing on screen. Colour is
+ * never the carrier: red is load or failure, brown is moisture or material
+ * condition, and the geometry says the same thing without either.
+ */
+import { WEEK_ARTEFACTS } from "../../lib/semester";
+
+interface Props {
+  /** A teaching week: the glyph and its description come from WEEK_ARTEFACTS. */
+  week?: number;
+  /** One of the four phase glyphs, which belong to no single week. */
+  phase?: "define" | "expose" | "assemble" | "diagnose";
+  /** Describes the phase glyph, which has no entry in WEEK_ARTEFACTS. */
+  alt?: string;
+  /** Set where the glyph is the only description of the artefact. */
+  labelled?: boolean;
+}
+const { week, phase, alt: altProp, labelled = false } = Astro.props;
+if ((week === undefined) === (phase === undefined)) {
+  throw new Error("WeekGlyph takes exactly one of `week` or `phase`");
+}
+const record = week === undefined ? undefined : WEEK_ARTEFACTS[week];
+if (week !== undefined && !record) {
+  throw new Error(`WeekGlyph: no artefact recorded for week ${week}`);
+}
+const glyph = record?.glyph ?? phase!;
+const alt = altProp ?? record?.alt ?? "";
+const uid = `wg-${glyph}`;
+---
+
+<svg
+  class:list={["wg", `wg--${glyph}`]}
+  viewBox="0 0 104 40"
+  role={labelled ? "img" : "presentation"}
+  aria-label={labelled ? alt : undefined}
+  focusable="false"
+>
+  <defs>
+    <pattern id={`${uid}-stip`} width="4.5" height="4.5" patternUnits="userSpaceOnUse">
+      <circle class="stip" cx="1.1" cy="1.1" r="0.8" />
+      <circle class="stip" cx="3.3" cy="3.3" r="0.8" />
+    </pattern>
+    <pattern id={`${uid}-hatch`} width="5" height="5" patternUnits="userSpaceOnUse"
+             patternTransform="rotate(38)">
+      <line class="hatch" x1="0" y1="0" x2="0" y2="5" />
+    </pattern>
+  </defs>
+
+  {/* 01 --- the classifier: a criterion drawn as a boundary that has to be
+      argued for, around a specimen that sits awkwardly inside it. */}
+  {glyph === "classify" && (
+    <g>
+      <rect class="bound" x="16" y="9" width="72" height="22" />
+      <path class="mat" d="M22 20 q 6 -4 12 0 t 12 0 t 12 0 t 12 0 t 6 0" />
+      <path class="rule" d="M22 26 H82" />
+      <path class="tick" d="M16 5 V9 M88 5 V9" />
+    </g>
+  )}
+
+  {/* 02 --- the beam: a span between two supports, deflected at mid-span, with
+      the undeflected line left behind as the reference. */}
+  {glyph === "beam" && (
+    <g>
+      <path class="ghost" d="M18 16 H86" />
+      <path class="mat" d="M18 16 q 34 13 68 0" />
+      <path class="rule" d="M18 16 v10 M86 16 v10" />
+      <path class="ground" d="M10 30 H30 M74 30 H94" />
+      <path class="force" d="M52 2 V12 m-3.5 -5 l3.5 5 l3.5 -5" />
+    </g>
+  )}
+
+  {/* 03 --- slip: one layer hatched, sheared between two faces travelling in
+      opposite directions. */}
+  {glyph === "slip" && (
+    <g>
+      <rect class="mat" x="30" y="11" width="44" height="18" />
+      <rect x="30" y="11" width="44" height="18" fill={`url(#${uid}-hatch)`} stroke="none" />
+      <path class="force" d="M24 20 H6 m6 -4.5 l-6 4.5 l6 4.5" />
+      <path class="force" d="M80 20 H98 m-6 -4.5 l6 4.5 l-6 4.5" />
+    </g>
+  )}
+
+  {/* 04 --- the moisture front: a stippled zone advancing through a boundary,
+      three arrows marking three observation times. */}
+  {glyph === "moisture" && (
+    <g>
+      <path class="rule" d="M8 9 H70 M8 31 H70" />
+      <rect x="8" y="9" width="34" height="22" fill={`url(#${uid}-stip)`} stroke="none" />
+      <path class="front" d="M42 9 V31" />
+      <path class="wet" d="M78 12 H98 m-6 -4 l6 4 l-6 4" />
+      <path class="wet" d="M78 20 H94 m-6 -4 l6 4 l-6 4" />
+      <path class="wet" d="M78 28 H90 m-6 -4 l6 4 l-6 4" />
+    </g>
+  )}
+
+  {/* 05 --- the load path: load entering the top, threading past a layer that
+      carries nothing, and arriving at the support. */}
+  {glyph === "loadpath" && (
+    <g>
+      <path class="rule" d="M14 11 H90 M14 29 H90" />
+      <path class="ghost" d="M14 20 H90" />
+      <path class="path" d="M52 2 V11 L38 20 L52 29 V38" />
+      <circle class="node" cx="38" cy="20" r="2.4" />
+      <path class="ground" d="M42 38 H62" />
+    </g>
+  )}
+
+  {/* 06 --- the interface: a continuous binding film between two layers, thinned
+      to nothing at one end, where it stops binding and starts lubricating. */}
+  {glyph === "interface" && (
+    <g>
+      <path class="rule" d="M10 12 H94 M10 28 H94" />
+      <path class="film" d="M10 20 q 10 -3.5 21 0 t 21 0 t 21 0 t 21 0" />
+      <path class="film film--thin" d="M58 20 H94" />
+      <path class="tick" d="M58 6 V12" />
+    </g>
+  )}
+
+  {/* 07 --- the thermal timeline: one condition read at three time points, not
+      an animation. The trace between them is dashed, because nothing was
+      measured in between. */}
+  {glyph === "thermal" && (
+    <g>
+      <path class="rule" d="M10 34 H96" />
+      <path class="tick" d="M20 34 V29 M53 34 V29 M86 34 V29" />
+      <path class="trace" d="M20 24 L53 14 L86 8" />
+      <circle class="node" cx="20" cy="24" r="2.6" />
+      <circle class="node" cx="53" cy="14" r="2.6" />
+      <circle class="node" cx="86" cy="8" r="2.6" />
+    </g>
+  )}
+
+  {/* 08 --- the order of layers: the same four categories, one of them lifted
+      out of its position and set down in another. */}
+  {glyph === "order" && (
+    <g>
+      <path class="rule" d="M14 8 H70 M14 32 H70" />
+      <rect class="mat" x="14" y="13" width="56" height="6" />
+      <rect class="ghost-box" x="14" y="21" width="56" height="6" />
+      <path class="move" d="M78 25 V15 m-3.5 5 l3.5 -5 l3.5 5" />
+    </g>
+  )}
+
+  {/* 09 --- cutting geometry: a cut that removes continuity and makes two new
+      free edges, each with its own force line. */}
+  {glyph === "cut" && (
+    <g>
+      <rect class="rule-box" x="12" y="11" width="80" height="18" />
+      <path class="cutline" d="M52 4 V36" />
+      <path class="force" d="M44 20 H32 m4 -3.5 l-4 3.5 l4 3.5" />
+      <path class="force" d="M60 20 H72 m-4 -3.5 l4 3.5 l-4 3.5" />
+    </g>
+  )}
+
+  {/* 10 --- transport: the specimen inside a packaging boundary, tilted, with
+      the route it travelled traced beneath. */}
+  {glyph === "transport" && (
+    <g>
+      <g transform="rotate(-11 52 17)">
+        <rect class="pack" x="26" y="7" width="52" height="20" />
+        <path class="rule" d="M30 17 H74" />
+      </g>
+      <path class="route" d="M8 35 q 14 -6 26 0 t 26 0 t 26 0" />
+    </g>
+  )}
+
+  {/* 11 --- the autopsy: three evidence fragments, and a causal chain that
+      branches because the evidence does not settle which branch happened. */}
+  {glyph === "autopsy" && (
+    <g>
+      <path class="frag" d="M10 8 h14 l-3 7 h-12 Z" />
+      <path class="frag" d="M10 24 h12 l2 7 h-14 Z" />
+      <path class="chain" d="M28 12 H48 L64 20 H88" />
+      <path class="chain chain--alt" d="M48 12 L64 30 H84" />
+      <circle class="node" cx="48" cy="12" r="2.6" />
+      <circle class="node node--open" cx="84" cy="30" r="2.6" />
+    </g>
+  )}
+
+  {/* 12 --- the final rig: a declared load, applied, and a specimen that did
+      not lose its usable structure under it. */}
+  {glyph === "final" && (
+    <g>
+      <path class="rule" d="M18 6 H86 M18 34 H86" />
+      <path class="rule" d="M22 6 v4 M82 6 v4" />
+      <rect class="mat" x="28" y="15" width="48" height="11" />
+      <path class="force" d="M40 2 V12 m-3 -4 l3 4 l3 -4" />
+      <path class="force" d="M64 2 V12 m-3 -4 l3 4 l3 -4" />
+      <path class="held" d="M88 22 l4 5 l8 -12" />
+    </g>
+  )}
+
+  {/* The four phase glyphs, reused on the phone composition. */}
+  {glyph === "define" && (
+    <g>
+      <path class="rule" d="M16 12 H88 M28 12 V32 M76 12 V32" />
+      <path class="tick" d="M46 6 l6 -3 l6 3" />
+      <path class="ghost" d="M16 32 H88" />
+    </g>
+  )}
+  {glyph === "expose" && (
+    <g>
+      <path class="force" d="M34 6 V18 m-3 -4 l3 4 l3 -4" />
+      <path class="force" d="M52 6 V18 m-3 -4 l3 4 l3 -4" />
+      <path class="force" d="M70 6 V18 m-3 -4 l3 4 l3 -4" />
+      <path class="mat" d="M14 26 q 12 -6 24 0 t 24 0 t 24 0" />
+      <path class="rule" d="M14 33 H86" />
+    </g>
+  )}
+  {glyph === "assemble" && (
+    <g>
+      <rect class="rule-box" x="40" y="13" width="26" height="14" />
+      <path class="rule" d="M44 20 H62" />
+      <path class="force" d="M34 20 H14 m6 -4.5 l-6 4.5 l6 4.5" />
+      <path class="force" d="M72 20 H92 m-6 -4.5 l6 4.5 l-6 4.5" />
+    </g>
+  )}
+  {glyph === "diagnose" && (
+    <g>
+      <circle class="lens" cx="46" cy="18" r="13" />
+      <path class="rule" d="M56 28 L72 36" />
+      <path class="chain" d="M40 18 H52" />
+    </g>
+  )}
+</svg>
+
+<style>
+  .wg {
+    display: block;
+    width: 104px;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Charcoal structure: the specimen, its rules and its supports. */
+  .rule,
+  .tick,
+  .ground,
+  .chain {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .ground { stroke-width: 2.6; }
+  .tick { stroke-width: 1.3; }
+
+  .rule-box,
+  .pack {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+  }
+  .pack { stroke-width: 1.8; }
+
+  /* A material layer: outlined, and filled only enough to read as solid. */
+  .mat {
+    fill: color-mix(in srgb, var(--slop-charcoal) 8%, transparent);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+  }
+  .wg--beam .mat,
+  .wg--classify .mat,
+  .wg--expose .mat {
+    fill: none;
+    stroke-width: 1.8;
+  }
+
+  /* The reference state a measurement is taken against: present, but not the
+     subject. Dashed, so it is not merely a lighter version of the same line. */
+  .ghost,
+  .ghost-box {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 3;
+    opacity: 0.55;
+  }
+
+  /* A boundary under dispute --- dashed because the criterion is the argument,
+     not a measured edge. */
+  .bound {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+    stroke-dasharray: 5 3.5;
+  }
+
+  .hatch { stroke: var(--slop-tomato); stroke-width: 1.1; }
+  .stip { fill: var(--slop-toast); }
+
+  /* Load and failure. */
+  .force,
+  .path,
+  .cutline,
+  .move {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cutline { stroke-dasharray: 4 3; }
+  .path { stroke-width: 2.2; }
+
+  /* Moisture and material condition. */
+  .front,
+  .wet,
+  .film {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+  .front { stroke-width: 2.2; }
+  .film--thin { stroke-width: 0.9; stroke-dasharray: 2 2.5; }
+
+  /* A time trace: dashed, because only the marked points were measured. */
+  .trace {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.8;
+    stroke-dasharray: 5 3;
+  }
+
+  .route {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.6;
+    stroke-dasharray: 6 3;
+  }
+
+  .node { fill: var(--slop-charcoal); stroke: none; }
+  /* An unresolved end of the chain: open, not filled. */
+  .node--open {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+  }
+  .chain--alt { stroke-dasharray: 4 3; opacity: 0.75; }
+
+  .frag {
+    fill: color-mix(in srgb, var(--slop-charcoal) 14%, transparent);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.4;
+  }
+
+  .lens {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 2;
+  }
+
+  /* Held: the one place green appears in this set, and never alone --- the
+     week's status is printed beside it. */
+  .held {
+    fill: none;
+    stroke: var(--slop-lettuce);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>

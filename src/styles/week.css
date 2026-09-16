@@ -1,0 +1,478 @@
+/* A teaching week.
+ *
+ * Shared anatomy, changing apparatus. This file styles the anatomy --- the
+ * identity block, the station frame, the assessment connection and the week
+ * navigation --- plus the station's state controls, which are one mechanism
+ * used by all twelve.
+ *
+ * Week 11 sets its identity block on charcoal. Everything that block contains
+ * inherits its inks from `.slop-band--ink` in course.css, which is where the
+ * on-charcoal palette lives, so nothing here re-states a colour that was only
+ * verified against paper.
+ */
+
+/* --- 1. Identity block -------------------------------------------------- */
+
+.week .wh {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "n     id"
+    "marks marks";
+  column-gap: clamp(0.75rem, 2vw, 1.5rem);
+  row-gap: 1.25rem;
+}
+
+@media (width >= 1000px) {
+  .week .wh {
+    /* `auto` on the number column, not a fixed width: "11" and "12" set wider
+       than 7.5rem at the display size and wrapped onto two lines. */
+    grid-template-columns: auto minmax(0, 1fr) minmax(12rem, 17rem);
+    grid-template-areas: "n id marks";
+    align-items: start;
+    column-gap: clamp(1rem, 2.5vw, 2.5rem);
+  }
+}
+
+/* The week number, cropped large. It marks a change of phase in the semester
+   without replacing the page's heading, which is the title beside it. */
+.week .wh-n {
+  grid-area: n;
+  margin: 0;
+  font-size: clamp(3.5rem, 11vw, 8rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  color: var(--slop-charcoal);
+  opacity: 0.22;
+  white-space: nowrap;
+}
+.week--ink .wh-n { opacity: 0.4; }
+
+.week .wh-id { grid-area: id; }
+.week .wh-title {
+  font-size: clamp(2.1rem, 4.8vw, 3.75rem);
+  margin-bottom: 0.5rem;
+}
+.week .wh-q {
+  margin: 0 0 1rem;
+  font-size: clamp(1.0625rem, 1.6vw, 1.4rem);
+  line-height: 1.25;
+  max-width: 40ch;
+  border-left: var(--slop-rule-heavy) solid var(--slop-tomato);
+  padding-left: 0.9rem;
+}
+.week .wh-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  margin: 0;
+}
+
+.week .wh-marks {
+  grid-area: marks;
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+@media (width >= 1000px) {
+  .week .wh-marks {
+    justify-items: end;
+    text-align: right;
+    padding-top: 0.5rem;
+  }
+}
+.week .wh-marks p { margin: 0; }
+.week .wh-glyph { display: block; }
+.week .wh-glyph .wg { width: 120px; }
+
+.week .wh-due a,
+.week .wh-due .pending {
+  color: var(--slop-tomato);
+  letter-spacing: 0.04em;
+}
+.week--ink .wh-due a { color: var(--slop-tomato-on-ink); }
+
+/* --- 2. The test station ------------------------------------------------ */
+
+.week .st { margin-top: clamp(1.25rem, 2.5vw, 2rem); }
+
+.week .st-set {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.week .st-legend {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0;
+  margin-bottom: clamp(0.9rem, 2vw, 1.5rem);
+}
+.week .st-name { color: var(--slop-toast); }
+.week .st-prompt {
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  max-width: 54ch;
+}
+
+/* The radios themselves are off-screen, not `display: none` --- a hidden
+   radio is removed from the accessibility tree and from the tab order, which
+   would be the whole control gone. The visible label is what the reader sees,
+   and it gets the focus ring. */
+.week .st-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.week .st-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: clamp(0.9rem, 2vw, 1.5rem);
+}
+
+.week .st-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0.6rem 1.1rem;
+  border: var(--slop-rule-heavy) solid var(--slop-rule);
+  background: var(--slop-paper);
+  font-family: var(--slop-font-mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  align-items: center;
+}
+.week .st-label:hover { background: var(--slop-wash); }
+.week .st-label-n { color: var(--slop-toast); font-size: 0.75rem; }
+
+/* The selected state. Filled, and the number switches to the paper ground, so
+   it is legible as well as marked --- and the state's own name is printed in
+   the reading below, so the fill is never the only signal of which is on. */
+.week .st-radio:nth-of-type(1):checked ~ .st-labels .st-label:nth-child(1),
+.week .st-radio:nth-of-type(2):checked ~ .st-labels .st-label:nth-child(2),
+.week .st-radio:nth-of-type(3):checked ~ .st-labels .st-label:nth-child(3),
+.week .st-radio:nth-of-type(4):checked ~ .st-labels .st-label:nth-child(4) {
+  background: var(--slop-tomato);
+  border-color: var(--slop-tomato);
+  color: var(--slop-paper);
+}
+.week .st-radio:nth-of-type(1):checked ~ .st-labels .st-label:nth-child(1) .st-label-n,
+.week .st-radio:nth-of-type(2):checked ~ .st-labels .st-label:nth-child(2) .st-label-n,
+.week .st-radio:nth-of-type(3):checked ~ .st-labels .st-label:nth-child(3) .st-label-n,
+.week .st-radio:nth-of-type(4):checked ~ .st-labels .st-label:nth-child(4) .st-label-n {
+  color: var(--slop-paper);
+  opacity: 0.8;
+}
+
+/* Focus follows the radio, so the ring has to be drawn on its label. */
+.week .st-radio:focus-visible ~ .st-labels .st-label { outline: none; }
+.week .st-radio:nth-of-type(1):focus-visible ~ .st-labels .st-label:nth-child(1),
+.week .st-radio:nth-of-type(2):focus-visible ~ .st-labels .st-label:nth-child(2),
+.week .st-radio:nth-of-type(3):focus-visible ~ .st-labels .st-label:nth-child(3),
+.week .st-radio:nth-of-type(4):focus-visible ~ .st-labels .st-label:nth-child(4) {
+  outline: 3px solid var(--slop-charcoal);
+  outline-offset: 3px;
+}
+
+/* One state on screen at a time. With CSS off, every state renders in order
+   with its own labelled reading, which is a legible fallback rather than an
+   empty frame. */
+.week .st-panel { display: none; }
+.week .st-radio:nth-of-type(1):checked ~ .st-panels .st-panel:nth-child(1),
+.week .st-radio:nth-of-type(2):checked ~ .st-panels .st-panel:nth-child(2),
+.week .st-radio:nth-of-type(3):checked ~ .st-panels .st-panel:nth-child(3),
+.week .st-radio:nth-of-type(4):checked ~ .st-panels .st-panel:nth-child(4) {
+  display: block;
+}
+
+.week .st-fig {
+  margin: 0;
+  /* Capped, and not because the page lacks room. The drawing's type is sized
+     in viewBox units, so at the page's full 1760px the 16px annotations render
+     at about 34px --- larger than the section heading above them. The station
+     is the page's dominant artefact at this width; past it, it is just big. */
+  max-width: 1000px;
+  border: var(--slop-rule-heavy) solid var(--slop-rule);
+  background: var(--slop-paper);
+}
+.week .st-fig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.week .st-read {
+  display: grid;
+  gap: 0.3rem;
+  padding: clamp(0.75rem, 1.5vw, 1.1rem) clamp(0.9rem, 2vw, 1.5rem);
+  border-top: var(--slop-rule-width) solid var(--slop-rule);
+}
+.week .st-read-k { color: var(--slop-toast); }
+.week .st-read-t { max-width: 72ch; }
+
+/* --- The station drawings' shared ink ----------------------------------- */
+
+.week .st-fig .rule-box,
+.week .st-fig .pack,
+.week .st-fig .frame,
+.week .st-fig .platen,
+.week .st-fig .cause,
+.week .st-fig .obs,
+.week .st-fig .frag {
+  fill: var(--slop-paper);
+  stroke: var(--slop-charcoal);
+  stroke-width: 2;
+}
+.week .st-fig .pack { stroke-width: 3; }
+.week .st-fig .platen { fill: color-mix(in srgb, var(--slop-charcoal) 12%, var(--slop-paper)); }
+.week .st-fig .obs { stroke-width: 3; }
+
+/* A layer's material: outlined and lightly filled, never appetising. */
+.week .st-fig .mat,
+.week .st-fig .mat-line {
+  fill: color-mix(in srgb, var(--slop-tomato) 22%, var(--slop-paper));
+  stroke: var(--slop-charcoal);
+  stroke-width: 2;
+}
+.week .st-fig .mat-line { fill: none; stroke-width: 2.6; }
+.week .st-fig .pore { fill: color-mix(in srgb, var(--slop-toast) 32%, transparent); }
+.week .st-fig .hatch { stroke: var(--slop-charcoal); stroke-width: 1.1; opacity: 0.7; }
+
+/* Structural categories, told apart by fill AND by the name printed beside
+   each one in the drawing. */
+.week .st-fig .is-wetlayer { fill: color-mix(in srgb, var(--slop-toast) 34%, var(--slop-paper)); }
+.week .st-fig .is-bindlayer { fill: color-mix(in srgb, var(--slop-lettuce) 28%, var(--slop-paper)); }
+.week .st-fig .is-looselayer {
+  fill: color-mix(in srgb, var(--slop-tomato) 16%, var(--slop-paper));
+  stroke-dasharray: 8 5;
+}
+.week .st-fig .is-outerlayer { fill: var(--slop-paper); }
+.week .st-fig .is-focus { stroke-width: 3.4; }
+
+.week .st-fig .wet {
+  fill: color-mix(in srgb, var(--slop-toast) 46%, var(--slop-paper));
+  stroke: none;
+}
+.week .st-fig .frontline,
+.week .st-fig .drop {
+  fill: none;
+  stroke: var(--slop-toast);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.week .st-fig .film-band {
+  fill: color-mix(in srgb, var(--slop-toast) 40%, var(--slop-paper));
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.6;
+}
+.week .st-fig .thermo {
+  fill: color-mix(in srgb, var(--slop-tomato) 34%, var(--slop-paper));
+  stroke: var(--slop-charcoal);
+  stroke-width: 2;
+}
+
+.week .st-fig .bench,
+.week .st-fig .support {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 3.4;
+}
+.week .st-fig .frame,
+.week .st-fig .screw {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 3;
+}
+.week .st-fig .hatchline {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.3;
+  opacity: 0.7;
+}
+.week .st-fig .axis,
+.week .st-fig .hair,
+.week .st-fig .leader,
+.week .st-fig .dim,
+.week .st-fig .dimtick {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.4;
+}
+.week .st-fig .hair { stroke: var(--slop-rule-hair); stroke-width: 1.6; }
+.week .st-fig .dimtick { stroke-dasharray: 5 4; }
+
+/* The datum a measurement is taken against, and the trace a recovery left. */
+.week .st-fig .ghost {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.5;
+  stroke-dasharray: 7 5;
+  opacity: 0.5;
+}
+.week .st-fig .trace,
+.week .st-fig .route {
+  fill: none;
+  stroke: var(--slop-toast);
+  stroke-width: 2;
+  stroke-dasharray: 7 5;
+}
+
+/* Load, failure and the criterion under dispute. */
+.week .st-fig .force,
+.week .st-fig .path,
+.week .st-fig .cutline,
+.week .st-fig .strike {
+  fill: none;
+  stroke: var(--slop-tomato);
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.week .st-fig .cutline { stroke-dasharray: 8 5; }
+.week .st-fig .strike { stroke-width: 2.6; }
+.week .st-fig .bound {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 2;
+  stroke-dasharray: 9 6;
+}
+.week .st-fig .hinge {
+  fill: var(--slop-paper);
+  stroke: var(--slop-tomato);
+  stroke-width: 3;
+}
+.week .st-fig .bind {
+  fill: none;
+  stroke: var(--slop-lettuce);
+  stroke-width: 3;
+}
+.week .st-fig .held {
+  fill: none;
+  stroke: var(--slop-lettuce);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.week .st-fig .chain {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.week .st-fig .chain.is-out,
+.week .st-fig .cause.is-out { opacity: 0.32; stroke-dasharray: 6 5; }
+.week .st-fig .node {
+  fill: var(--slop-paper);
+  stroke: var(--slop-charcoal);
+  stroke-width: 2.4;
+}
+.week .st-fig .node.is-on { fill: var(--slop-tomato); stroke: var(--slop-tomato); }
+.week .st-fig .frame-tick {
+  fill: var(--slop-paper);
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.6;
+}
+.week .st-fig .frame-tick.is-on { fill: var(--slop-tomato); stroke: var(--slop-tomato); }
+/* A fragment not yet admitted to the record: faded and dashed, with its own
+   text faded too, so it reads as pending rather than as a fainter fact. */
+.week .st-fig .frag { opacity: 0.35; stroke-dasharray: 7 5; }
+.week .st-fig .frag.is-in { opacity: 1; stroke-dasharray: none; }
+
+.week .st-fig .lab,
+.week .st-fig .ann,
+.week .st-fig .dimlab {
+  font-family: var(--slop-font-mono);
+  fill: var(--slop-charcoal);
+}
+.week .st-fig .lab { font-size: 15px; letter-spacing: 0.08em; }
+.week .st-fig .lab--v { letter-spacing: 0.04em; font-size: 14px; }
+.week .st-fig .lab--out { opacity: 0.42; }
+.week .st-fig .lab--ok { fill: var(--slop-lettuce); }
+.week .st-fig .lab--no { fill: var(--slop-tomato); }
+.week .st-fig .ann { font-size: 16px; }
+.week .st-fig .ann--head { font-weight: 600; }
+.week .st-fig .ann--fail { fill: var(--slop-tomato); }
+.week .st-fig .ann--wet { fill: var(--slop-toast); }
+.week .st-fig .ann--ok { fill: var(--slop-lettuce); }
+.week .st-fig .dimlab { font-size: 16px; font-weight: 600; }
+
+/* --- 3. The week's own prose -------------------------------------------- */
+
+.week .wk-body h2 {
+  margin-top: clamp(2rem, 3.5vw, 2.75rem);
+  padding-top: 0.75rem;
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.week .wk-body > :first-child { margin-top: 0; }
+
+/* --- 7. The assessment connection --------------------------------------- */
+
+.week .wk-asm {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 3rem);
+  margin-top: clamp(1rem, 2vw, 1.5rem);
+}
+@media (width >= 900px) {
+  .week .wk-asm { grid-template-columns: minmax(0, 46fr) minmax(0, 54fr); }
+}
+.week .wk-asm-cap { color: var(--slop-lettuce); margin: 0 0 0.35rem; }
+.week .wk-asm-t {
+  margin: 0 0 0.5rem;
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.8vw, 2.25rem);
+  line-height: 1.05;
+}
+.week .wk-asm-t a {
+  color: var(--slop-charcoal);
+  text-decoration-color: var(--slop-charcoal);
+}
+.week .wk-asm-t a:hover { color: var(--slop-tomato); text-decoration-color: var(--slop-tomato); }
+.week .wk-asm p { max-width: 50ch; }
+.week .wk-asm-due { color: var(--slop-toast); text-transform: none; }
+.week .wk-asm-side {
+  border-left: var(--slop-rule-heavy) solid var(--slop-rule-hair);
+  padding-left: clamp(1rem, 2vw, 1.5rem);
+}
+.week .wk-asm-side p { font-size: 0.9375rem; }
+
+/* --- 8. Week navigation -------------------------------------------------- */
+
+.week .wk-nav {
+  display: grid;
+  gap: 0;
+}
+@media (width >= 800px) {
+  .week .wk-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.week .wk-nav > * {
+  display: grid;
+  gap: 0.2rem;
+  align-content: start;
+  padding: 0.9rem 1.5rem 0.9rem 0;
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+}
+.week .wn-k { color: var(--slop-toast); }
+.week .wk-nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--slop-charcoal);
+  text-decoration-color: var(--slop-charcoal);
+}
+.week .wk-nav a:hover { color: var(--slop-tomato); text-decoration-color: var(--slop-tomato); }
+@media (width >= 800px) {
+  .week .wk-nav .wn-mid { justify-items: center; text-align: center; }
+  .week .wk-nav .wn-end { justify-items: end; text-align: right; }
+}

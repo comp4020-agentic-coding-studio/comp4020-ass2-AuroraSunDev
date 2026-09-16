@@ -313,8 +313,8 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         })}
       </ol>
       <p class="track-foot">
-        Weeks 3 to 12 open as the semester is published. The full schedule lives
-        on the <a href={withBase("/sessions/")}>semester structure</a> page.
+        Every week's date, structural question and artefact is on the{" "}
+        <a href={withBase("/sessions/")}>semester load path</a>.
       </p>
     </div>
   </section>
@@ -412,7 +412,9 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
             Moisture Is a Load — the Week 4 lecture deck
           </h3>
           <p class="res-act">
-            <span class="pending">Open the Week 4 lecture deck <em>in preparation</em></span>
+            <a class="linkline" href={withBase("/lectures/moisture-is-a-load/")}>
+              Open the Week 4 lecture deck<span aria-hidden="true">→</span>
+            </a>
           </p>
         </article>
 
@@ -422,7 +424,9 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
             The Field Manual — procedures, evidence and failure modes
           </h3>
           <p class="res-act">
-            <span class="pending">Consult the Field Manual <em>in preparation</em></span>
+            <a class="linkline" href={withBase("/field-manual/")}>
+              Consult the Field Manual<span aria-hidden="true">→</span>
+            </a>
           </p>
         </article>
       </div>
@@ -446,9 +450,12 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
         <div class="det-side">
           <p class="det-line">From definition to destructive testing. One load path.</p>
           <ul class="det-links">
-            <li><a href={withBase("/policies/")}>Policies, safety and equivalent participation</a></li>
-            <li><a href={withBase("/assessments/")}>Assessment</a></li>
+            <li><a href={withBase("/course/")}>Course guide and learning outcomes</a></li>
             <li><a href={withBase("/sessions/")}>Semester structure</a></li>
+            <li><a href={withBase("/assessments/")}>Assessment</a></li>
+            <li><a href={withBase("/field-manual/")}>Field Manual</a></li>
+            <li><a href={withBase("/policies/")}>Policies, safety and equivalent participation</a></li>
+            <li><a href={withBase("/lectures/")}>Lectures</a></li>
             <li><a href={withBase("/people/")}>People</a></li>
           </ul>
           <p class="det-stamp"><Stamp state="archived" label="Experiment archived" /></p>

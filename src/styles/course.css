@@ -135,6 +135,12 @@
   align-items: center;
   gap: var(--slop-space-sm);
   margin-block: var(--slop-space-md);
+  /* The label is a record and can be long. Unwrapped it pushed the page to a
+     469px scroll width at the 390px marking viewport --- caught by listing the
+     nodes crossing the viewport's right edge, not by looking at it. Wrapping
+     drops the label below its rule on a phone, which is the right reading
+     order for a mark that annotates the rule above it. */
+  flex-wrap: wrap;
 }
 
 .slop-archive-rule__line {
@@ -147,7 +153,9 @@
 }
 
 .slop-archive-rule__label {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-wrap: break-word;
   font-family: var(--slop-font-mono);
   font-size: var(--at-font-size-xs);
   letter-spacing: 0.08em;

@@ -1,12 +1,41 @@
 ---
+/**
+ * One teaching week.
+ *
+ * The information order is fixed across all twelve (plan.md, "Shared Week
+ * Anatomy"): number, date and title; the structural question; the concept; the
+ * failure specimen; the investigation; the assessment connection; and previous
+ * / all weeks / next at the foot. What changes from week to week is the test
+ * station --- one unique artefact per week, from src/components/week ---
+ * and, for Week 11, the ground the page is printed on.
+ *
+ * The concept, failure condition and investigation are the week's own markdown
+ * body, so the shared anatomy is a frame around real teaching content rather
+ * than a template with slots.
+ */
 import { render } from "astro:content";
 import { getPublishedCollection } from "astro-course-university/content";
 import RelatedContent from "astro-course-university/components/RelatedContent.astro";
 import SpecList from "astro-course-university/components/SpecList.astro";
-import ContentLayout from "astro-theme-university/layouts/ContentLayout.astro";
+import BaseLayout from "astro-theme-university/layouts/BaseLayout.astro";
+import { withBase } from "astro-theme-university/url";
+import ArchiveRule from "../../components/course/ArchiveRule.astro";
+import SpecimenLabel from "../../components/course/SpecimenLabel.astro";
+import Stamp from "../../components/course/Stamp.astro";
+import WeekGlyph from "../../components/course/WeekGlyph.astro";
+import TestStation from "../../components/week/TestStation.astro";
 import TeachingTeam from "../../components/TeachingTeam.astro";
+import { courseMeta } from "../../course-config";
 import { formatCourseDate } from "../../lib/dates";
+import {
+  ASSESSMENTS,
+  WEEKS,
+  WEEK_ARTEFACTS,
+  indexPhaseOf,
+} from "../../lib/semester";
 import { graphCollections, sessionLabels, siteConfig } from "../../site-config";
+import "../../styles/page.css";
+import "../../styles/week.css";
 
 export async function getStaticPaths() {
   const sessions = await getPublishedCollection("sessions");
@@ -15,19 +44,211 @@ export async function getStaticPaths() {
 
 const { session } = Astro.props;
 const { Content } = await render(session);
+const n = Number(session.data.week);
+
+const record = WEEKS.find((w) => w.week === n);
+const phase = indexPhaseOf(n);
+const { artefact } = WEEK_ARTEFACTS[n];
+
+/* Previous and next follow the semester, not the collection's file order. */
+const built = new Set((await getPublishedCollection("sessions")).map((s) => s.id));
+const at = (week: number) => WEEKS.find((w) => w.week === week);
+const linkTo = (week?: number) => {
+  const w = week === undefined ? undefined : at(week);
+  if (!w) return undefined;
+  return { week: w, href: built.has(w.slug) ? withBase(`/sessions/${w.slug}/`) : undefined };
+};
+const prev = linkTo(n > 1 ? n - 1 : undefined);
+const next = linkTo(n < WEEKS.length ? n + 1 : undefined);
+
+/* The assessment this week prepares, from plan.md's alignment: weeks 1-3 the
+   Field Log, 4-6 the Component Test, 7-11 the Failure Autopsy, and week 12 the
+   final. Week 12 draws on the whole semester, so it points at the final. */
+const prepares =
+  n <= 3 ? "field-log" : n <= 6 ? "component-test" : n <= 11 ? "failure-autopsy" : "final";
+const assessment = ASSESSMENTS.find((a) => a.slug === prepares)!;
+const builtAssessments = new Set((await getPublishedCollection("assessments")).map((a) => a.id));
+const assessmentHref = builtAssessments.has(prepares)
+  ? withBase(`/assessments/${prepares}/`)
+  : undefined;
+/* A submission also falls due at the end of some weeks. */
+const dueHere = ASSESSMENTS.find((a) => a.dueWeek === n);
+
+const lectures = await getPublishedCollection("lectures");
+const lecture = lectures.find((l) => Number(l.data.week) === n);
+const lectureHref = lecture
+  ? withBase(
+      lecture.id === "moisture-is-a-load"
+        ? "/lectures/moisture-is-a-load/"
+        : `/lectures/${lecture.id}/`,
+    )
+  : undefined;
+
+/* Week 11 is the semester's forensic low point and opens on charcoal; Week 12
+   returns to laboratory white with the final rig. plan.md makes this rare on
+   purpose --- one page in twelve. */
+const ink = n === 11;
+const nn = String(n).padStart(2, "0");
 ---
 
-<ContentLayout
-  title={`Week ${session.data.week} ${sessionLabels.singular}: ${session.data.title}`}
-  description={session.data.description}
+<BaseLayout
+  title={`Week ${n}: ${session.data.title} — ${courseMeta.code}`}
+  description={session.data.description ?? undefined}
   {...siteConfig}
+  mainAttrs={{ class: `slop-page week ${ink ? "week--ink" : ""}` }}
 >
-  <p><strong>{formatCourseDate(session.data.date)}</strong></p>
-  <Content />
-  <SpecList spec={session.data.spec}>
-    What you bring to the session. Written so a reader can tell whether it has
-    been met without asking you.
-  </SpecList>
-  <TeachingTeam teachers={session.data.teachers} />
-  <RelatedContent entry={session} collections={graphCollections} />
-</ContentLayout>
+  {/* --- 1. Identity, date, title and the structural question ----------- */}
+  <section
+    class:list={["band", "band--tight", ink && "band--ink", ink && "slop-band--ink"]}
+    aria-labelledby="wk-title"
+  >
+    <div class="inner">
+      <div class="wh">
+        <p class="wh-n display" aria-hidden="true">{nn}</p>
+
+        <div class="wh-id">
+          <p class="eyebrow">
+            {sessionLabels.singular} {n} of {WEEKS.length} —
+            Phase {phase.numeral}, {phase.name}
+          </p>
+          <h1 id="wk-title" class="page-title wh-title">{session.data.title}</h1>
+          <p class="wh-q">{record?.question ?? session.data.description}</p>
+          <p class="wh-meta">
+            <SpecimenLabel key="Commencing" value={formatCourseDate(session.data.date)} />
+            <SpecimenLabel key="Artefact" value={artefact} />
+          </p>
+        </div>
+
+        <div class="wh-marks">
+          <span class="wh-glyph" aria-hidden="true"><WeekGlyph week={n} /></span>
+          {lectureHref && (
+            <p class="wh-deck">
+              <a class="linkline" href={lectureHref}>
+                {lecture?.id === "moisture-is-a-load" ? "Open the lecture deck" : "Lecture notes"}
+                <span aria-hidden="true">→</span>
+              </a>
+            </p>
+          )}
+          {dueHere && (
+            <p class="wh-due mono">
+              {assessmentHref ? (
+                <a href={withBase(`/assessments/${dueHere.slug}/`)}>
+                  {dueHere.title} due — {dueHere.weight}%
+                </a>
+              ) : (
+                <span class="pending">{dueHere.title} due — {dueHere.weight}%</span>
+              )}
+            </p>
+          )}
+          {ink && <p class="wh-stamp"><Stamp state="failed" label="Destructive testing" /></p>}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* --- 2. The test station --------------------------------------------- */}
+  <section class="band band--alt" aria-labelledby="stn-title">
+    <div class="inner">
+      <p class="eyebrow eyebrow--ruled">Test station {nn}</p>
+      <h2 id="stn-title" class="xl">The apparatus.</h2>
+      <TestStation week={n} />
+    </div>
+  </section>
+
+  {/* --- 3-6. Concept, failure, investigation, reading ------------------- */}
+  <section class="band" aria-labelledby="body-title">
+    <div class="inner inner--reading">
+      <h2 id="body-title" class="visually-hidden">This week</h2>
+      <div class="wk-body slop-measure">
+        <Content />
+      </div>
+
+      <SpecList spec={session.data.spec}>
+        What you bring to the session. Written so a reader can tell whether it
+        has been met without asking you.
+      </SpecList>
+
+      <TeachingTeam teachers={session.data.teachers} />
+      <RelatedContent entry={session} collections={graphCollections} />
+    </div>
+  </section>
+
+  {/* --- 7. The assessment connection ------------------------------------ */}
+  <section class="band band--alt" aria-labelledby="link-title">
+    <div class="inner">
+      <p class="eyebrow eyebrow--ruled">Where this week's evidence goes</p>
+      <h2 id="link-title" class="xl">
+        {dueHere ? "Due at the end of this week." : "Building towards it."}
+      </h2>
+
+      <div class="wk-asm">
+        <div>
+          <p class="wk-asm-cap mono">{assessment.capability} — {assessment.weight}%</p>
+          <h3 class="wk-asm-t">
+            {assessmentHref ? (
+              <a href={assessmentHref}>{assessment.title}</a>
+            ) : (
+              <span class="pending">{assessment.title}</span>
+            )}
+          </h3>
+          <p>{assessment.summary}</p>
+          <p class="mono wk-asm-due">Due {formatCourseDate(assessment.due)}, end of Week {assessment.dueWeek}</p>
+        </div>
+        <div class="wk-asm-side">
+          <p>
+            The <b>{artefact}</b> this week produces is evidence for that
+            submission. The recording sheet for it, and the standard it is
+            judged against, are in the{" "}
+            <a href={withBase("/field-manual/")}>Field Manual</a>.
+          </p>
+          <p>
+            Any activity here can be completed with a physical specimen, a
+            non-food analogue, or the supplied evidence pack — see{" "}
+            <a href={withBase("/policies/")}>policies and participation</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* --- 8. Previous / all weeks / next ---------------------------------- */}
+  <section class="band band--last" aria-labelledby="wknav-title">
+    <div class="inner">
+      <h2 id="wknav-title" class="eyebrow eyebrow--ruled">Week navigation</h2>
+      <nav class="wk-nav" aria-label={`${sessionLabels.plural}`}>
+        <div>
+          <span class="wn-k mono">Previous week</span>
+          {prev ? (
+            prev.href ? (
+              <a href={prev.href}>Week {prev.week.week}: {prev.week.title}</a>
+            ) : (
+              <span class="pending">Week {prev.week.week}: {prev.week.title} <em>in preparation</em></span>
+            )
+          ) : (
+            <span class="pending">This is the first week</span>
+          )}
+        </div>
+
+        <div class="wn-mid">
+          <span class="wn-k mono">All weeks</span>
+          <a href={withBase("/sessions/")}>The semester load path</a>
+        </div>
+
+        <div class="wn-end">
+          <span class="wn-k mono">Next week</span>
+          {next ? (
+            next.href ? (
+              <a href={next.href}>Week {next.week.week}: {next.week.title}</a>
+            ) : (
+              <span class="pending">Week {next.week.week}: {next.week.title} <em>in preparation</em></span>
+            )
+          ) : (
+            <span class="pending">This is the final week</span>
+          )}
+        </div>
+      </nav>
+
+      <ArchiveRule label={`${courseMeta.code} / week ${nn} / ${artefact.toLowerCase()}`} />
+    </div>
+  </section>
+</BaseLayout>
