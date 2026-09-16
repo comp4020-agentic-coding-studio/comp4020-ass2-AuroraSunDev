@@ -97,6 +97,15 @@ const CATEGORIES = [
 ];
 
 const lastWeek = WEEKS[WEEKS.length - 1];
+/* The convenor first, then the tutor: the guide's block is about jurisdiction,
+   and the convenor's is the wider one. Read from the collection so this page
+   cannot state a role or a contact rule the person's own page contradicts. */
+const ROLE_ORDER = ["convenor", "tutor"];
+const people = await getPublishedCollection("people");
+const staff = [...people].sort(
+  (a, b) => ROLE_ORDER.indexOf(String(a.data.role)) - ROLE_ORDER.indexOf(String(b.data.role)),
+);
+
 ---
 
 <BaseLayout
@@ -353,6 +362,46 @@ const lastWeek = WEEKS[WEEKS.length - 1];
             <li>Whether the specimen is eaten is not assessed.</li>
           </ul>
         </div>
+      </div>
+    </div>
+  </section>
+
+  {/* --- 5b. Who runs it, and what it asks of a week --------------------- *
+      A course specification that never says who teaches the course or how long
+      it expects to take is a document about a subject, not about a course.
+      Both were missing; the staff are read from the people collection rather
+      than restated, so this block cannot drift from their own pages.        */}
+  <section class="band" aria-labelledby="run-title">
+    <div class="inner">
+      <p class="eyebrow eyebrow--ruled">Who runs it</p>
+      <h2 id="run-title" class="xl">Two people, two jurisdictions.</h2>
+
+      <div class="guide-staff">
+        {staff.map((person) => (
+          <div class="guide-person">
+            <p class="guide-person-role mono">{person.data.role}</p>
+            <h3 class="guide-person-name">
+              <a href={withBase(`/people/${person.id}/`)}>{person.data.title}</a>
+            </h3>
+            <p class="guide-person-line">{person.data.description}</p>
+            {person.data.contact && <p class="guide-person-contact">{person.data.contact}</p>}
+          </div>
+        ))}
+      </div>
+
+      <div class="guide-load">
+        <p class="eyebrow eyebrow--ruled">What a week asks</p>
+        <dl class="facts-list">
+          <div><dt>Contact</dt><dd>One two-hour laboratory session each teaching week</dd></div>
+          <div><dt>Lectures</dt><dd>Two, in Weeks 4 and 8, each with a full deck</dd></div>
+          <div><dt>Independent work</dt><dd>Around four hours a week, most of it recording rather than reading</dd></div>
+          <div><dt>Consultations</dt><dd>Weeks 4 and 9, for work in progress</dd></div>
+        </dl>
+        <p class="guide-load-note">
+          The independent hours are an estimate from the assessment load, not a
+          measurement. A week in which a specimen has to be observed over an
+          interval costs more of them than a week in which one does not.
+        </p>
       </div>
     </div>
   </section>

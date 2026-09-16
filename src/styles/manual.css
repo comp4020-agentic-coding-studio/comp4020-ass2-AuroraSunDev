@@ -117,30 +117,6 @@
   margin-bottom: 0.15rem;
 }
 
-/* --- Wide tables on a phone --------------------------------------------- *
- *
- * plan.md asks for wide comparison tables to become labelled records rather
- * than a pinched grid. The theme wraps every table in a horizontally
- * scrollable box, which keeps the data reachable but hides the fact that
- * there is more of it off the right edge --- a marker can miss a column
- * entirely. The rule below restores the scroll affordance by drawing the
- * edge, so the box reads as something that moves.
- */
-@media (width < 700px) {
-  .manual-body .at-table-wrap {
-    border-inline-end: var(--slop-rule-width) dashed var(--slop-rule-hair);
-  }
-  .manual-body .at-table-wrap::after {
-    content: "Scrolls sideways →";
-    display: block;
-    font-family: var(--slop-font-mono);
-    font-size: var(--at-font-size-xs);
-    letter-spacing: 0.1em;
-    color: var(--slop-toast);
-    padding-block: 0.35rem;
-  }
-}
-
 /* --- Placement ---------------------------------------------------------- *
  *
  * The theme puts every direct child of <main> in its `content` column, which

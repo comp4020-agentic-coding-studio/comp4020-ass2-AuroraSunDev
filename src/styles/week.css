@@ -593,3 +593,36 @@
   border-color: var(--slop-tomato-on-ink);
   color: var(--slop-ink);
 }
+
+/* --- 3b. Reading column and apparatus ----------------------------------- *
+ *
+ * plan.md describes this page as a long reading column with apparatus beside
+ * it. It was a reading column with the apparatus stacked underneath, which at
+ * 1920 left roughly a third of the band empty beside the prose and put the
+ * spec list --- the thing a reader checks the prose against --- a scroll away
+ * from the prose it qualifies.
+ *
+ * The aside only moves beside the column where there is room for both at a
+ * comfortable measure. Below that it stays in the flow, after the reading,
+ * which is the order it is written in.
+ */
+.week .wk-read { min-width: 0; }
+
+@media (width >= 1180px) {
+  .week .wk-read {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+    column-gap: clamp(2rem, 4vw, 4rem);
+    align-items: start;
+  }
+  .week .wk-read > .wk-body { grid-column: 1; }
+  .week .wk-aside {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    /* Clear of the sticky nav bar the page scrolls under. */
+    top: 5.5rem;
+  }
+}
+
+.week .wk-aside > * + * { margin-top: clamp(1.25rem, 2.5vw, 2rem); }

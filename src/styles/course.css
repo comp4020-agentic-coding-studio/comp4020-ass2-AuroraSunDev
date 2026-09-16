@@ -429,3 +429,30 @@ h1,
   color: var(--slop-toast);
   margin-top: 0.1rem;
 }
+
+/* --- Wide tables on a phone --------------------------------------------- *
+ *
+ * plan.md asks for wide comparison tables to become labelled records rather
+ * than a pinched grid. The theme instead wraps every table in a horizontally
+ * scrollable box, which keeps the data reachable --- the page itself never
+ * scrolls --- but says nothing about there being more of it past the right
+ * edge, so a reader can miss a whole column and not know it.
+ *
+ * Restructuring every table into stacked records is the better answer and a
+ * larger change than this submission has room for. Drawing the edge is the
+ * honest interim: the box reads as something that moves, and it says so.
+ */
+@media (width < 700px) {
+  .at-table-wrap {
+    border-inline-end: var(--slop-rule-width) dashed var(--slop-rule-hair);
+  }
+  .at-table-wrap::after {
+    content: "Scrolls sideways →";
+    display: block;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.1em;
+    color: var(--slop-toast);
+    padding-block: 0.35rem;
+  }
+}

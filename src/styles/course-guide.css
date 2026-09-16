@@ -466,3 +466,64 @@
 .guide .guide-next span { font-size: 0.9375rem; color: var(--at-text-secondary); }
 
 .guide .guide-review-line { margin: 0; }
+
+/* --- Who runs it -------------------------------------------------------- *
+ *
+ * A specification that never says who teaches the course, or how many hours a
+ * week it expects, is a document about a subject rather than about a course.
+ * Both blocks sit here for that reason, and both read their content from the
+ * collections rather than restating it.
+ */
+
+.guide .guide-staff {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  grid-template-columns: 1fr;
+  margin-top: clamp(1.25rem, 2.5vw, 2rem);
+}
+@media (width >= 760px) {
+  .guide .guide-staff { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.guide .guide-person {
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-top: var(--slop-space-sm);
+  min-width: 0;
+}
+.guide .guide-person-role {
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--slop-toast);
+  margin: 0 0 0.35rem;
+}
+.guide .guide-person-name {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  line-height: 1.05;
+  margin: 0 0 0.5rem;
+}
+.guide .guide-person-name a {
+  color: var(--slop-charcoal);
+  text-decoration-color: var(--slop-rule-hair);
+}
+.guide .guide-person-name a:hover { color: var(--slop-tomato); }
+.guide .guide-person-line { margin: 0 0 0.6rem; max-width: 46ch; }
+.guide .guide-person-contact {
+  margin: 0;
+  font-size: var(--at-font-size-sm);
+  color: var(--at-text-secondary);
+  max-width: 46ch;
+  border-left: var(--slop-rule-width) solid var(--slop-rule-hair);
+  padding-left: 0.75rem;
+}
+
+.guide .guide-load { margin-top: clamp(1.75rem, 4vw, 3rem); }
+.guide .guide-load .facts-list { margin-top: var(--slop-space-sm); }
+.guide .guide-load-note {
+  margin-top: var(--slop-space-sm);
+  max-width: var(--slop-measure);
+  font-size: var(--at-font-size-sm);
+  color: var(--at-text-secondary);
+}

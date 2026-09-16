@@ -194,19 +194,26 @@ const nn = String(n).padStart(2, "0");
 
   {/* --- 3-6. Concept, failure, investigation, reading ------------------- */}
   <section class="band" aria-labelledby="body-title">
-    <div class="inner inner--reading">
+    {/* Reading column, apparatus beside it --- plan.md's own description of
+        this page. The three blocks below the prose used to sit under it in a
+        1280px container whose text measure is about 740px, so a third of the
+        band was empty at the marking viewport while the things a reader checks
+        the prose against were a scroll away from it. */}
+    <div class="inner inner--reading wk-read">
       <h2 id="body-title" class="visually-hidden">This week</h2>
       <div class="wk-body slop-measure">
         <Content />
       </div>
 
-      <SpecList spec={session.data.spec}>
-        What you bring to the session. Written so a reader can tell whether it
-        has been met without asking you.
-      </SpecList>
+      <aside class="wk-aside" aria-label="This week's apparatus">
+        <SpecList spec={session.data.spec}>
+          What you bring to the session. Written so a reader can tell whether it
+          has been met without asking you.
+        </SpecList>
 
-      <TeachingTeam teachers={session.data.teachers} />
-      <RelatedContent entry={session} collections={graphCollections} />
+        <TeachingTeam teachers={session.data.teachers} />
+        <RelatedContent entry={session} collections={graphCollections} />
+      </aside>
     </div>
   </section>
 
