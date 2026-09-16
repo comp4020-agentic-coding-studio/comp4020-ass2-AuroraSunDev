@@ -291,3 +291,140 @@ h1,
      letting a two-word title split. */
   text-wrap: balance;
 }
+
+/* --- The course navigation bar ----------------------------------------- *
+ *
+ * Styles for src/components/SiteNav.astro, which replaces the theme's Nav.
+ * Only the parts the theme has no equivalent for live here: the institution
+ * mark that is no longer a link, the course code beside it, and the Course
+ * disclosure. Everything else keeps the theme's own `.at-nav-*` rules.
+ */
+
+/* The theme seats the bar in its own `content` grid column, which is much
+   narrower than this course's container --- 864px against 1760px at a 1920
+   viewport --- so the header floated in the middle of the page while every
+   section below it ran to the margins. The reference header is aligned with
+   the content beneath it, so the bar takes the same container as `.inner`.
+   The brand's translate exists to pull the logo out of the theme's inset; in
+   this container there is no inset to escape. */
+.slop-nav .at-nav-inner {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 1760px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+@media (width >= 640px) {
+  .slop-nav .at-nav-brand { transform: none; }
+}
+
+/* The wordmark is a mark now, not a link, so it must not invite a click. */
+.slop-nav .slop-brand {
+  cursor: default;
+  text-decoration: none;
+}
+
+/* The theme pushes whatever follows the brand to the far end with
+   `.at-nav-inner > .at-nav-brand + *`. That rule was written for the nav
+   links; the course code now sits there instead and has to stay beside the
+   wordmark, as the reference header sets it. Undoing the auto margin also
+   returns the links to their own `margin-inline-start: auto`, which is what
+   stops the bar wrapping onto two rows. */
+.slop-nav .at-nav-inner > .slop-brand + .slop-nav-code {
+  margin-inline-start: var(--slop-space-sm);
+}
+.slop-nav .slop-nav-code {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-sm);
+  letter-spacing: 0.06em;
+  color: var(--slop-toast);
+  white-space: nowrap;
+}
+
+/* --- The Course disclosure --------------------------------------------- */
+
+.slop-nav .slop-nav-details { position: relative; }
+
+.slop-nav .slop-nav-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  cursor: pointer;
+  list-style: none;
+  /* Safari draws its own triangle through ::-webkit-details-marker. */
+  user-select: none;
+}
+.slop-nav .slop-nav-summary::-webkit-details-marker { display: none; }
+.slop-nav .slop-nav-summary::marker { content: ""; }
+
+.slop-nav .slop-nav-caret {
+  width: 0.62em;
+  height: 0.4em;
+  flex: none;
+  transition: transform 120ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .slop-nav .slop-nav-caret { transition: none; }
+}
+.slop-nav .slop-nav-details[open] .slop-nav-caret { transform: rotate(180deg); }
+
+/* The group reads as current when one of its pages is open, matching the way
+   the theme underlines a current top-level link. */
+.slop-nav .slop-nav-summary.is-current { color: var(--slop-tomato); }
+
+.slop-nav .slop-nav-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Desktop: a panel hanging off the bar. Below the theme's 640px nav
+   breakpoint the whole bar is already a stacked panel, so the group stays in
+   the flow there and is simply indented. */
+@media (width >= 640px) {
+  /* The theme scrolls the link row horizontally when it overflows, which means
+     `overflow-x: auto` --- and an overflow container clips an absolutely
+     positioned child, so the disclosure panel rendered but was invisible.
+     Wrapping is the honest fallback for a row that does not fit: nothing is
+     hidden, and the panel can hang below the bar. */
+  .slop-nav .at-nav-links {
+    overflow: visible;
+    flex-wrap: wrap;
+    mask-image: none;
+  }
+
+  .slop-nav .slop-nav-menu {
+    position: absolute;
+    inset-inline-start: 0;
+    top: calc(100% + 0.6rem);
+    z-index: 30;
+    min-width: 15rem;
+    background: var(--slop-paper);
+    border: var(--slop-rule-width) solid var(--slop-rule);
+    padding: 0.35rem 0;
+    box-shadow: 0 6px 18px rgb(31 30 28 / 12%);
+  }
+  .slop-nav .slop-nav-menu a {
+    display: block;
+    padding: 0.55rem 0.9rem;
+  }
+  .slop-nav .slop-nav-menu a:hover,
+  .slop-nav .slop-nav-menu a:focus-visible {
+    background: var(--slop-wash);
+  }
+}
+
+@media (width < 640px) {
+  .slop-nav .slop-nav-menu { padding-inline-start: 0.9rem; }
+  .slop-nav .slop-nav-menu a { display: block; padding-block: 0.4rem; }
+  /* The code would crowd the toggle on a phone; the page title carries it. */
+  .slop-nav .slop-nav-code { display: none; }
+}
+
+.slop-nav .slop-nav-menu-t { display: block; }
+.slop-nav .slop-nav-menu-n {
+  display: block;
+  font-size: var(--at-font-size-xs);
+  color: var(--slop-toast);
+  margin-top: 0.1rem;
+}

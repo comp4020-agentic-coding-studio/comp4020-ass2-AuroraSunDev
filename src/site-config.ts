@@ -1,4 +1,5 @@
 import { defineSiteConfig } from "astro-theme-university/types";
+import type { NavLink } from "astro-theme-university/types";
 import { slopBranding } from "astro-theme-slop";
 import { courseMeta } from "./course-config";
 
@@ -17,21 +18,41 @@ export const courseApiCollections = [
   { key: "policies", dir: "pages/policies" },
 ];
 
+/** The navigation bar's own shape: one level of grouping, which the theme's
+ *  flat `NavLink` cannot express. Mirrors `NavItem` in SiteNav.astro. */
+const NAV = [
+  {
+    text: "Course",
+    children: [
+      { text: "Course brief", href: "/", note: "The specimen under load" },
+      { text: "Course guide", href: "/course/", note: "Outcomes and requirements" },
+    ],
+  },
+  { text: sessionLabels.plural, href: "/sessions/" },
+  { text: "Assessments", href: "/assessments/" },
+  { text: "Field Manual", href: "/field-manual/" },
+  { text: "Policies", href: "/policies/" },
+];
+
 export const siteConfig = defineSiteConfig({
   ...slopBranding,
   name: "Slop University",
 
-  // The order plan.md sets for the desktop header: the course specification,
-  // then the semester, then the graded work, then the methods. Lectures,
-  // policies and people follow, because a marker reaches those from the pages
-  // that cite them rather than from the bar.
-  links: [
-    { text: "Course", href: "/course/" },
-    { text: sessionLabels.plural, href: "/sessions/" },
-    { text: "Assessments", href: "/assessments/" },
-    { text: "Field Manual", href: "/field-manual/" },
-    { text: "Policies", href: "/policies/" },
-  ],
+  // The order the reference header sets: the course, then the semester, then
+  // the graded work, then the methods. Policies follows, because a marker
+  // reaches it from the pages that cite it rather than from the bar.
+  //
+  // Course is a group, not a link. The brief and the guide are two readings of
+  // the same course --- what it is, and what it requires --- and the brief is
+  // this site's front door, which used to be reachable only by clicking the
+  // university's name. The university is not this course, so that link is gone
+  // and its destination lives here instead.
+  //
+  // The cast widens the theme's flat NavLink, which has no notion of a group.
+  // BaseLayout passes `links` straight through to the nav component, and this
+  // site's nav (src/components/SiteNav.astro, swapped in by the courseNav
+  // plugin in astro.config.ts) is the one that receives it.
+  links: NAV as unknown as NavLink[],
 
   // The course's visual system is a materials-testing laboratory: true white
   // paper, charcoal ink, and a charcoal section that means autopsy. The

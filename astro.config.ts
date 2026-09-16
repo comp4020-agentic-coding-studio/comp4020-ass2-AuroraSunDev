@@ -22,6 +22,53 @@ const slopMotion = {
   },
 };
 
+// Swap the theme's navigation bar for the course's own.
+//
+// BaseLayout imports it as `../components/Nav.astro` --- a relative specifier
+// inside the package --- so a plain Vite alias on the package path never sees
+// it. This resolves the import normally and then redirects it when the file it
+// landed on is the theme's Nav, which is why it runs `enforce: "pre"` and
+// calls `this.resolve` with `skipSelf`.
+//
+// If the theme ever moves that file, `count` stays 0 and the build fails here
+// rather than silently shipping the wrong nav.
+const courseNav = {
+  name: "slop-course-nav",
+  hooks: {
+    "astro:config:setup": ({ updateConfig }: { updateConfig: (c: Record<string, unknown>) => void }) => {
+      let count = 0;
+      updateConfig({
+        vite: {
+          plugins: [
+            {
+              name: "slop-course-nav-resolver",
+              enforce: "pre" as const,
+              async resolveId(this: any, source: string, importer: string | undefined, options: unknown) {
+                if (!source.endsWith("/Nav.astro")) return null;
+                const resolved = await this.resolve(source, importer, {
+                  ...(options as object),
+                  skipSelf: true,
+                });
+                if (!resolved?.id.includes("astro-theme-university")) return null;
+                count += 1;
+                return new URL("./src/components/SiteNav.astro", import.meta.url).pathname;
+              },
+              buildEnd() {
+                if (count === 0) {
+                  throw new Error(
+                    "slop-course-nav: the theme's Nav.astro was never imported, so the " +
+                      "course nav did not replace it. Check astro-theme-university's BaseLayout.",
+                  );
+                }
+              },
+            },
+          ],
+        },
+      });
+    },
+  },
+};
+
 export default defineConfig({
   site,
   base,
@@ -95,6 +142,7 @@ export default defineConfig({
     // @font-face for the theme's body font, which the deck styles ask for by
     // name.
     slopMotion,
+    courseNav,
     astromotion({
       theme: "./src/decks/theme.css",
       fontVariables: ["--font-public-sans"],

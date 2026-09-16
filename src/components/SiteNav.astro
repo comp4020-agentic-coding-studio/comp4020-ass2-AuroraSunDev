@@ -1,0 +1,265 @@
+---
+/**
+ * The site's navigation bar, replacing the theme's own.
+ *
+ * Two things the theme's Nav cannot express, both of them structural rather
+ * than cosmetic:
+ *
+ *   1. Its wordmark is always a link to the site root. On this site the root
+ *      IS the course, so that made "Slop University" a link to a course --- it
+ *      promised the institution and delivered one unit of it. Slop University
+ *      is fictional and has no site to point at, so the wordmark is now a mark
+ *      and not a link, and the course's own entry point moved into the Course
+ *      menu where it belongs.
+ *   2. Its `NavLink` is flat, and the course needs one grouped item: the brief
+ *      and the guide are two readings of the same thing and belong together.
+ *
+ * The disclosure is a native `<details>`, so it opens with the keyboard, is
+ * announced as an expandable group, and works with JavaScript off --- the
+ * same standard the slide stage and the test stations are held to. The script
+ * at the foot is enhancement only: it closes the menu on Escape and on an
+ * outside click, neither of which `<details>` does by itself.
+ *
+ * Everything else --- the mobile toggle, the inert handling that keeps the
+ * collapsed menu out of the tab order, the search trigger --- is the theme's
+ * behaviour, kept so this bar stays interchangeable with it.
+ */
+import Icon from "astro-theme-university/components/Icon.astro";
+import SearchDialog from "astro-theme-university/components/SearchDialog.astro";
+import { withBase } from "astro-theme-university/url";
+import type { ImageMetadata } from "astro";
+import { courseMeta } from "../course-config";
+
+export interface NavItem {
+  text: string;
+  href?: string;
+  /** When present the item is a disclosure rather than a link. */
+  children?: { text: string; href: string; note?: string }[];
+}
+
+/* BaseLayout passes the theme's own prop set through, so anything this bar
+   needs beyond that --- the course code --- is read here rather than threaded
+   through a layout that does not know about it. */
+interface Props {
+  name: string;
+  links?: NavItem[];
+  search?: boolean;
+  logo?: ImageMetadata;
+  logoDark?: ImageMetadata;
+  logoCompact?: ImageMetadata;
+  logoCompactDark?: ImageMetadata;
+}
+
+const {
+  name,
+  links = [],
+  search = true,
+  logo,
+  logoDark,
+  logoCompact,
+  logoCompactDark,
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const root = withBase("/");
+
+/**
+ * The theme's own test is `path === resolved || path.startsWith(resolved)`,
+ * which marks the site root active on every page once a base path is in play,
+ * because every path starts with the base. The root has to match exactly.
+ */
+const isActive = (href: string) => {
+  const resolved = withBase(href);
+  if (resolved === root) return currentPath === resolved;
+  return currentPath === resolved || currentPath.startsWith(resolved);
+};
+---
+
+<nav class="at-nav slop-nav" aria-label="Main">
+  <div class="at-nav-inner">
+    {/* The institution mark. Not a link: see the note at the top of this file. */}
+    <span class="at-nav-brand slop-brand">
+      {logo ? (
+        <>
+          <span class="at-nav-logo-full">
+            <img
+              src={logo.src}
+              width={logo.width}
+              height={logo.height}
+              alt={name}
+              class:list={["at-nav-logo", { "at-nav-logo--has-dark": !!logoDark }]}
+            />
+            {logoDark && (
+              <img
+                src={logoDark.src}
+                width={logoDark.width}
+                height={logoDark.height}
+                alt=""
+                class="at-nav-logo at-nav-logo--dark"
+              />
+            )}
+          </span>
+          {logoCompact && (
+            <span class="at-nav-logo-compact">
+              <img
+                src={logoCompact.src}
+                width={logoCompact.width}
+                height={logoCompact.height}
+                alt={name}
+                class:list={["at-nav-logo", { "at-nav-logo--has-dark": !!logoCompactDark }]}
+              />
+              {logoCompactDark && (
+                <img
+                  src={logoCompactDark.src}
+                  width={logoCompactDark.width}
+                  height={logoCompactDark.height}
+                  alt=""
+                  class="at-nav-logo at-nav-logo--dark"
+                />
+              )}
+            </span>
+          )}
+        </>
+      ) : (
+        <span class="at-nav-wordmark">{name}</span>
+      )}
+    </span>
+
+    <span class="slop-nav-code">{courseMeta.code}</span>
+
+    {links.length > 0 && (
+      <>
+        <button
+          class="at-icon-button at-nav-toggle"
+          aria-expanded="false"
+          aria-controls="at-nav-menu"
+          aria-label="Menu"
+        >
+          <Icon name="menu" size={20} class="at-nav-icon-open" />
+          <Icon name="xmark" size={20} class="at-nav-icon-close" />
+        </button>
+
+        <div class="at-nav-links-wrapper" inert>
+          <ul class="at-nav-links" id="at-nav-menu" role="list">
+            {links.map((link) => {
+              if (!link.children) {
+                const resolved = withBase(link.href!);
+                return (
+                  <li>
+                    <a href={resolved} aria-current={isActive(link.href!) ? "page" : undefined}>
+                      {link.text}
+                    </a>
+                  </li>
+                );
+              }
+              const openHere = link.children.some((c) => isActive(c.href));
+              return (
+                <li class="slop-nav-group">
+                  <details class="slop-nav-details" open={openHere}>
+                    <summary class:list={["slop-nav-summary", openHere && "is-current"]}>
+                      <span>{link.text}</span>
+                      <svg class="slop-nav-caret" viewBox="0 0 10 6" aria-hidden="true" focusable="false">
+                        <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+                      </svg>
+                    </summary>
+                    <ul class="slop-nav-menu" role="list">
+                      {link.children.map((child) => (
+                        <li>
+                          <a
+                            href={withBase(child.href)}
+                            aria-current={isActive(child.href) ? "page" : undefined}
+                          >
+                            <span class="slop-nav-menu-t">{child.text}</span>
+                            {child.note && <span class="slop-nav-menu-n">{child.note}</span>}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </>
+    )}
+
+    {search && (
+      <button
+        class="at-icon-button at-search-trigger"
+        aria-label="Search (Cmd+K)"
+        title="Search (Cmd+K)"
+        data-search-trigger
+      >
+        <Icon name="search" size={20} />
+      </button>
+    )}
+  </div>
+  {search && <SearchDialog basePath={import.meta.env.BASE_URL} />}
+</nav>
+
+<script>
+  // The theme's nav behaviour, plus the two things <details> does not do for
+  // itself. Everything here is enhancement: with the script removed the menu
+  // still opens, still closes, and is still reachable by keyboard.
+  function setupNav() {
+    for (const toggle of document.querySelectorAll<HTMLElement>(".at-nav-toggle")) {
+      if (toggle.dataset.atNavInitialized) continue;
+      toggle.dataset.atNavInitialized = "true";
+      toggle.addEventListener("click", function () {
+        const expanded = toggle.getAttribute("aria-expanded") === "true";
+        toggle.setAttribute("aria-expanded", String(!expanded));
+        const wrapper = toggle.closest(".at-nav")?.querySelector(".at-nav-links-wrapper");
+        if (wrapper instanceof HTMLElement) wrapper.inert = expanded;
+      });
+    }
+
+    for (const trigger of document.querySelectorAll<HTMLElement>("[data-search-trigger]")) {
+      if (trigger.dataset.atSearchTriggerInitialized) continue;
+      trigger.dataset.atSearchTriggerInitialized = "true";
+      trigger.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("at-search-open"));
+      });
+    }
+
+    function syncNavInert() {
+      for (const wrapper of document.querySelectorAll<HTMLElement>(".at-nav-links-wrapper")) {
+        const toggle = wrapper.closest(".at-nav")?.querySelector(".at-nav-toggle");
+        if (!(toggle instanceof HTMLElement) || getComputedStyle(toggle).display === "none") {
+          wrapper.inert = false;
+        } else {
+          wrapper.inert = toggle.getAttribute("aria-expanded") !== "true";
+        }
+      }
+    }
+    syncNavInert();
+    if (document.documentElement.dataset.atNavMediaInitialized !== "true") {
+      document.documentElement.dataset.atNavMediaInitialized = "true";
+      matchMedia("(width >= 640px)").addEventListener("change", syncNavInert);
+    }
+
+    // Close the disclosure on Escape, returning focus to its summary, and on a
+    // click outside it. On the phone the menu is already inside the collapsed
+    // panel, so only close it there when it is actually on screen.
+    const groups = document.querySelectorAll<HTMLDetailsElement>(".slop-nav-details");
+    if (!document.documentElement.dataset.slopNavInitialized) {
+      document.documentElement.dataset.slopNavInitialized = "true";
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        for (const details of document.querySelectorAll<HTMLDetailsElement>(".slop-nav-details")) {
+          if (!details.open) continue;
+          details.open = false;
+          details.querySelector("summary")?.focus();
+        }
+      });
+      document.addEventListener("click", (event) => {
+        for (const details of document.querySelectorAll<HTMLDetailsElement>(".slop-nav-details")) {
+          if (details.open && !details.contains(event.target as Node)) details.open = false;
+        }
+      });
+    }
+    void groups;
+  }
+  setupNav();
+  document.addEventListener("astro:page-load", setupNav);
+</script>
