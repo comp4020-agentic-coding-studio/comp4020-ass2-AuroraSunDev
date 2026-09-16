@@ -1,0 +1,115 @@
+---
+/**
+ * One of the three equivalent participation routes, drawn as the material it
+ * uses: a physical specimen, a non-food analogue, or a supplied evidence pack.
+ *
+ * The three drawings are deliberately the same size and weight. The routes are
+ * equivalent, and a drawing that made one look like the real test and the other
+ * two like substitutes would say the opposite of the policy.
+ */
+interface Props {
+  route: "specimen" | "analogue" | "supplied";
+}
+const { route } = Astro.props;
+---
+
+<svg class:list={["rg", `rg--${route}`]} viewBox="0 0 120 72" role="presentation" focusable="false">
+  {/* A layered specimen in section, with the load it is under. */}
+  {route === "specimen" && (
+    <g>
+      <rect class="edge" x="18" y="28" width="84" height="9" />
+      <rect class="mid" x="18" y="37" width="84" height="11" />
+      <rect class="edge" x="18" y="48" width="84" height="9" />
+      <path class="force" d="M60 8 V22 m-4 -6 l4 6 l4 -6" />
+      <path class="ground" d="M14 64 H106" />
+    </g>
+  )}
+
+  {/* The same section, in foam and card: outlined, hatched, and dimensioned,
+      because an analogue is measured rather than eaten. */}
+  {route === "analogue" && (
+    <g>
+      <defs>
+        <pattern id="rg-hatch" width="6" height="6" patternUnits="userSpaceOnUse"
+                 patternTransform="rotate(40)">
+          <line class="hatch" x1="0" y1="0" x2="0" y2="6" />
+        </pattern>
+      </defs>
+      <rect class="edge" x="18" y="28" width="84" height="9" />
+      <rect class="edge" x="18" y="37" width="84" height="11" fill="url(#rg-hatch)" />
+      <rect class="edge" x="18" y="48" width="84" height="9" />
+      <path class="force" d="M60 8 V22 m-4 -6 l4 6 l4 -6" />
+      <path class="dim" d="M108 28 V57 m-3.5 3.5 l3.5 -3.5 l3.5 3.5 m-3.5 -32.5 l-3.5 3.5 l3.5 -3.5 l3.5 3.5" />
+    </g>
+  )}
+
+  {/* A pack of records: photographs and measurements taken by someone else,
+      with the course's own crop marks on the top sheet. */}
+  {route === "supplied" && (
+    <g>
+      <rect class="sheet" x="26" y="20" width="70" height="42" />
+      <rect class="sheet" x="22" y="15" width="70" height="42" />
+      <rect class="sheet sheet--top" x="18" y="10" width="70" height="42" />
+      <path class="mid-line" d="M26 26 H80 M26 32 H80" />
+      <path class="crop" d="M18 10 h7 M18 10 v7 M88 52 h-7 M88 52 v-7" />
+      <path class="record" d="M26 42 H62" />
+    </g>
+  )}
+</svg>
+
+<style>
+  .rg {
+    display: block;
+    width: 120px;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .edge,
+  .sheet {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.8;
+  }
+  .sheet { fill: color-mix(in srgb, var(--slop-charcoal) 6%, var(--slop-paper)); }
+  .sheet--top { fill: var(--slop-paper); }
+
+  .mid {
+    fill: color-mix(in srgb, var(--slop-toast) 28%, var(--slop-paper));
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.8;
+  }
+
+  .hatch { stroke: var(--slop-charcoal); stroke-width: 1; opacity: 0.75; }
+
+  .force {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ground {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 2.6;
+  }
+
+  .dim,
+  .mid-line,
+  .crop {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+  }
+  .mid-line { opacity: 0.45; }
+
+  .record {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.6;
+    stroke-dasharray: 6 4;
+  }
+</style>

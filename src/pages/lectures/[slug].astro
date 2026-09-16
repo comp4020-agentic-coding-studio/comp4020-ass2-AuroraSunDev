@@ -9,8 +9,21 @@ import { formatCourseDate } from "../../lib/dates";
 import { graphCollections, siteConfig } from "../../site-config";
 
 export async function getStaticPaths() {
+  /* The Week 4 lecture has a hand-built page at
+     src/pages/lectures/moisture-is-a-load.astro, because its composition is a
+     slide stage with an outline and a transcript rather than an article. Astro
+     fails the build on two routes claiming one URL, so it is filtered out here
+     rather than left to win by accident.
+
+     Declared inside the function, not beside it: Astro hoists getStaticPaths
+     into its own module scope, so a const in the component script is not in
+     scope here and the build fails with "HAND_BUILT is not defined". */
+  const handBuilt = new Set(["moisture-is-a-load"]);
+
   const lectures = await getPublishedCollection("lectures");
-  return lectures.map((lecture) => ({ params: { slug: lecture.id }, props: { lecture } }));
+  return lectures
+    .filter((lecture) => !handBuilt.has(lecture.id))
+    .map((lecture) => ({ params: { slug: lecture.id }, props: { lecture } }));
 }
 
 const { lecture } = Astro.props;

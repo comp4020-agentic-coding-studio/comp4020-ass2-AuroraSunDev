@@ -1,0 +1,169 @@
+/* The apparatus pages.
+ *
+ * The homepage is a set of full-bleed bands; so are the weeks index, the course
+ * guide, the assessment overview, the assessment briefs and the field manual.
+ * They are not prose pages with a heading and a reading column --- each has one
+ * dominant information structure, and that structure needs the page's full
+ * width for its rails, tracks and load axes.
+ *
+ * This file is the part those pages share: the full-bleed shell, the band
+ * rhythm, the three typographic roles at page scale, and the two link forms.
+ * Everything page-specific lives in its own stylesheet beside it, so a rule
+ * here is one that at least three pages actually wanted.
+ *
+ * `main.home` keeps its own copy of the shell in home.css. That is deliberate:
+ * the homepage is the one page whose band rhythm is tuned to a photographic
+ * hero, and it was verified against its references at both viewports before
+ * this file existed. Folding it in would mean re-verifying eight sections to
+ * save twenty lines.
+ */
+
+/* The theme lays the body out on a named grid and puts every direct child in
+   the `content` column. These pages need the `full` column so their bands can
+   carry a ground, or a rule, edge to edge. */
+main.slop-page {
+  grid-column: full;
+  display: block;
+  padding: 0;
+}
+
+/* The theme draws a 1px accent rule down the content edge. It reads as a margin
+   rule on an article page, but it would cut through a full-bleed band. */
+body:has(main.slop-page)::after {
+  display: none;
+}
+
+.slop-page .inner {
+  max-width: 1760px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+/* A narrower container for the pages whose dominant structure is a long
+   reading column with apparatus beside it rather than a full-width rail. */
+.slop-page .inner--reading {
+  max-width: 1280px;
+}
+
+.slop-page .band {
+  padding-block: clamp(2.25rem, 4.5vw, 4.5rem);
+  border-bottom: var(--slop-rule-width) solid var(--slop-rule);
+}
+
+.slop-page .band--alt { background: var(--slop-wash); }
+.slop-page .band--ink {
+  background: var(--slop-ink);
+  border-bottom-color: var(--slop-ink);
+}
+.slop-page .band--tight { padding-block: clamp(1.5rem, 2.5vw, 2.5rem); }
+.slop-page .band--last { border-bottom: 0; }
+
+/* --- The three typographic roles at page scale ------------------------- */
+
+.slop-page .display {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+}
+
+/* The page title. One per page, and the only thing at this size. */
+.slop-page .page-title {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5.6vw, 4.75rem);
+  line-height: 0.97;
+  letter-spacing: 0.005em;
+  margin: 0 0 0.75rem;
+  text-wrap: pretty;
+}
+
+.slop-page .xl {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 3.6vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: 0.005em;
+  margin: 0 0 0.75rem;
+  text-wrap: balance;
+}
+
+.slop-page .lede {
+  font-size: clamp(1.05rem, 1.3vw, 1.3rem);
+  max-width: 48ch;
+  margin: 0 0 1.5rem;
+}
+
+/* The monospace role: identifiers, dates, measurements, conditions and short
+   technical annotations. Never a paragraph. */
+.slop-page .eyebrow,
+.slop-page .mono,
+.slop-page .caveat,
+.slop-page .colhead {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.slop-page .eyebrow { color: var(--slop-toast); }
+.slop-page .caveat { color: var(--slop-charcoal); opacity: 0.72; }
+
+/* An eyebrow with the section rule it sits on. */
+.slop-page .eyebrow--ruled {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+.slop-page .eyebrow--ruled::after {
+  content: "";
+  flex: 1 1 auto;
+  height: var(--slop-rule-width);
+  background: var(--slop-rule-hair);
+}
+
+/* --- The two link forms ------------------------------------------------ */
+
+.slop-page .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 48px;
+  padding: 0.7rem 1.5rem;
+  background: var(--slop-tomato);
+  color: var(--slop-paper);
+  font-family: var(--slop-font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.slop-page .btn:hover { background: color-mix(in srgb, var(--slop-tomato) 84%, #000); }
+
+.slop-page .linkline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  font-family: var(--slop-font-mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.04em;
+  color: var(--slop-tomato);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+
+/* A route whose page has not been built yet. It reads as what it is rather
+   than as a link that goes nowhere --- the build's link checker fails on the
+   alternative, and a dead link is worse than a note. */
+.slop-page .pending {
+  color: var(--slop-charcoal);
+  opacity: 0.6;
+}
+.slop-page .pending em {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

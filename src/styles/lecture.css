@@ -1,0 +1,399 @@
+/* The Week 4 lecture page.
+ *
+ * The stage is the page's dominant structure: a ruled 16:9 frame with the
+ * outline beside it on desktop, and controls beneath. On the phone the outline
+ * moves below the controls and becomes an inline jump list, and the slide frame
+ * gives up its aspect ratio --- a dense 16:9 slide shrunk to 390px wide is
+ * unreadable, which is exactly what plan.md's mobile rule forbids.
+ *
+ * The slide switching is CSS, not script: `:target` selects the visible slide.
+ * The `:has()` rule is what makes slide 1 the default before any slide has been
+ * targeted.
+ */
+
+/* --- Identity block ----------------------------------------------------- */
+
+.lect .lect-head {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+}
+@media (width >= 900px) {
+  .lect .lect-head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+.lect .lect-h1 {
+  font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+  margin-bottom: 0.4rem;
+}
+
+.lect .lect-q {
+  margin: 0;
+  font-size: clamp(1.15rem, 1.9vw, 1.75rem);
+  line-height: 1.2;
+  max-width: 34ch;
+  color: var(--slop-charcoal);
+}
+
+.lect .lect-actions { display: grid; gap: 0.5rem; justify-items: start; }
+@media (width >= 900px) {
+  .lect .lect-actions { justify-items: end; text-align: right; }
+}
+.lect .lect-actions p { margin: 0; }
+.lect .lect-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  padding-top: 0.5rem;
+}
+
+/* --- The stage ---------------------------------------------------------- */
+
+.lect .band--stage { padding-block: clamp(1.25rem, 2.5vw, 2rem); }
+
+.lect .stage {
+  display: grid;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+@media (width >= 1100px) {
+  .lect .stage {
+    /* The outline is a later sibling of the slides in the DOM --- that is what
+       lets a targeted slide style the matching outline row without script ---
+       so it is put back on the right here by named areas. */
+    grid-template-columns: minmax(0, 74fr) minmax(16rem, 26fr);
+    grid-template-areas: "slide aside";
+    align-items: start;
+  }
+  .lect .slide { grid-area: slide; }
+  .lect .outline { grid-area: aside; }
+}
+
+/* One slide visible at a time. */
+.lect .slide { display: none; }
+.lect .slide:target { display: block; }
+/* Before anything is targeted, slide 1 is the slide. */
+.lect .stage:not(:has(.slide:target)) .slide--first { display: block; }
+
+.lect .slide:focus-visible {
+  outline: var(--slop-rule-heavy) solid var(--slop-tomato);
+  outline-offset: 6px;
+}
+
+.lect .slide-head,
+.lect .slide-fig,
+.lect .slide-desc {
+  border-inline: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-inline: clamp(1rem, 2vw, 2rem);
+  background: var(--slop-paper);
+}
+.lect .slide-head {
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-top: clamp(0.9rem, 1.6vw, 1.4rem);
+}
+.lect .slide-desc {
+  border-bottom: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-bottom: clamp(0.9rem, 1.6vw, 1.4rem);
+}
+
+.lect .slide-n {
+  margin: 0 0 0.35rem;
+  color: var(--slop-toast);
+}
+
+.lect .slide-t {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.4vw, 2.75rem);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.lect .slide-fig {
+  padding-block: clamp(1rem, 2vw, 1.75rem);
+}
+
+.lect .slide-desc {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--at-text-secondary);
+  max-width: 88ch;
+}
+.lect .slide-desc-k {
+  display: inline-block;
+  margin-inline-end: 0.6rem;
+  color: var(--slop-toast);
+}
+.lect .slide-illus {
+  font-style: normal;
+  color: var(--slop-tomato);
+}
+
+/* --- Controls ----------------------------------------------------------- */
+
+.lect .ctl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.6rem;
+  margin-top: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.lect .ctl-btn {
+  display: grid;
+  place-items: center;
+  gap: 0.1rem;
+  min-width: 5.5rem;
+  min-height: 56px;
+  padding: 0.5rem 1rem;
+  border: var(--slop-rule-heavy) solid var(--slop-rule);
+  background: var(--slop-paper);
+  color: var(--slop-charcoal);
+  font-family: var(--slop-font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.lect .ctl-btn:hover { background: var(--slop-wash); }
+.lect .ctl-arrow { font-size: 1.3rem; line-height: 1; }
+
+/* An end of the deck. Kept in place rather than removed, so the control row
+   does not change width between slides, and marked as unavailable in text as
+   well as by its ink. */
+.lect .ctl-btn--off {
+  opacity: 0.35;
+  cursor: default;
+}
+.lect .ctl-btn--off em {
+  font-style: normal;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+}
+
+.lect .ctl-btn--exit {
+  border-color: var(--slop-tomato);
+  color: var(--slop-tomato);
+}
+.lect .ctl-btn--exit:hover { background: color-mix(in srgb, var(--slop-tomato) 8%, var(--slop-paper)); }
+
+.lect .ctl-count {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  min-width: 6.5rem;
+  min-height: 56px;
+  padding: 0.5rem 1rem;
+  border: var(--slop-rule-heavy) solid var(--slop-rule);
+  align-items: center;
+  justify-content: center;
+}
+.lect .ctl-count b { font-size: 1.75rem; line-height: 1; }
+.lect .ctl-count span { font-size: 0.8125rem; letter-spacing: 0.04em; }
+
+.lect .ctl-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding-inline: 0.75rem;
+  font-family: var(--slop-font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  color: var(--slop-tomato);
+}
+
+/* --- The outline -------------------------------------------------------- */
+
+.lect .outline {
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-top: 0.9rem;
+}
+@media (width >= 1100px) {
+  .lect .outline {
+    border-top: 0;
+    border-inline-start: var(--slop-rule-width) solid var(--slop-rule-hair);
+    padding: 0 0 0 clamp(1rem, 2vw, 1.75rem);
+  }
+}
+
+.lect .outline-t {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.lect .outline-list {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+}
+.lect .outline-list li { border-top: var(--slop-rule-width) solid var(--slop-rule-hair); }
+.lect .outline-list a {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: baseline;
+  /* 44px minimum touch target, per the plan's responsive rules. */
+  min-height: 44px;
+  padding-block: 0.6rem;
+  text-decoration: none;
+  color: var(--slop-charcoal);
+}
+.lect .outline-list a:hover .outline-name { text-decoration: underline; }
+.lect .outline-n { color: var(--slop-charcoal); opacity: 0.55; font-weight: 600; }
+.lect .outline-name { font-size: 0.9375rem; line-height: 1.25; }
+
+/* The current slide, marked in the outline. The sibling combinator reaches the
+   outline because it follows the slide sections in the DOM. A left rule and a
+   bold weight carry it as well as the colour does. */
+.lect .slide:target ~ .outline li { --o-on: 0; }
+.lect .stage:not(:has(.slide:target)) .outline li[data-o="1"],
+.lect #slide-01:target ~ .outline li[data-o="1"],
+.lect #slide-02:target ~ .outline li[data-o="2"],
+.lect #slide-03:target ~ .outline li[data-o="3"],
+.lect #slide-04:target ~ .outline li[data-o="4"],
+.lect #slide-05:target ~ .outline li[data-o="5"],
+.lect #slide-06:target ~ .outline li[data-o="6"],
+.lect #slide-07:target ~ .outline li[data-o="7"],
+.lect #slide-08:target ~ .outline li[data-o="8"],
+.lect #slide-09:target ~ .outline li[data-o="9"],
+.lect #slide-10:target ~ .outline li[data-o="10"],
+.lect #slide-11:target ~ .outline li[data-o="11"],
+.lect #slide-12:target ~ .outline li[data-o="12"] {
+  border-inline-start: var(--slop-rule-heavy) solid var(--slop-tomato);
+  padding-inline-start: 0.6rem;
+}
+.lect .stage:not(:has(.slide:target)) .outline li[data-o="1"] a,
+.lect #slide-01:target ~ .outline li[data-o="1"] a,
+.lect #slide-02:target ~ .outline li[data-o="2"] a,
+.lect #slide-03:target ~ .outline li[data-o="3"] a,
+.lect #slide-04:target ~ .outline li[data-o="4"] a,
+.lect #slide-05:target ~ .outline li[data-o="5"] a,
+.lect #slide-06:target ~ .outline li[data-o="6"] a,
+.lect #slide-07:target ~ .outline li[data-o="7"] a,
+.lect #slide-08:target ~ .outline li[data-o="8"] a,
+.lect #slide-09:target ~ .outline li[data-o="9"] a,
+.lect #slide-10:target ~ .outline li[data-o="10"] a,
+.lect #slide-11:target ~ .outline li[data-o="11"] a,
+.lect #slide-12:target ~ .outline li[data-o="12"] a {
+  color: var(--slop-tomato);
+  font-weight: 600;
+}
+.lect .stage:not(:has(.slide:target)) .outline li[data-o="1"] .outline-n,
+.lect #slide-01:target ~ .outline li[data-o="1"] .outline-n,
+.lect #slide-02:target ~ .outline li[data-o="2"] .outline-n,
+.lect #slide-03:target ~ .outline li[data-o="3"] .outline-n,
+.lect #slide-04:target ~ .outline li[data-o="4"] .outline-n,
+.lect #slide-05:target ~ .outline li[data-o="5"] .outline-n,
+.lect #slide-06:target ~ .outline li[data-o="6"] .outline-n,
+.lect #slide-07:target ~ .outline li[data-o="7"] .outline-n,
+.lect #slide-08:target ~ .outline li[data-o="8"] .outline-n,
+.lect #slide-09:target ~ .outline li[data-o="9"] .outline-n,
+.lect #slide-10:target ~ .outline li[data-o="10"] .outline-n,
+.lect #slide-11:target ~ .outline li[data-o="11"] .outline-n,
+.lect #slide-12:target ~ .outline li[data-o="12"] .outline-n {
+  color: var(--slop-tomato);
+  opacity: 1;
+}
+
+.lect .outline-note {
+  color: var(--slop-charcoal);
+  opacity: 0.66;
+  text-transform: none;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  margin-bottom: 0.9rem;
+}
+.lect .outline-deck { margin: 0; }
+
+/* --- Transcript --------------------------------------------------------- */
+
+.lect .tr {
+  list-style: none;
+  margin: clamp(1.25rem, 2.5vw, 2rem) 0 0;
+  padding: 0;
+  counter-reset: none;
+}
+
+.lect .tr-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.35rem;
+  padding-block: clamp(1.25rem, 2.5vw, 2rem);
+  border-top: var(--slop-rule-width) solid var(--slop-rule);
+  /* Anchor targets need clearance beneath the sticky header. */
+  scroll-margin-top: 6rem;
+}
+@media (width >= 800px) {
+  .lect .tr-item {
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: clamp(1rem, 2vw, 2rem);
+  }
+}
+
+.lect .tr-n { color: var(--slop-toast); padding-top: 0.5rem; }
+
+.lect .tr-t {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 600;
+}
+.lect .tr-purpose {
+  margin: 0 0 1rem;
+  color: var(--slop-charcoal);
+  opacity: 0.66;
+  text-transform: none;
+  letter-spacing: 0.03em;
+}
+.lect .tr-body p { max-width: var(--slop-measure); }
+
+.lect .tr-fig {
+  border-left: var(--slop-rule-heavy) solid var(--slop-rule-hair);
+  padding-left: 1rem;
+  font-size: 0.9375rem;
+  color: var(--at-text-secondary);
+}
+.lect .tr-fig-k {
+  display: inline-block;
+  margin-inline-end: 0.6rem;
+  color: var(--slop-toast);
+}
+.lect .tr-back { margin-bottom: 0; }
+.lect .tr-back a {
+  font-family: var(--slop-font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+}
+
+/* --- After the lecture -------------------------------------------------- */
+
+.lect .lect-next {
+  list-style: none;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+@media (width >= 800px) {
+  .lect .lect-next { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.lect .lect-next > li {
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  padding: 1rem 1.5rem 1rem 0;
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+}
+.lect .lect-next a,
+.lect .lect-next > li > .pending {
+  color: var(--slop-charcoal);
+  text-decoration-color: var(--slop-charcoal);
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(1.15rem, 1.9vw, 1.45rem);
+  letter-spacing: 0.01em;
+}
+.lect .lect-next span { font-size: 0.9375rem; color: var(--at-text-secondary); }
+
+.lect .lect-cite { font-size: 0.9375rem; }

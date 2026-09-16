@@ -1,0 +1,173 @@
+---
+/**
+ * The Week 4 lecture: identity, question, slide stage and complete transcript.
+ *
+ * This lecture has a hand-built page rather than rendering through
+ * /lectures/[slug].astro, because its composition is a teaching stage with an
+ * outline and a transcript rather than an article. That dynamic route filters
+ * this slug out so the two do not both claim the URL --- see the comment
+ * there.
+ *
+ * The page is the accessible presentation of the lecture. The reveal deck at
+ * /decks/moisture-is-a-load/ is the performance artefact for the room; both
+ * read src/lib/lecture-moisture.ts, so a slide cannot say one thing here and
+ * another there.
+ */
+import BaseLayout from "astro-theme-university/layouts/BaseLayout.astro";
+import { getPublishedCollection } from "astro-course-university/content";
+import { withBase } from "astro-theme-university/url";
+import ArchiveRule from "../../components/course/ArchiveRule.astro";
+import SpecimenLabel from "../../components/course/SpecimenLabel.astro";
+import SlideStage from "../../components/lecture/SlideStage.astro";
+import { courseMeta } from "../../course-config";
+import { formatCourseDate } from "../../lib/dates";
+import { LECTURE, SLIDES } from "../../lib/lecture-moisture";
+import { WEEKS } from "../../lib/semester";
+import { siteConfig } from "../../site-config";
+import "../../styles/page.css";
+import "../../styles/lecture.css";
+
+const week = WEEKS.find((w) => w.week === LECTURE.week)!;
+
+const sessions = await getPublishedCollection("sessions");
+const weekHref = sessions.some((s) => s.id === week.slug)
+  ? withBase(`/sessions/${week.slug}/`)
+  : undefined;
+
+const assessments = await getPublishedCollection("assessments");
+const componentTestHref = assessments.some((a) => a.id === "component-test")
+  ? withBase("/assessments/component-test/")
+  : undefined;
+
+const lectures = await getPublishedCollection("lectures");
+const entry = lectures.find((l) => l.id === LECTURE.slug);
+
+const id = (n: number) => `slide-${String(n).padStart(2, "0")}`;
+---
+
+<BaseLayout
+  title={`Week ${LECTURE.week} lecture: ${LECTURE.title} — ${courseMeta.code}`}
+  description={`The Week ${LECTURE.week} lecture deck. ${LECTURE.slideCount} slides on how liquid progressively compromises a boundary, with a complete transcript and the Week 4 investigation brief.`}
+  {...siteConfig}
+  mainAttrs={{ class: "slop-page lect" }}
+>
+  {/* --- Identity and question ------------------------------------------
+      Deliberately unnamed: a named <section> is a `region` landmark, and
+      naming this one by its h1 gave the page two regions called "Moisture Is
+      a Load" --- this band and slide 1. The h1 inside it already says what
+      the band is. */}
+  <section class="band band--tight">
+    <div class="inner">
+      <div class="lect-head">
+        <div>
+          <p class="eyebrow">
+            Week {LECTURE.week} lecture — {formatCourseDate(week.date)}
+          </p>
+          <h1 id="lect-title" class="page-title lect-h1">{LECTURE.title}</h1>
+          <p class="lect-q">{LECTURE.question}</p>
+        </div>
+
+        <div class="lect-actions">
+          <p>
+            <a class="btn" href={`#${id(1)}`}>Start lecture<span aria-hidden="true">→</span></a>
+          </p>
+          <p>
+            {weekHref ? (
+              <a class="linkline" href={weekHref}>
+                Return to Week {LECTURE.week}<span aria-hidden="true">→</span>
+              </a>
+            ) : (
+              <span class="pending">Return to Week {LECTURE.week} <em>in preparation</em></span>
+            )}
+          </p>
+          <p class="lect-meta">
+            <SpecimenLabel key="Slides" value={String(LECTURE.slideCount)} />
+            <SpecimenLabel key="Duration" value={`${LECTURE.minutes} min`} />
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* --- The stage ------------------------------------------------------- */}
+  <section class="band band--stage" aria-labelledby="stage-title">
+    <div class="inner">
+      <h2 id="stage-title" class="visually-hidden">Slides</h2>
+      <SlideStage
+        exitHref={weekHref}
+        exitLabel={`Exit to Week ${LECTURE.week}`}
+      />
+    </div>
+  </section>
+
+  {/* --- The complete transcript ----------------------------------------- */}
+  <section class="band band--alt" aria-labelledby="tr-title">
+    <div class="inner inner--reading">
+      <p class="eyebrow eyebrow--ruled">Complete transcript</p>
+      <h2 id="tr-title" class="xl">Everything said, in order.</h2>
+      <p class="lede">
+        The full spoken content of all {LECTURE.slideCount} slides, with each
+        figure described. Nothing in the lecture exists only as a drawing.
+      </p>
+
+      <ol class="tr">
+        {SLIDES.map((s) => (
+          <li class="tr-item" id={`t-${id(s.n)}`}>
+            <p class="tr-n mono">Slide {String(s.n).padStart(2, "0")}</p>
+            <div class="tr-body">
+              <h3 class="tr-t">{s.title}</h3>
+              <p class="tr-purpose mono">{s.purpose}</p>
+              {s.transcript.map((para) => <p>{para}</p>)}
+              <p class="tr-fig">
+                <span class="tr-fig-k mono">Figure</span>
+                {s.figureAlt}
+              </p>
+              <p class="tr-back">
+                <a href={`#${id(s.n)}`}>Show slide {String(s.n).padStart(2, "0")}</a>
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  {/* --- Where this lecture leads ---------------------------------------- */}
+  <section class="band band--last" aria-labelledby="after-title">
+    <div class="inner">
+      <h2 id="after-title" class="eyebrow eyebrow--ruled">After the lecture</h2>
+      <ul class="lect-next">
+        <li>
+          {weekHref ? (
+            <a href={weekHref}>Week {LECTURE.week}: {week.title}</a>
+          ) : (
+            <span class="pending">Week {LECTURE.week}: {week.title}</span>
+          )}
+          <span>The investigation, the failure condition, and the absorption observation.</span>
+        </li>
+        <li>
+          <a href={withBase("/field-manual/#moisture-migration")}>
+            Field Manual: Moisture migration
+          </a>
+          <span>The method, its records, and what it cannot establish.</span>
+        </li>
+        <li>
+          {componentTestHref ? (
+            <a href={componentTestHref}>Component Test — 20%</a>
+          ) : (
+            <span class="pending">Component Test — 20%</span>
+          )}
+          <span>The assessment this lecture is machinery for.</span>
+        </li>
+      </ul>
+
+      {entry && (
+        <p class="lect-cite">
+          Reading and sources for this lecture are listed on{" "}
+          <a href={withBase(`/lectures/`)}>the lectures index</a>.
+        </p>
+      )}
+      <ArchiveRule label={`${courseMeta.code} / lecture 04 / ${LECTURE.slideCount} slides`} />
+    </div>
+  </section>
+</BaseLayout>

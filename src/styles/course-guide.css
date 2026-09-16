@@ -1,0 +1,468 @@
+/* The Course Guide: a specification sheet.
+ *
+ * The composition is deliberately unlike the homepage's. The first viewport is
+ * an inspection block --- the course code set as a measured object on the left,
+ * the specimen it specifies drawn on the right --- and the sections below it
+ * are a load path, a duration list, three converging routes and one charcoal
+ * scope statement. There are no cards on this page.
+ */
+
+/* --- 1. Inspection block ----------------------------------------------- */
+
+.guide .insp {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+@media (width >= 1100px) {
+  .guide .insp {
+    grid-template-columns: minmax(0, 54fr) minmax(0, 46fr);
+    align-items: start;
+  }
+}
+
+/* The course code, set as the object under inspection. The trailing digits are
+   the ones the starter repository assigned, so they are set apart from the
+   level fragment rather than run together with it. */
+.guide .code {
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-top: clamp(0.75rem, 1.5vw, 1.25rem);
+  margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+  position: relative;
+}
+
+.guide .code-n {
+  margin: 0;
+  font-size: clamp(3.75rem, 11vw, 8.5rem);
+  line-height: 0.82;
+  letter-spacing: -0.015em;
+}
+.guide .code-n-tail {
+  font-size: 0.62em;
+  letter-spacing: 0.01em;
+}
+
+/* The scale line under the code: a measurement mark, drawn with the same ticks
+   the specimen drawings use, so the code reads as a specimen identifier. */
+.guide .code-scale {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.1rem;
+}
+.guide .code-scale-line {
+  height: var(--slop-rule-width);
+  background: var(--slop-charcoal);
+}
+.guide .code-scale-ticks {
+  height: 7px;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--slop-charcoal) 0 1px,
+    transparent 1px 10%
+  );
+  background-size: 100% 4px;
+  background-repeat: no-repeat;
+  background-position: top left;
+  border-left: 1px solid var(--slop-charcoal);
+  border-right: 1px solid var(--slop-charcoal);
+}
+.guide .code-scale-nums {
+  display: flex;
+  justify-content: space-between;
+  color: var(--slop-charcoal);
+  opacity: 0.7;
+}
+.guide .code-scale-nums i { font-style: normal; }
+
+/* The review mark sits beside the code, rotated like a stamp pressed onto the
+   sheet rather than a label typeset on it. */
+.guide .code-stamp {
+  margin: 1rem 0 0;
+  transform: rotate(-3deg);
+  transform-origin: left center;
+}
+.guide .code-stamp .slop-stamp {
+  font-size: clamp(1rem, 1.6vw, 1.5rem);
+  padding: 0.22em 0.75em;
+  letter-spacing: 0.18em;
+  /* Red: the review mark that closes a specification sheet. `--tested` is
+     charcoal by default, which reads as another rule on a page already full
+     of them. */
+  color: var(--slop-tomato);
+}
+
+/* --- Facts and prose --------------------------------------------------- */
+
+.guide .facts {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+@media (width >= 700px) {
+  .guide .facts {
+    grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  }
+}
+
+.guide .facts-list { margin: 0; }
+.guide .facts-list > div {
+  display: grid;
+  /* The term takes the width it needs and the value wraps. The other way round
+     squeezed "Assessment" into two lines to keep its own value on one. */
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: baseline;
+  padding-block: 0.6rem;
+  border-bottom: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.guide .facts-list dt {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slop-lettuce);
+}
+.guide .facts-list dd {
+  margin: 0;
+  font-family: var(--slop-font-mono);
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.guide .facts-prose {
+  border-left: var(--slop-rule-width) solid var(--slop-rule-hair);
+  padding-left: clamp(1rem, 2vw, 1.75rem);
+}
+.guide .facts-prose h2 { color: var(--slop-lettuce); margin-bottom: 0.4rem; }
+.guide .facts-prose h2 + p { margin-top: 0; }
+.guide .facts-prose p { max-width: 46ch; }
+.guide .facts-prose > h2:not(:first-child) { margin-top: 1.5rem; }
+
+.guide .question {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: clamp(1.1rem, 1.5vw, 1.375rem);
+  line-height: 1.35;
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+
+/* --- The specimen figure ------------------------------------------------ */
+
+.guide .insp-figure { margin: 0; }
+.guide .insp-cap {
+  margin: 0.75rem 0 1.25rem;
+  color: var(--slop-toast);
+  text-transform: none;
+}
+
+.guide .cats { margin: 0; }
+.guide .cat {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.9rem;
+  padding-block: 0.55rem;
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.guide .cat dt {
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slop-lettuce);
+  padding-top: 0.15em;
+}
+.guide .cat dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--at-text-secondary);
+}
+
+/* --- 2. Learning outcomes as a load path -------------------------------- */
+
+.guide .lo {
+  list-style: none;
+  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  padding: 0;
+}
+
+.guide .lo-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem 4rem minmax(0, 1fr);
+  grid-template-areas:
+    "rail n text"
+    "rail n ev";
+  column-gap: clamp(0.75rem, 1.5vw, 1.5rem);
+  row-gap: 0.4rem;
+  padding-block: 1.1rem;
+  border-bottom: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+
+/* The line the five outcomes stand on. Vertical on the phone, and still
+   vertical on desktop --- five long outcome sentences do not fit across a
+   horizontal rail at a readable size, and the plan's requirement is one load
+   path drawing, not a horizontal one. */
+.guide .lo-rail {
+  grid-area: rail;
+  align-self: stretch;
+  justify-self: center;
+  position: relative;
+  width: 2px;
+  margin-block: -1.1rem;
+  background: var(--slop-charcoal);
+}
+.guide .lo-item:first-child .lo-rail { margin-block-start: 0; }
+.guide .lo-item:last-child .lo-rail { margin-block-end: 0; }
+
+.guide .lo-dot {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 1.75rem;
+  translate: -50% -50%;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--slop-charcoal);
+  border-radius: 50%;
+  background: var(--slop-wash);
+}
+
+.guide .lo-n {
+  grid-area: n;
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  line-height: 1;
+  color: var(--slop-charcoal);
+  opacity: 0.4;
+}
+
+.guide .lo-text {
+  grid-area: text;
+  margin: 0;
+  font-size: clamp(1.0625rem, 1.3vw, 1.25rem);
+  line-height: 1.35;
+  max-width: 58ch;
+}
+.guide .lo-verb {
+  font-size: 1.06em;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.guide .lo-ev {
+  grid-area: ev;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+}
+.guide .lo-ev-label {
+  color: var(--slop-toast);
+  /* A dropped leader from the outcome to its evidence: the relationship is
+     drawn as well as named. */
+  padding-left: 1rem;
+  position: relative;
+}
+.guide .lo-ev-label::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.45em;
+  width: 0.65rem;
+  height: var(--slop-rule-width);
+  background: var(--slop-toast);
+}
+.guide .lo-ev-and { color: var(--at-text-secondary); }
+
+@media (width >= 900px) {
+  .guide .lo-item {
+    grid-template-columns: 2rem 4.5rem minmax(0, 56fr) minmax(0, 30fr);
+    grid-template-areas: "rail n text ev";
+    align-items: center;
+    row-gap: 0;
+  }
+  .guide .lo-dot { top: 50%; }
+  .guide .lo-ev { justify-content: flex-end; }
+}
+
+/* --- 3. Weekly teaching format ------------------------------------------ */
+
+.guide .fmt {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  margin-top: clamp(1.25rem, 2.5vw, 2rem);
+}
+@media (width >= 900px) {
+  .guide .fmt { grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); }
+}
+
+.guide .fmt-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: fmt;
+}
+.guide .fmt-list > li {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding-block: 0.9rem;
+  border-top: var(--slop-rule-width) solid var(--slop-rule);
+}
+.guide .fmt-dur {
+  color: var(--slop-tomato);
+  text-transform: none;
+  padding-top: 0.3em;
+}
+.guide .fmt-body { max-width: 56ch; }
+
+.guide .fmt-note {
+  border-left: var(--slop-rule-heavy) solid var(--slop-rule-hair);
+  padding-left: clamp(1rem, 2vw, 1.5rem);
+}
+.guide .fmt-note .mono {
+  color: var(--slop-toast);
+  margin-bottom: 0.5rem;
+}
+.guide .fmt-note p { font-size: 0.9375rem; max-width: 40ch; }
+
+/* --- 4. Three converging routes ----------------------------------------- */
+
+.guide .routes { margin-top: clamp(1.25rem, 2.5vw, 2rem); }
+
+.guide .routes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+@media (width >= 800px) {
+  .guide .routes-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.guide .route {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  padding: 1.25rem 1.25rem 2.25rem;
+  border: var(--slop-rule-width) solid var(--slop-rule);
+  background: var(--slop-paper);
+}
+.guide .route-fig { display: block; }
+.guide .route-name {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.1rem, 2vw, 1.375rem);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.guide .route-line { margin: 0; font-size: 0.9375rem; }
+.guide .route-note {
+  margin: 0;
+  color: var(--slop-toast);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* Each route drops a line to the bar beneath: three paths arriving at one
+   assessed outcome. */
+.guide .route-drop {
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline-start: 50%;
+  translate: -50% 100%;
+  width: 2px;
+  height: clamp(0.9rem, 2vw, 1.5rem);
+  background: var(--slop-lettuce);
+}
+
+.guide .routes-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  margin: clamp(0.9rem, 2vw, 1.5rem) 0 0;
+  padding: 1rem 1.25rem;
+  border: var(--slop-rule-heavy) solid var(--slop-lettuce);
+  background: var(--slop-paper);
+}
+.guide .routes-bar-mark {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: var(--slop-rule-heavy) solid var(--slop-lettuce);
+  border-radius: 50%;
+}
+.guide .routes-bar-text { flex: 1 1 22rem; }
+.guide .routes-next { margin: 1.25rem 0 0; }
+
+/* --- 5. What this course is not (charcoal) ------------------------------ */
+
+.guide .not {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 3rem);
+}
+@media (width >= 900px) {
+  .guide .not { grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); }
+}
+.guide .not-body p { max-width: 54ch; }
+.guide .not-hard {
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  border-left: var(--slop-rule-heavy) solid var(--slop-tomato);
+  padding-left: 1rem;
+}
+.guide .not-list {
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+  font-family: var(--slop-font-mono);
+  font-size: 0.875rem;
+}
+.guide .not-list li { padding-left: 1.4rem; position: relative; }
+/* A struck-out mark, not a tick: these are the things the course does not do. */
+.guide .not-list li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.62em;
+  width: 0.85rem;
+  height: var(--slop-rule-heavy);
+  background: var(--slop-tomato);
+}
+
+/* --- 6. Continue -------------------------------------------------------- */
+
+.guide .guide-next {
+  list-style: none;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+@media (width >= 800px) {
+  .guide .guide-next { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.guide .guide-next > li {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem 1.5rem 1rem 0;
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+}
+.guide .guide-next a {
+  color: var(--slop-charcoal);
+  text-decoration-color: var(--slop-charcoal);
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+  letter-spacing: 0.01em;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+.guide .guide-next span { font-size: 0.9375rem; color: var(--at-text-secondary); }
+
+.guide .guide-review-line { margin: 0; }

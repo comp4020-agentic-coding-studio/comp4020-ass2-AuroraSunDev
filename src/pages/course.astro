@@ -1,0 +1,387 @@
+---
+/**
+ * The Course Guide --- the specification sheet for Specimen: SLOP2895.
+ *
+ * Its job (plan.md, "Confirmed Course Guide") is to answer the practical
+ * questions a student actually has, not to repeat the homepage. So it is
+ * composed as a specification: an inspection block with the course code set as
+ * a measured object, a single load-path drawing carrying the five learning
+ * outcomes to the evidence that assesses each, three parallel participation
+ * routes converging on one outcome, and one annotated exploded specimen
+ * distinguishing the five analytical categories the course uses.
+ *
+ * Nothing on this page is a promotional band. It ends with a review stamp.
+ */
+import BaseLayout from "astro-theme-university/layouts/BaseLayout.astro";
+import { getPublishedCollection } from "astro-course-university/content";
+import { withBase } from "astro-theme-university/url";
+import ArchiveRule from "../components/course/ArchiveRule.astro";
+import ExplodedSpecification from "../components/course/ExplodedSpecification.astro";
+import RouteGlyph from "../components/course/RouteGlyph.astro";
+import SpecimenLabel from "../components/course/SpecimenLabel.astro";
+import Stamp from "../components/course/Stamp.astro";
+import { courseMeta } from "../course-config";
+import { formatCourseDate } from "../lib/dates";
+import { ASSESSMENTS, TOTAL_WEIGHT, WEEKS } from "../lib/semester";
+import { siteConfig } from "../site-config";
+import "../styles/page.css";
+import "../styles/course-guide.css";
+
+const assessments = await getPublishedCollection("assessments");
+const builtAssessments = new Set(assessments.map((a) => a.id));
+const assessmentHref = (slug: string) =>
+  builtAssessments.has(slug) ? withBase(`/assessments/${slug}/`) : undefined;
+const bySlug = (slug: string) => ASSESSMENTS.find((a) => a.slug === slug)!;
+
+/* The five learning outcomes, each with the capability it names and the
+   submission that carries its principal evidence. plan.md's alignment table is
+   the source; the assessment titles come from the semester data so a rename
+   cannot leave this page stating the old one. */
+const OUTCOMES = [
+  {
+    verb: "Classify",
+    text: "the structural roles of layers, boundaries and interfaces in a sandwich assembly.",
+    evidence: ["field-log"],
+  },
+  {
+    verb: "Design and document",
+    text: "a controlled comparison that isolates one structural variable.",
+    evidence: ["component-test"],
+  },
+  {
+    verb: "Distinguish",
+    text: "direct observation, reasonable inference and unresolved uncertainty.",
+    evidence: ["field-log", "failure-autopsy"],
+  },
+  {
+    verb: "Diagnose",
+    text: "failures involving slippage, moisture, compression, geometry, temperature and transport.",
+    evidence: ["failure-autopsy"],
+  },
+  {
+    verb: "Design, test, revise and defend",
+    text: "a sandwich system for a declared load case.",
+    evidence: ["final"],
+  },
+];
+
+const ROUTES = [
+  {
+    route: "specimen" as const,
+    name: "Physical Specimen",
+    line: "Real, low-cost materials, tested structurally.",
+    note: "No requirement to consume the result at any point.",
+  },
+  {
+    route: "analogue" as const,
+    name: "Non-Food Analogue",
+    line: "Foam, sponge, cardboard, clay or textile.",
+    note: "The same variable, in a material chosen for measurement.",
+  },
+  {
+    route: "supplied" as const,
+    name: "Supplied Evidence",
+    line: "Course photographs, measurements and failure cases.",
+    note: "Used where field or physical testing is impractical.",
+  },
+];
+
+/* The five categories the exploded drawing annotates. The drawing carries the
+   labels; these carry what each one means. */
+const CATEGORIES = [
+  { term: "Material", def: "What a layer is made of, and how it behaves when loaded, wetted or warmed." },
+  { term: "Interface", def: "The boundary between two layers, where grip, slip and moisture transfer happen." },
+  { term: "Load", def: "The force the assembly is asked to carry, declared before the test rather than after it." },
+  { term: "Observation", def: "What was seen and recorded, kept separate from what it is thought to mean." },
+  { term: "Evidence", def: "An observation with its condition, its measurement and its limitation attached." },
+];
+
+const lastWeek = WEEKS[WEEKS.length - 1];
+---
+
+<BaseLayout
+  title={`Course guide — ${courseMeta.code}`}
+  description="The specification for SLOP2895: level, entry requirements, the central course question, five learning outcomes, the weekly teaching format, and three equivalent participation routes."
+  {...siteConfig}
+  mainAttrs={{ class: "slop-page guide" }}
+>
+  {/* --- 1. Inspection block -------------------------------------------- */}
+  <section class="band band--tight" aria-labelledby="guide-title">
+    <div class="inner">
+      <div class="insp">
+        <div class="insp-spec">
+          <h1 id="guide-title" class="page-title">Course guide</h1>
+
+          {/* The course code set as the object under inspection: an oversized
+              fragment, a scale line beneath it, and one review mark. */}
+          <div class="code">
+            <p class="code-n display" aria-hidden="true">
+              {courseMeta.code.slice(0, 5)}<span class="code-n-tail">{courseMeta.code.slice(5)}</span>
+            </p>
+            <p class="visually-hidden">Course code {courseMeta.code}.</p>
+            <div class="code-scale" aria-hidden="true">
+              <span class="code-scale-line"></span>
+              <span class="code-scale-ticks"></span>
+              <span class="code-scale-nums mono">
+                <i>0</i><i>50</i><i>100</i><i>150</i><i>200 mm</i>
+              </span>
+            </div>
+            <p class="code-stamp"><Stamp state="tested" label="Specification" /></p>
+          </div>
+
+          <div class="facts">
+            <dl class="facts-list">
+              <div><dt>Level</dt><dd>{courseMeta.level}000-level undergraduate</dd></div>
+              <div><dt>Prerequisites</dt><dd>None</dd></div>
+              <div><dt>Culinary experience</dt><dd>Not required</dd></div>
+              <div><dt>Session</dt><dd>{courseMeta.session} {courseMeta.year}</dd></div>
+              <div><dt>Duration</dt><dd>Twelve teaching weeks</dd></div>
+              <div><dt>Assessment</dt><dd>Four submissions, {TOTAL_WEIGHT}% total</dd></div>
+            </dl>
+
+            <div class="facts-prose">
+              <h2 class="eyebrow">Summary</h2>
+              <p>
+                <b>{courseMeta.title}</b> treats the sandwich as a temporary
+                material system. Students investigate how layers carry load,
+                exchange moisture, generate friction, respond to temperature,
+                survive transport and fail under use.
+              </p>
+              <p>
+                This is not a cooking course. No culinary experience is expected,
+                taste is not assessed, and no student is required to prepare or
+                consume food. The course is concerned with observation,
+                controlled testing, failure analysis and the defence of
+                structural decisions.
+              </p>
+
+              <h2 class="eyebrow">Central question</h2>
+              <blockquote class="question">
+                What must be true for a sandwich to remain a sandwich from
+                assembly to use?
+              </blockquote>
+            </div>
+          </div>
+        </div>
+
+        {/* --- The annotated specimen ----------------------------------- */}
+        <figure class="insp-figure">
+          <ExplodedSpecification />
+          <figcaption>
+            <p class="insp-cap mono">
+              Specimen 001 — five layers, exploded for inspection
+            </p>
+            <dl class="cats">
+              {CATEGORIES.map((c) => (
+                <div class="cat">
+                  <dt>{c.term}</dt>
+                  <dd>{c.def}</dd>
+                </div>
+              ))}
+            </dl>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  {/* --- 2. Learning outcomes on one load path -------------------------- */}
+  <section class="band band--alt" aria-labelledby="lo-title">
+    <div class="inner">
+      <p class="eyebrow eyebrow--ruled">Learning outcomes</p>
+      <h2 id="lo-title" class="xl">Five capabilities. One load path.</h2>
+      <p class="lede">
+        On successful completion of the course, students will be able to do each
+        of the following. Each outcome attaches to the submission that carries
+        its principal evidence.
+      </p>
+
+      <ol class="lo">
+        {OUTCOMES.map((o, i) => (
+          <li class="lo-item">
+            {/* The path itself: a station on a line, with the evidence the
+                outcome is proved by hanging beneath it. */}
+            <span class="lo-rail" aria-hidden="true"><span class="lo-dot"></span></span>
+            <p class="lo-n display">{String(i + 1).padStart(2, "0")}</p>
+            <p class="lo-text">
+              <b class="lo-verb display">{o.verb}</b> {o.text}
+            </p>
+            <p class="lo-ev">
+              <span class="lo-ev-label mono">Principal evidence</span>
+              {o.evidence.map((slug, j) => {
+                const a = bySlug(slug);
+                const href = assessmentHref(slug);
+                return (
+                  <>
+                    {j > 0 && <span class="lo-ev-and"> and </span>}
+                    {href ? (
+                      <a href={href}>{a.title}</a>
+                    ) : (
+                      <span class="pending">{a.title}</span>
+                    )}
+                  </>
+                );
+              })}
+            </p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  {/* --- 3. Weekly teaching format --------------------------------------- */}
+  <section class="band" aria-labelledby="fmt-title">
+    <div class="inner inner--reading">
+      <p class="eyebrow eyebrow--ruled">Weekly teaching format</p>
+      <h2 id="fmt-title" class="xl">The rhythm holds. The question changes.</h2>
+
+      <div class="fmt">
+        <ol class="fmt-list">
+          <li>
+            <span class="fmt-dur mono">60 min</span>
+            <span class="fmt-body">
+              <b>Lecture.</b> The week's structural question, the principle
+              behind it, and the cases that make it concrete.
+            </span>
+          </li>
+          <li>
+            <span class="fmt-dur mono">120 min</span>
+            <span class="fmt-body">
+              <b>Laboratory or studio.</b> Observation, testing, comparison or
+              failure analysis at the week's own test station.
+            </span>
+          </li>
+          <li>
+            <span class="fmt-dur mono">Field</span>
+            <span class="fmt-body">
+              <b>Documentation task.</b> One activity that generates reusable
+              evidence rather than a one-off result.
+            </span>
+          </li>
+          <li>
+            <span class="fmt-dur mono">Output</span>
+            <span class="fmt-body">
+              <b>One distinct artefact.</b> A compression record, a moisture
+              diagram, a transport dossier — a different instrument each week.
+            </span>
+          </li>
+        </ol>
+
+        <aside class="fmt-note">
+          <p class="mono">Weeks 1–{lastWeek.week}</p>
+          <p>
+            The order of a week is predictable on purpose. What changes is the
+            question, the method of investigation and the artefact that leaves
+            the room — which is why no two week pages look alike.
+          </p>
+          <p>
+            <a class="linkline" href={withBase("/sessions/")}>
+              The twelve weeks<span aria-hidden="true">→</span>
+            </a>
+          </p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  {/* --- 4. Three equivalent routes -------------------------------------- */}
+  <section class="band band--alt" aria-labelledby="routes-title">
+    <div class="inner">
+      <p class="eyebrow eyebrow--ruled">Equivalent participation</p>
+      <h2 id="routes-title" class="xl">Three materials. One assessed outcome.</h2>
+      <p class="lede">
+        Every practical activity in the course supports three routes. They are
+        not a concession and they are not ranked: each is a way of reaching the
+        same learning outcome, and each is marked against the same criteria.
+      </p>
+
+      {/* Three parallel routes converging on one bar. The convergence is drawn
+          with rules on the phone as well as on desktop, and stated in the
+          sentence beneath it, so the drawing is never the only carrier. */}
+      <div class="routes">
+        <ol class="routes-list">
+          {ROUTES.map((r) => (
+            <li class="route">
+              <span class="route-fig" aria-hidden="true"><RouteGlyph route={r.route} /></span>
+              <h3 class="route-name display">{r.name}</h3>
+              <p class="route-line">{r.line}</p>
+              <p class="route-note mono">{r.note}</p>
+              <span class="route-drop" aria-hidden="true"></span>
+            </li>
+          ))}
+        </ol>
+        <p class="routes-bar">
+          <span class="routes-bar-mark" aria-hidden="true"></span>
+          <span class="routes-bar-text">
+            All three routes assess the same learning outcome. Selecting an
+            alternative to direct food handling costs no marks.
+          </span>
+          <Stamp state="held" label="Equivalent" />
+        </p>
+      </div>
+
+      <p class="routes-next">
+        <a class="linkline" href={withBase("/policies/")}>
+          Safety, allergies, cost, waste and consent<span aria-hidden="true">→</span>
+        </a>
+      </p>
+    </div>
+  </section>
+
+  {/* --- 5. What this course is not -------------------------------------- */}
+  <section class="band band--ink slop-band--ink" aria-labelledby="not-title">
+    <div class="inner">
+      <div class="not">
+        <div>
+          <p class="eyebrow">Scope</p>
+          <h2 id="not-title" class="xl">What this course is not.</h2>
+        </div>
+        <div class="not-body">
+          <p>
+            This course does not teach recipes, professional cookery, nutrition,
+            food styling or restaurant service. A structurally successful
+            submission does not need to be attractive or edible.
+          </p>
+          <p class="not-hard">
+            A visually appealing sandwich with no evidence, no testing and no
+            defensible load case will not receive a high mark.
+          </p>
+          <ul class="not-list">
+            <li>Taste is not assessed.</li>
+            <li>Ingredient expense is not assessed.</li>
+            <li>Culinary skill is not assessed.</li>
+            <li>Whether the specimen is eaten is not assessed.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* --- 6. Where to go next --------------------------------------------- */}
+  <section class="band band--last" aria-labelledby="next-title">
+    <div class="inner">
+      <h2 id="next-title" class="eyebrow eyebrow--ruled">Continue</h2>
+      <ul class="guide-next">
+        <li>
+          <a href={withBase("/sessions/")}>Weeks</a>
+          <span>Twelve dated teaching weeks on one load path.</span>
+        </li>
+        <li>
+          <a href={withBase("/assessments/")}>Assessments</a>
+          <span>Four submissions, {TOTAL_WEIGHT}%, and what counts as evidence.</span>
+        </li>
+        <li>
+          <a href={withBase("/policies/")}>Policies</a>
+          <span>Safe, accessible, low-cost and equivalent participation.</span>
+        </li>
+      </ul>
+
+      <div class="guide-review">
+        <ArchiveRule label={`${courseMeta.code} / specification / reviewed`} />
+        <p class="guide-review-line">
+          <SpecimenLabel key="Teaching period" value={`${formatCourseDate(courseMeta.startDate)} – ${formatCourseDate(courseMeta.endDate)}`} />
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

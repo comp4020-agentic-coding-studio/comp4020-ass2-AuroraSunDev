@@ -1,0 +1,252 @@
+---
+/**
+ * The specimen specification drawing: five layers, exploded, each annotated
+ * with the analytical category it stands for.
+ *
+ * plan.md asks the Course Guide for "one annotated cross-section to distinguish
+ * material, interface, load, observation and evidence, avoiding a decorative
+ * finished sandwich". So this is a line drawing rather than a photograph --- the
+ * page's image rule reserves realistic specimen imagery for the homepage and
+ * for evidence-based specimen cases. The five slabs are drawn in cabinet
+ * projection with their own thicknesses, because the point of the drawing is
+ * that the layers are not interchangeable.
+ *
+ * The labels are drawn as SVG text so they sit on their leader lines, and the
+ * whole figure carries one `aria-label` naming the stack in order. The page
+ * prints a definition for each of the five categories beside it, so nothing
+ * here is the only place a reader can learn what `interface` means.
+ */
+
+interface Layer {
+  /** Front-bottom baseline of the slab, in user units. */
+  y: number;
+  /** Slab thickness. */
+  t: number;
+  label: string;
+  /** Drawn treatment: a porous outer layer, a continuous film, discrete
+   *  load-bearing bodies, or a thin recording sheet. */
+  kind: "porous" | "film" | "discrete" | "sheet";
+}
+
+/* One projection for every slab, so the stack reads as one specimen taken
+   apart rather than five drawings at five angles. */
+const W = 232;
+const DX = 56;
+const DY = 32;
+const X = 48;
+
+const LAYERS: Layer[] = [
+  { y: 104, t: 26, label: "Material", kind: "porous" },
+  { y: 182, t: 11, label: "Interface", kind: "film" },
+  { y: 252, t: 15, label: "Load", kind: "discrete" },
+  { y: 318, t: 8, label: "Observation", kind: "sheet" },
+  { y: 398, t: 26, label: "Evidence", kind: "porous" },
+];
+
+/** The three visible faces of one slab. */
+const faces = (y: number, t: number) => {
+  const top = y - t;
+  return {
+    front: `M${X} ${y} H${X + W} V${top} H${X} Z`,
+    lid: `M${X} ${top} L${X + DX} ${top - DY} H${X + W + DX} L${X + W} ${top} Z`,
+    side: `M${X + W} ${y} L${X + W + DX} ${y - DY} V${top - DY} L${X + W} ${top} Z`,
+  };
+};
+
+/* The leader line leaves the slab's right face at its mid-height and runs to
+   the label column. */
+const LEADER_X = X + W + DX + 14;
+const LABEL_X = 466;
+const uid = "xspec";
+---
+
+<svg
+  class="xspec"
+  viewBox="0 0 620 470"
+  role="img"
+  aria-label="An exploded drawing of one specimen in five layers. From the top: a porous outer layer, labelled material; a continuous film, labelled interface; two discrete load-bearing bodies, labelled load; a thin recording sheet, labelled observation; and a second porous outer layer, labelled evidence."
+>
+  <defs>
+    <pattern id={`${uid}-pore`} width="9" height="9" patternUnits="userSpaceOnUse">
+      <circle class="pore" cx="2.4" cy="2.6" r="1.5" />
+      <circle class="pore" cx="6.6" cy="6.4" r="1.1" />
+      <circle class="pore" cx="7.4" cy="1.8" r="0.7" />
+    </pattern>
+  </defs>
+
+  {/* The assembly axis: where the layers came from, and where they return to.
+      Dashed, because it is a construction line and not an edge. */}
+  <path
+    class="axis"
+    d={`M${X} ${LAYERS[0].y - LAYERS[0].t} V${LAYERS[4].y} M${X + W} ${LAYERS[0].y - LAYERS[0].t} V${LAYERS[4].y}`}
+  />
+
+  {LAYERS.map((layer, i) => {
+    const f = faces(layer.y, layer.t);
+    const mid = layer.y - layer.t / 2;
+    const labelY = mid - DY / 2;
+    return (
+      <g class:list={["slab", `slab--${layer.kind}`]}>
+        <path class="face face--side" d={f.side} />
+        <path class="face face--lid" d={f.lid} />
+        <path class="face face--front" d={f.front} />
+
+        {/* The layer's own condition, drawn on the face that shows it. */}
+        {layer.kind === "porous" && (
+          <path class="texture" d={f.front} fill={`url(#${uid}-pore)`} />
+        )}
+        {layer.kind === "film" && (
+          <path
+            class="filmline"
+            d={`M${X + 6} ${mid} q 14 -3.5 28 0 t 28 0 t 28 0 t 28 0 t 28 0 t 28 0 t 28 0 t 24 0`}
+          />
+        )}
+        {layer.kind === "discrete" && (
+          <g>
+            {/* Two bodies rather than a continuous slab: a load layer carries
+                through where it touches, and not in between. */}
+            <path class="gap" d={`M${X + 106} ${layer.y} v${-layer.t} l${DX} ${-DY} v${layer.t} Z`} />
+            <path class="gapline" d={`M${X + 106} ${layer.y} V${layer.y - layer.t} M${X + 122} ${layer.y} V${layer.y - layer.t}`} />
+          </g>
+        )}
+        {layer.kind === "sheet" && (
+          <path class="record" d={`M${X + 10} ${mid} H${X + W - 10}`} />
+        )}
+
+        {/* Leader and label. */}
+        <path
+          class="leader"
+          d={`M${X + W + DX - 2} ${labelY + 4} H${LEADER_X + 86} H${LABEL_X - 12}`}
+        />
+        <circle class="leader-dot" cx={X + W + DX - 2} cy={labelY + 4} r="3" />
+        <text class="label" x={LABEL_X} y={labelY + 9}>{layer.label.toUpperCase()}</text>
+
+        {/* The specimen's own numbering: layers are counted from the top. */}
+        <text class="layer-n" x={X - 12} y={labelY + 34} text-anchor="end">
+          {String(i + 1).padStart(2, "0")}
+        </text>
+      </g>
+    );
+  })}
+
+  {/* A scale bar, so the drawing states its size rather than implying one. */}
+  <g class="scale">
+    <path class="scale-line" d={`M${X} 452 H${X + W}`} />
+    <path
+      class="scale-tick"
+      d={`M${X} 446 v12 M${X + W / 4} 448 v8 M${X + W / 2} 446 v12 M${X + (3 * W) / 4} 448 v8 M${X + W} 446 v12`}
+    />
+    <text class="scale-label" x={X} y="442">0</text>
+    <text class="scale-label" x={X + W / 2} y="442" text-anchor="middle">60</text>
+    <text class="scale-label" x={X + W} y="442" text-anchor="end">120 mm</text>
+  </g>
+</svg>
+
+<style>
+  .xspec {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Paper-white solids with charcoal edges: a drawing, not a rendering. The
+     three faces differ by a wash rather than by a hue, so the projection reads
+     in greyscale and in print. */
+  .face {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.7;
+    stroke-linejoin: round;
+  }
+  .face--lid { fill: color-mix(in srgb, var(--slop-charcoal) 4%, var(--slop-paper)); }
+  .face--side { fill: color-mix(in srgb, var(--slop-charcoal) 12%, var(--slop-paper)); }
+
+  .texture { stroke: none; }
+  .pore { fill: color-mix(in srgb, var(--slop-toast) 42%, transparent); }
+
+  /* The interface layer: a continuous film, in the green that on this site
+     means a route that is holding. */
+  .slab--film .face--front,
+  .slab--film .face--lid {
+    fill: color-mix(in srgb, var(--slop-lettuce) 22%, var(--slop-paper));
+  }
+  .slab--film .face--side {
+    fill: color-mix(in srgb, var(--slop-lettuce) 34%, var(--slop-paper));
+  }
+  .filmline {
+    fill: none;
+    stroke: var(--slop-lettuce);
+    stroke-width: 1.6;
+  }
+
+  /* The load layer: red, because this is where the load is declared. */
+  .slab--discrete .face--front,
+  .slab--discrete .face--lid {
+    fill: color-mix(in srgb, var(--slop-tomato) 20%, var(--slop-paper));
+  }
+  .slab--discrete .face--side {
+    fill: color-mix(in srgb, var(--slop-tomato) 32%, var(--slop-paper));
+  }
+  /* The interruption between the two load-bearing bodies. */
+  .gap {
+    fill: var(--slop-paper);
+    stroke: none;
+  }
+  .gapline {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.7;
+  }
+
+  /* The observation sheet: a record, so it carries a ruled line. */
+  .record {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 1.3;
+    stroke-dasharray: 7 4;
+  }
+
+  .axis {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.1;
+    stroke-dasharray: 6 5;
+    opacity: 0.5;
+  }
+
+  .leader {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.2;
+  }
+  .leader-dot { fill: var(--slop-charcoal); }
+
+  .label {
+    font-family: var(--slop-font-mono);
+    font-size: 17px;
+    letter-spacing: 0.08em;
+    fill: var(--slop-lettuce);
+  }
+
+  .layer-n {
+    font-family: var(--slop-font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    fill: var(--slop-charcoal);
+    opacity: 0.55;
+  }
+
+  .scale-line,
+  .scale-tick {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+  }
+  .scale-label {
+    font-family: var(--slop-font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    fill: var(--slop-charcoal);
+    opacity: 0.7;
+  }
+</style>

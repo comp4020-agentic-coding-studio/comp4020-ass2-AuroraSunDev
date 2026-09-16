@@ -1,0 +1,193 @@
+---
+/**
+ * The lecture's slide viewer.
+ *
+ * It is built on `:target` rather than on JavaScript. Each slide is a section
+ * with an id; the previous and next controls are ordinary links to those ids;
+ * and CSS shows the targeted slide and hides the rest. That buys quite a lot
+ * for no script at all:
+ *
+ *   - every slide has a real URL, so a lecturer can link to slide 7;
+ *   - browser back returns to the previous slide and then out to Week 4,
+ *     rather than trapping the reader in the deck;
+ *   - the controls are links, so they are already keyboard operable and
+ *     already announced;
+ *   - with JavaScript off, or broken, the deck still works completely.
+ *
+ * The one thing script adds is arrow keys, which the plan asks for. That
+ * listener does nothing except follow the prev/next link that is already on
+ * screen, so its absence costs nothing.
+ *
+ * Nothing here animates. The reference's advancing moisture front is a
+ * property of slide 4's drawing --- three states side by side, dimensioned ---
+ * not a transition, so `prefers-reduced-motion` has nothing to turn off and
+ * the deck is identical either way.
+ *
+ * The outline is a LATER SIBLING of the slide sections on purpose: that is what
+ * lets `#slide-04:target ~ .outline [data-o="4"]` mark the current slide in it
+ * without script. It is placed back on the right by grid.
+ */
+import { withBase } from "astro-theme-university/url";
+import { LECTURE, SLIDES } from "../../lib/lecture-moisture";
+import SlideFigure from "./SlideFigure.astro";
+
+interface Props {
+  /** Where `Exit deck` goes: the week page this lecture belongs to. */
+  exitHref?: string;
+  exitLabel: string;
+}
+const { exitHref, exitLabel } = Astro.props;
+
+const id = (n: number) => `slide-${String(n).padStart(2, "0")}`;
+const total = SLIDES.length;
+---
+
+<div class="stage" data-stage>
+  {SLIDES.map((s) => (
+    <section
+      class:list={["slide", s.n === 1 && "slide--first"]}
+      id={id(s.n)}
+      aria-labelledby={`${id(s.n)}-t`}
+      tabindex="-1"
+    >
+      <div class="slide-head">
+        <p class="slide-n mono">
+          Slide {String(s.n).padStart(2, "0")} / {total}
+        </p>
+        <h3 class="slide-t display" id={`${id(s.n)}-t`}>{s.title}</h3>
+      </div>
+
+      <div class="slide-fig">
+        <SlideFigure figure={s.figure} />
+      </div>
+
+      {/* What the drawing shows, in words. Printed, not hidden: in a lecture
+          the description of the figure is part of the teaching, and a reader
+          following the transcript needs it on the page. */}
+      <p class="slide-desc">
+        <span class="slide-desc-k mono">Figure</span>
+        {s.figureAlt}
+        {s.illustrative && (
+          <em class="slide-illus"> Values shown are illustrative course values, not measurements.</em>
+        )}
+      </p>
+
+      {/* The controls belong to the slide, so the number they print is always
+          this slide's number --- no script needed to keep them in step.
+
+          A labelled group rather than a <nav>: only one of the twelve is on
+          screen at a time, but all twelve are in the DOM, and twelve
+          navigation landmarks for one control bar is noise in a landmark list
+          (axe's landmark-unique rule fails the build over it). The page's one
+          navigation landmark is the site nav. */}
+      <div class="ctl" role="group" aria-label={`Slide ${s.n} of ${total} controls`}>
+        {s.n > 1 ? (
+          <a class="ctl-btn" href={`#${id(s.n - 1)}`} data-prev>
+            <span class="ctl-arrow" aria-hidden="true">←</span>
+            <span>Previous</span>
+          </a>
+        ) : (
+          <span class="ctl-btn ctl-btn--off" aria-hidden="true">
+            <span class="ctl-arrow">←</span>
+            <span>Previous</span>
+          </span>
+        )}
+
+        <p class="ctl-count">
+          <b class="display">{String(s.n).padStart(2, "0")}</b>
+          <span class="mono">of {total}</span>
+        </p>
+
+        {s.n < total ? (
+          <a class="ctl-btn" href={`#${id(s.n + 1)}`} data-next>
+            <span class="ctl-arrow" aria-hidden="true">→</span>
+            <span>Next</span>
+          </a>
+        ) : (
+          <span class="ctl-btn ctl-btn--off" aria-hidden="true">
+            <span class="ctl-arrow">→</span>
+            <span>Next</span>
+          </span>
+        )}
+
+        {exitHref ? (
+          <a class="ctl-btn ctl-btn--exit" href={exitHref}>
+            <span class="ctl-arrow" aria-hidden="true">✕</span>
+            <span>{exitLabel}</span>
+          </a>
+        ) : (
+          <span class="ctl-btn ctl-btn--off">
+            <span class="ctl-arrow" aria-hidden="true">✕</span>
+            <span>{exitLabel} <em>in preparation</em></span>
+          </span>
+        )}
+
+        <a class="ctl-link" href={`#t-${id(s.n)}`}>Open transcript</a>
+      </div>
+    </section>
+  ))}
+
+  {/* --- The outline ---------------------------------------------------- */}
+  <div class="outline">
+    <h3 class="outline-t">Lecture outline</h3>
+    <ol class="outline-list">
+      {SLIDES.map((s) => (
+        <li data-o={s.n}>
+          <a href={`#${id(s.n)}`}>
+            <span class="outline-n mono">{String(s.n).padStart(2, "0")}</span>
+            <span class="outline-name">{s.title}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+    <p class="outline-note mono">
+      Arrow keys change slides.<br />
+      Every slide has its own address.
+    </p>
+    <p class="outline-deck">
+      <a class="linkline" href={withBase(LECTURE.deck)}>
+        Open the presenter deck<span aria-hidden="true">→</span>
+      </a>
+    </p>
+  </div>
+</div>
+
+<script>
+  /* Arrow keys, and nothing else. The listener follows whichever prev/next
+     link is currently on screen, so it cannot disagree with the controls, and
+     removing it leaves a deck that still works.
+     Bound on `astro:page-load` rather than at parse time, because the theme
+     runs Astro's ClientRouter: a listener attached once on first load would be
+     talking to a document that has since been swapped out. */
+  const bind = () => {
+    const stage = document.querySelector<HTMLElement>("[data-stage]");
+    if (!stage) return;
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      // Never steal a keystroke from a field or from the search dialog.
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable]")) return;
+
+      const dir =
+        event.key === "ArrowRight" ? "next" : event.key === "ArrowLeft" ? "prev" : null;
+      if (!dir) return;
+
+      // The visible slide is the one the browser is showing; ask the layout
+      // rather than tracking an index that could drift from the URL.
+      const current = [...stage.querySelectorAll<HTMLElement>(".slide")].find(
+        (el) => el.offsetParent !== null,
+      );
+      const link = current?.querySelector<HTMLAnchorElement>(`[data-${dir}]`);
+      if (!link) return;
+      event.preventDefault();
+      link.click();
+    };
+
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("astro:before-swap", () =>
+      document.removeEventListener("keydown", onKey), { once: true });
+  };
+
+  document.addEventListener("astro:page-load", bind);
+</script>
