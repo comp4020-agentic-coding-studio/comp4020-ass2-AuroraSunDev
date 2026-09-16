@@ -42,6 +42,10 @@ export const siteConfig = defineSiteConfig({
   colorScheme: "light",
 
   licence: "CC-BY-NC-SA-4.0",
-  socialImage: "/src/assets/images/card.png",
-  socialImageAlt: `A preview card for ${courseMeta.code}: ${courseMeta.title}`,
+  // No socialImage. The starter shipped one, and it was the template's
+  // artwork rather than this course's --- so it has been removed rather than
+  // submitted as ours. With the field absent the theme emits no `og:image`,
+  // which is the honest state: a link preview with no picture, instead of a
+  // picture of a different course. A card drawn in this course's own system is
+  // outstanding work, not a decision against having one.
 });
