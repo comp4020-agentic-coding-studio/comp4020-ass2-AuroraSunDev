@@ -42,10 +42,18 @@ export const siteConfig = defineSiteConfig({
   colorScheme: "light",
 
   licence: "CC-BY-NC-SA-4.0",
-  // No socialImage. The starter shipped one, and it was the template's
-  // artwork rather than this course's --- so it has been removed rather than
-  // submitted as ours. With the field absent the theme emits no `og:image`,
-  // which is the honest state: a link preview with no picture, instead of a
-  // picture of a different course. A card drawn in this course's own system is
-  // outstanding work, not a decision against having one.
+
+  // The starter's card was the template's artwork, not this course's, so it
+  // was deleted rather than submitted as ours. This one is the course's own:
+  // the specimen is generated from the prompt kept in scripts/image-prompts.mjs
+  // and the card is assembled by scripts/compose-social-card.mjs, which sets
+  // the title in the same IBM Plex Sans Condensed the homepage h1 uses. Both
+  // steps are re-runnable from the repo.
+  socialImage: "/src/assets/images/social/card.png",
+  socialImageAlt:
+    "SLOP2895, Semester 1 2027. The Sandwich Must Hold. Every lunch is a " +
+    "temporary structure; study the forces that make it fail. Beside the " +
+    "title, a sandwich specimen is held between the steel platens of a " +
+    "benchtop compression press, with a lettuce edge protruding at the " +
+    "interface. Marked specimen 001, scale 50 mm, test in progress.",
 });

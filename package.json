@@ -10,6 +10,8 @@
     "typecheck": "astro check",
     "check": "pnpm typecheck && pnpm test",
     "check:evidence": "node scripts/check-evidence.ts",
+    "images:specimen": "node scripts/generate-image.mjs social-specimen",
+    "images:card": "node scripts/compose-social-card.mjs",
     "test": "pnpm build && vitest run spec",
     "test:template": "vitest run scripts"
   },

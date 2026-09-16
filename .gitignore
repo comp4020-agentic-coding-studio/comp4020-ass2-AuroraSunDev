@@ -30,3 +30,7 @@ mise.local.toml
 # Local QA screenshots for viewport checks. Rendered output, never
 # committed, and kept apart from design-references/, which are approved inputs.
 .qa/
+
+# Intermediates from scripts/compose-social-card.mjs. The card itself is
+# committed; these are the page and screenshot it is rendered through.
+.card.tmp.*
