@@ -85,6 +85,12 @@ const lectureHref = lecture
         : `/lectures/${lecture.id}/`,
     )
   : undefined;
+/* A week whose lecture ships slides gets a direct route to them, not just to
+   the lecture notes: the deck is the thing a student is looking for when they
+   arrive from a timetable, and making them find it through a notes page is one
+   click of nothing. The notes stay linked beside it, because the deck needs a
+   presenter and the notes do not. */
+const slidesHref = lecture?.data.slides ? withBase(lecture.data.slides) : undefined;
 
 /* Week 11 is the semester's forensic low point and opens on charcoal; Week 12
    returns to laboratory white with the final rig. plan.md makes this rare on
@@ -133,10 +139,17 @@ const nn = String(n).padStart(2, "0");
 
         <div class="wh-marks">
           <span class="wh-glyph" aria-hidden="true"><WeekGlyph week={n} /></span>
+          {slidesHref && (
+            <p class="wh-deck">
+              <a class="btn btn--slides" href={slidesHref}>
+                Open the slides<span aria-hidden="true">→</span>
+              </a>
+            </p>
+          )}
           {lectureHref && (
             <p class="wh-deck">
               <a class="linkline" href={lectureHref}>
-                {lecture?.id === "moisture-is-a-load" ? "Open the lecture deck" : "Lecture notes"}
+                {slidesHref ? "Lecture notes" : "Open the lecture deck"}
                 <span aria-hidden="true">→</span>
               </a>
             </p>

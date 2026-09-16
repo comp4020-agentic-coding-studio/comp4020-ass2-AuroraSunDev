@@ -1,0 +1,420 @@
+---
+title: "The Order of Layers"
+description:
+  Week 8 of SLOP2895 — assembly order as a structural variable, and how to
+  build one material set twice so the ordering is the only thing under test
+---
+
+import OrderFigure from "../components/deck/OrderFigure.astro";
+import LayerOrderExploded from "../components/week/LayerOrderExploded.astro";
+
+```comment
+The presenter deck for Week 8. The week page at /sessions/week-08/ is the
+readable presentation of the same argument: it carries the full prose, the
+exploded pair at page scale, and works with the keyboard alone. This file is
+the artefact for the room.
+
+Both read the same drawings --- the exploded pair from
+src/components/week/LayerOrderExploded.astro and the slide figures from
+src/components/deck/OrderFigure.astro --- so a figure cannot differ between
+the deck and the page it belongs to.
+
+Thirty slides. The argument is one line long and the slides are the steps in
+it: reordering changes no material and every interface. Everything that is not
+that line is either evidence for it or a limit on it.
+```
+
+{/* _class: banner */}
+
+# The Order of Layers
+
+## SLOP2895 · Week 8
+
+**Why does the same material set behave differently when reordered?**
+
+```notes
+Weeks 2 to 7 changed what was in the specimen. This week nothing is added,
+nothing is removed, and nothing is substituted. The only thing that moves is
+position, and the assembly still behaves differently.
+```
+
+---
+
+## A Material Set Is a List
+
+<OrderFigure figure="set" />
+
+Bread, support, loose, moist, binding. Five materials, no arrangement.
+
+```notes
+Slide 1. Start with what a materials list actually specifies: membership.
+Nothing here says what touches what.
+```
+
+---
+
+## An Assembly Is an Ordered List
+
+<OrderFigure figure="assembly" />
+
+The same five, now with a sequence. Everything this week follows from that
+difference.
+
+```notes
+Slide 2. The distinction is the whole lecture. A set has members; an assembly
+has neighbours.
+```
+
+---
+
+## Reorder It: Nothing About the Materials Changes
+
+Same components. Same masses. Same properties, every one of them.
+
+```notes
+Slide 3. Say this plainly, because the intuition fights it. Nobody swapped a
+material for a different material.
+```
+
+---
+
+## What Changes Is the Set of Interfaces
+
+<OrderFigure figure="interfaces" />
+
+Five layers admit four interfaces. Which four depends entirely on sequence.
+
+```notes
+Slide 4. This is the mechanism. The interface is where load is transferred and
+where grip is held or lost --- and the interfaces are what the ordering
+decides.
+```
+
+---
+
+## Sixty Distinguishable Orders
+
+<OrderFigure figure="orders" />
+
+Five layers, once the flip is discounted. Each presents a different pair of
+materials at every junction.
+
+```notes
+Slide 5. Sixty is 5! / 2 = 60. The flip is discounted because turning the whole
+stack over does not change which layer touches which.
+
+Do not dwell on the arithmetic. The point is that "the same materials" names a
+very large family of assemblies, not one.
+```
+
+---
+
+## Two Orders, One Material Set
+
+<LayerOrderExploded notes="omit" />
+
+Only the binding layer moves.
+
+```notes
+Slide 6. The two stacks the whole week works from. In the revised order the
+binding layer sits above the loose layer instead of below the moist one.
+
+Give the room time here. Every later slide refers back to this pair.
+```
+
+---
+
+## Consequence One: Exposure
+
+Only neighbours interact.
+
+```notes
+Slide 7. The first of two consequences worth testing. It sounds obvious and it
+is routinely ignored in a materials list.
+```
+
+---
+
+## Only Touching Layers Interact
+
+<OrderFigure figure="neighbours" />
+
+A layer's effect on another depends on whether it reaches it.
+
+```notes
+Slide 8. A layer two positions away acts on its own neighbours, not across the
+gap. Anything travelling further has to cross an interface to do it, and that
+interface is a condition of its own.
+```
+
+---
+
+## A Moist Layer Against the Outer Layer
+
+<OrderFigure figure="exposed-wet" />
+
+The boundary is loaded directly.
+
+```notes
+Slide 9. This is a Soak condition, in the Field Manual's vocabulary: a moisture
+front advances from a boundary into a porous layer.
+```
+
+---
+
+## The Same Layer, One Position Inward
+
+<OrderFigure figure="buried-wet" />
+
+A drier layer now stands between. A different boundary is loaded.
+
+```notes
+Slide 10. Identical material. Identical quantity. The front now has to cross an
+interface before it reaches the outer layer, and it arrives later and weaker if
+it arrives at all.
+```
+
+---
+
+## The Material Is Identical. The Assembly Is Not.
+
+```notes
+Slide 11. Land the first consequence before moving on. If a record says "the
+bread went soft" without saying what the bread was touching, it has not
+recorded the condition.
+```
+
+---
+
+## Consequence Two: The Load Path
+
+Position decides what a layer carries.
+
+```notes
+Slide 12. The second consequence. This one is mechanical rather than about
+transport, and it is the one that surprises people.
+```
+
+---
+
+## Distance From the Neutral Axis
+
+<OrderFigure figure="neutral-axis" />
+
+In bending, a layer's contribution to stiffness depends on how far it sits from
+the axis that neither stretches nor compresses.
+
+```notes
+Slide 13. Standard beam behaviour, and the reason an I-beam puts its material
+at top and bottom rather than in the middle.
+
+This is a real structural relation, not a course invention --- but the course
+applies it to a layered assembly that only approximates a beam. Say so.
+```
+
+---
+
+## A Stiff Layer at the Centre
+
+Close to the axis. It contributes little.
+
+```notes
+Slide 14. The same stiff component, doing almost nothing, because of where it
+was placed.
+```
+
+---
+
+## The Same Layer at the Outer Face
+
+<OrderFigure figure="stiff-outer" />
+
+Far from the axis. It contributes a great deal.
+
+```notes
+Slide 15. Nothing about the layer changed. Its lever arm did.
+```
+
+---
+
+## Position, Not Material, Decides Load-Bearing
+
+```notes
+Slide 16. The second consequence, landed. "Load-bearing filling" is a claim
+about position as much as about substance.
+```
+
+---
+
+## What This Model Assumes
+
+Discrete layers meeting at clean interfaces.
+
+```notes
+Slide 17. The honest limit. Real layers interpenetrate: crumb absorbs, films
+migrate, edges blur. There is no clean plane in a real specimen.
+
+The discrete model is accepted here because it is what makes order testable at
+all. State it as an assumption, not as a fact about sandwiches.
+```
+
+---
+
+## Where the Model Breaks
+
+A layer that soaks into its neighbour stops being two layers with an interface
+between them.
+
+```notes
+Slide 18. And once that happens, "which interface failed" no longer has an
+answer, because the interface is gone. This is a real limit on the week's whole
+method and students should be able to name it.
+```
+
+---
+
+## The Investigation
+
+Fix one material set. Build it in two orders.
+
+```notes
+Slide 19. The practical half of the lecture starts here. The set is fixed
+first, and stays fixed --- that is what makes order the variable.
+```
+
+---
+
+## List Every Interface
+
+<OrderFigure figure="interfaces" />
+
+For each order, name the two layers that form each junction.
+
+```notes
+Slide 20. Four interfaces per order, eight in total. A junction nobody listed
+is a junction nobody predicted.
+```
+
+---
+
+## One Adjacency Note Per Interface
+
+<OrderFigure figure="adjacency-note" />
+
+What do these two touching materials do to each other?
+
+```notes
+Slide 21. The note is the reasoning, written before the load is applied. It is
+also the thing a marker reads to see whether the prediction was thought or
+guessed.
+```
+
+---
+
+## Predict the First Failure
+
+<OrderFigure figure="predict" />
+
+Name the interface, and say why, before loading anything.
+
+```notes
+Slide 22. Predict in writing. A prediction made after the result is not a
+prediction, and the difference is not detectable later unless it was recorded
+first.
+```
+
+---
+
+## Load Both Assemblies Identically
+
+Same load. Same duration. Same support. Same reader.
+
+```notes
+Slide 23. Everything the Field Manual's observation protocol asks for. If two
+conditions changed, the comparison has nothing to attribute the difference to.
+```
+
+---
+
+## Compare Prediction With Result
+
+<OrderFigure figure="compare" />
+
+The predicted interface and the observed one.
+
+```notes
+Slide 24. Both get recorded, whether or not they agree.
+```
+
+---
+
+## A Wrong Prediction With a Recorded Reason
+
+Is the more useful record.
+
+```notes
+Slide 25. Say this deliberately and mean it. A confident wrong prediction with
+its reasoning attached tells you which model failed. A right prediction with no
+reasoning tells you nothing you can reuse.
+
+This is also assessable: the mark is for the reasoning and the honesty, not for
+being right.
+```
+
+---
+
+## The Failure Condition
+
+An interface fails in one order and holds in the other — same materials, same
+load, same interval.
+
+```notes
+Slide 26. Now order is the only remaining variable, and it is the one under
+test. That is what makes the result attributable.
+```
+
+---
+
+## What Leaves the Session
+
+An **Assembly Rationale**.
+
+```notes
+Slide 27. One artefact, four parts, on the next slide.
+```
+
+---
+
+## The Assembly Rationale
+
+The fixed material set. Both orders drawn as labelled stacks. An adjacency note
+at every interface. The predicted first failure, and the observed one.
+
+```notes
+Slide 28. Read these out. This is the specification the week is marked against,
+and it is also the record Week 11 will need.
+```
+
+---
+
+## Where It Goes
+
+The Failure Autopsy cannot attribute an interface failure without knowing the
+order the specimen was built in.
+
+```notes
+Slide 29. Week 11 works from evidence produced by somebody else. If the order
+was never recorded, a whole class of explanation is unavailable to the person
+holding the fragments --- and they will not know it is missing.
+```
+
+---
+
+{/* _class: banner */}
+
+## The same materials. A different structure.
+
+```notes
+Slide 30. Close on the claim the week was built to support. Then send them to
+the assembly bay.
+```

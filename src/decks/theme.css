@@ -54,3 +54,30 @@
 
 /* A figure is the slide's subject, so it gets the room. */
 .reveal .sf { margin-block: 0.5em; }
+
+/* A slide heading is a title, and on this site a title is charcoal. The deck
+   stylesheet colours headings with the brand accent, which is right for site
+   chrome and wrong here: gold on a slide competes with the one colour the
+   drawings reserve for load and failure. */
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  color: var(--slop-charcoal);
+}
+
+/* The Week 8 figures are the slide's subject, not an illustration beside it.
+   They ship at page magnification, which is small in a projected 1600px frame,
+   so they are given the room here rather than drawn twice at two scales. */
+.reveal .of {
+  width: min(100%, 60vw);
+  height: auto;
+  margin-block: 0.4em;
+}
+
+/* The exploded pair carries two stacks and a notes panel, so it needs more of
+   the slide than a single-subject figure does. */
+.reveal .lox,
+.reveal .layer-order-exploded {
+  width: 100%;
+  max-width: none;
+}

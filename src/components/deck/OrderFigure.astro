@@ -1,0 +1,442 @@
+---
+/**
+ * The Week 8 slide figures.
+ *
+ * The lecture argues one line: reordering an assembly changes none of its
+ * materials and all of its interfaces. These twelve drawings are the steps in
+ * that argument, and each has exactly one job --- a figure that carried two
+ * would be a slide that made two claims.
+ *
+ * They are built on the same projection module as the Field Manual's icons and
+ * the Week 8 page's exploded pair (src/lib/axonometric.ts, 15 degrees measured
+ * off the approved reference), so the deck and the page it belongs to cannot
+ * disagree about what a slab looks like.
+ *
+ * Two constraints come from the medium rather than the subject. These are
+ * projected in a room, so each figure carries fewer and heavier elements than
+ * a page figure at the same magnification. And no word is drawn: every label,
+ * count and name is real HTML on the slide beside the drawing, which is the
+ * house rule everywhere on this site --- generated or hand-set, text in an
+ * SVG is unselectable, untranslatable and set in the wrong face.
+ */
+import {
+  arrow,
+  barbs,
+  box,
+  corners,
+  FILL,
+  frame,
+  HAIRLINE,
+  head,
+  poly,
+  SLAB,
+  SPAN,
+  seg,
+  shaft,
+  type P3,
+} from "../../lib/axonometric";
+
+export type OrderFigureName =
+  | "set"
+  | "assembly"
+  | "interfaces"
+  | "orders"
+  | "neighbours"
+  | "exposed-wet"
+  | "buried-wet"
+  | "neutral-axis"
+  | "stiff-outer"
+  | "adjacency-note"
+  | "predict"
+  | "compare";
+
+interface Props {
+  figure: OrderFigureName;
+  /** Set where the slide does not print the figure's subject in text. */
+  labelled?: boolean;
+}
+const { figure, labelled = false } = Astro.props;
+
+/** Pixels per user unit. One value for the set, so the set is one drawing. */
+const SCALE = 0.86;
+
+/** The five layers of the week's material set, bottom to top in the baseline. */
+const PLAN: P3 = [SPAN, SPAN, SLAB];
+const FILM: P3 = [SPAN, SPAN, FILL];
+
+/**
+ * Screen-horizontal is the plan diagonal.
+ *
+ * project() maps [x,y,z] to [(x-y)·cos, (x+y)·sin - z]. Moving along +x alone
+ * therefore moves DOWN the screen as well as across it, so a row of stacks
+ * offset that way walks downhill. Holding (x+y) constant --- stepping +d in x
+ * and -d in y --- is the only direction that is purely sideways.
+ */
+function acrossX(d: number): number { return d; }
+function acrossY(d: number): number { return -d; }
+
+/** A stack built from a list of layer thicknesses, with a gap between each. */
+function stack(thicks: number[], gap = 0.1, x = 0, y = 0) {
+  let z = 0;
+  return thicks.map((t) => {
+    const b = box([x, y, z], [SPAN, SPAN, t]);
+    const at = z;
+    z += t + gap;
+    return { b, z: at, t };
+  });
+}
+
+/** A stack with no gaps: the layers are in contact, which is the point. */
+function contact(thicks: number[], x = 0, y = 0) {
+  return stack(thicks, 0, x, y);
+}
+
+const SLABS = [SLAB, FILL, FILL, FILL, SLAB];
+
+/* --- set: five bodies, no arrangement ---------------------------------- *
+   Scattered on the plan rather than stacked, and deliberately not aligned:
+   a set has members and no geometry, so any tidy arrangement would already
+   be claiming more than a list does. */
+const SET_AT: P3[] = [
+  [0, 0, 0],
+  [1.4, -1.2, 0],
+  [2.9, -2.6, 0],
+  [0.9, 1.1, 0],
+  [2.5, -0.5, 0],
+];
+const SET = SET_AT.map((p) => box(p, PLAN));
+
+/* --- assembly: the same five, in contact ------------------------------- */
+const ASSEMBLY = contact(SLABS);
+
+/* --- interfaces: the four planes between five layers ------------------- *
+   The layers are exploded so the planes are visible at all, and each plane is
+   drawn wider than the bodies, because an interface belongs to neither of the
+   two components that share it. */
+const IF_STACK = stack(SLABS, 0.34);
+const IF_PLANES = IF_STACK.slice(0, -1).map((s, i) =>
+  box([-0.12, -0.12, s.z + s.t + (IF_STACK[i + 1].z - s.z - s.t) / 2], [SPAN + 0.24, SPAN + 0.24, 0]),
+);
+
+/* --- orders: a row of stacks that differ only in sequence -------------- *
+   Four silhouettes, each with its lettuce-green binding layer in a different
+   position, trailing off to the right. The count is on the slide, not here. */
+const ORDER_SEQS = [
+  [0, 1, 2, 3, 4],
+  [0, 2, 1, 3, 4],
+  [0, 2, 3, 1, 4],
+  [0, 3, 2, 1, 4],
+];
+const ORDER_PITCH = 2.35;
+const ORDERS = ORDER_SEQS.map((seq, col) =>
+  contact(SLABS, acrossX(col * ORDER_PITCH), acrossY(col * ORDER_PITCH)).map((s, row) => ({
+    ...s,
+    kind: seq[row],
+  })),
+);
+
+/* --- neighbours: only touching layers interact ------------------------- *
+   Which layers count as touching is decided here rather than in the markup: a
+   bare `<` inside a JSX expression parses as a tag open, so `Math.abs(...) <= 1`
+   in the template is read as fragment shorthand and fails the typecheck. */
+const NB = contact(SLABS);
+const NB_FOCUS = 2;
+const NB_NEAR = NB.map((_, i) => Math.abs(i - NB_FOCUS) <= 1);
+
+/* --- exposed-wet / buried-wet ------------------------------------------ *
+   The same moist layer in two positions. In the first it touches the outer
+   layer and the front runs straight into it; in the second a drier layer
+   stands between, and the front has an interface to cross first. */
+const WET_A = contact([SLAB, FILL, FILL, FILL, SLAB]);
+const WET_A_MOIST = 3;
+const WET_B_MOIST = 1;
+
+/* --- neutral-axis / stiff-outer ---------------------------------------- *
+   One assembly in bending. The axis that neither stretches nor compresses is
+   drawn through the middle, and the stiff layer sits once on it and once at
+   the face. The lever arm is the whole content of the pair, so it is dimensioned
+   in both. */
+const NA = contact(SLABS);
+const NA_MID = 2;
+const NA_TOP = 4;
+const naTopZ = (i: number) => NA[i].z + NA[i].t / 2;
+const NA_AXIS_Z = naTopZ(NA_MID);
+
+/* --- adjacency-note ----------------------------------------------------- *
+   One interface and the record beside it. The note is drawn as ruled lines
+   rather than lettering: the slide prints the words. */
+const AN = stack([SLAB, SLAB], 0.42);
+const AN_PLANE = box([-0.12, -0.12, SLAB + 0.21], [SPAN + 0.24, SPAN + 0.24, 0]);
+const AN_RULES = [0, 1, 2].map((i) =>
+  seg([SPAN + 0.55, 0.15 + i * 0.3, SLAB + 0.55], [SPAN + 1.85, 0.15 + i * 0.3, SLAB + 0.55]),
+);
+const AN_LEADER = seg([SPAN + 0.02, 0.5, SLAB + 0.21], [SPAN + 0.5, 0.5, SLAB + 0.5]);
+
+/* --- predict / compare -------------------------------------------------- *
+   Two stacks side by side. `predict` marks one interface as the call; `compare`
+   keeps that mark and adds the interface that actually went, in a different
+   line style so the two are told apart without colour. */
+const PC_PITCH = 2.5;
+const PC_A = contact(SLABS, 0, 0);
+const PC_B = contact(SLABS, acrossX(PC_PITCH), acrossY(PC_PITCH));
+const pcPlane = (s: { z: number; t: number }, d: number) =>
+  box([acrossX(d) - 0.14, acrossY(d) - 0.14, s.z + s.t], [SPAN + 0.28, SPAN + 0.28, 0]);
+const PREDICT_PLANE = pcPlane(PC_A[2], 0);
+const OBSERVED_PLANE = pcPlane(PC_B[1], PC_PITCH);
+
+/* --- frames ------------------------------------------------------------- */
+const EXTENT: Record<OrderFigureName, P3[]> = {
+  set: SET_AT.flatMap((p) => corners(p, PLAN)),
+  assembly: corners([0, 0, 0], [SPAN, SPAN, 1.2]),
+  interfaces: [...corners([-0.12, -0.12, 0], [SPAN + 0.24, SPAN + 0.24, 2.6])],
+  orders: ORDERS.flatMap((col, i) =>
+    corners([acrossX(i * ORDER_PITCH), acrossY(i * ORDER_PITCH), 0], [SPAN, SPAN, 1.2]),
+  ),
+  neighbours: corners([0, 0, 0], [SPAN, SPAN, 1.2]),
+  "exposed-wet": corners([-0.9, 0, 0], [SPAN + 0.9, SPAN, 1.2]),
+  "buried-wet": corners([-0.9, 0, 0], [SPAN + 0.9, SPAN, 1.2]),
+  "neutral-axis": corners([-0.5, 0, -0.3], [SPAN + 1.3, SPAN, 1.6]),
+  "stiff-outer": corners([-0.5, 0, -0.3], [SPAN + 1.3, SPAN, 1.6]),
+  "adjacency-note": corners([0, 0, 0], [SPAN + 2.0, SPAN, 1.1]),
+  predict: [
+    ...corners([-0.14, -0.14, 0], [SPAN + 0.28, SPAN + 0.28, 1.2]),
+    ...corners([acrossX(PC_PITCH) - 0.14, acrossY(PC_PITCH) - 0.14, 0], [SPAN + 0.28, SPAN + 0.28, 1.2]),
+  ],
+  compare: [
+    ...corners([-0.14, -0.14, 0], [SPAN + 0.28, SPAN + 0.28, 1.2]),
+    ...corners([acrossX(PC_PITCH) - 0.14, acrossY(PC_PITCH) - 0.14, 0], [SPAN + 0.28, SPAN + 0.28, 1.2]),
+  ],
+};
+
+const ALT: Record<OrderFigureName, string> = {
+  set: "Five slabs lying apart from one another in no arrangement.",
+  assembly: "The same five slabs stacked in contact, in order.",
+  interfaces: "An exploded stack of five layers with the four planes between them drawn.",
+  orders: "Four stacks of the same five layers, each with the green binding layer in a different position.",
+  neighbours: "A stack with one layer and its two touching neighbours drawn solid, the rest faint.",
+  "exposed-wet": "A stack whose moist layer touches the outer layer, with a moisture front running into it.",
+  "buried-wet": "The same stack with the moist layer moved inward, a drier layer between it and the outer layer.",
+  "neutral-axis": "An assembly in bending with its neutral axis drawn, and a stiff layer lying on that axis.",
+  "stiff-outer": "The same assembly with the stiff layer at the outer face, far from the neutral axis.",
+  "adjacency-note": "Two layers meeting at one interface, with a ruled record beside it.",
+  predict: "Two stacks, one with a single interface marked as the predicted first failure.",
+  compare: "Two stacks, one marking the predicted interface and the other the one that failed.",
+};
+
+if (!(figure in EXTENT)) {
+  throw new Error(
+    `OrderFigure: unknown figure "${figure}". Expected one of ${Object.keys(EXTENT).join(", ")}.`,
+  );
+}
+const fr = frame(EXTENT[figure], 16);
+---
+
+<svg
+  class:list={["of", `of--${figure}`]}
+  viewBox={fr.viewBox}
+  width={Math.round(fr.width * SCALE)}
+  height={Math.round(fr.height * SCALE)}
+  role={labelled ? "img" : "presentation"}
+  aria-label={labelled ? ALT[figure] : undefined}
+  focusable="false"
+>
+  {figure === "set" && (
+    <g>
+      {SET.map((b) => (
+        <g>
+          <path class="face" d={b.top} {...HAIRLINE} />
+          <path class="face face--front" d={b.front} {...HAIRLINE} />
+          <path class="face face--side" d={b.side} {...HAIRLINE} />
+        </g>
+      ))}
+    </g>
+  )}
+
+  {figure === "assembly" && (
+    <g>
+      {ASSEMBLY.map(({ b }) => (
+        <g>
+          <path class="face" d={b.top} {...HAIRLINE} />
+          <path class="face face--front" d={b.front} {...HAIRLINE} />
+          <path class="face face--side" d={b.side} {...HAIRLINE} />
+        </g>
+      ))}
+    </g>
+  )}
+
+  {figure === "interfaces" && (
+    <g>
+      {IF_STACK.map(({ b }) => (
+        <g>
+          <path class="face" d={b.top} {...HAIRLINE} />
+          <path class="face face--front" d={b.front} {...HAIRLINE} />
+          <path class="face face--side" d={b.side} {...HAIRLINE} />
+        </g>
+      ))}
+      {IF_PLANES.map((p) => <path class="plane" d={p.top} {...HAIRLINE} />)}
+    </g>
+  )}
+
+  {figure === "orders" && (
+    <g>
+      {ORDERS.map((col, i) => (
+        <g class:list={[i === ORDERS.length - 1 && "fading"]}>
+          {col.map(({ b, kind }) => (
+            <g>
+              <path class:list={["face", kind === 3 && "face--bind"]} d={b.top} {...HAIRLINE} />
+              <path class:list={["face", "face--front", kind === 3 && "face--bind"]} d={b.front} {...HAIRLINE} />
+              <path class:list={["face", "face--side", kind === 3 && "face--bind"]} d={b.side} {...HAIRLINE} />
+            </g>
+          ))}
+        </g>
+      ))}
+    </g>
+  )}
+
+  {figure === "neighbours" && (
+    <g>
+      {NB.map(({ b }, i) => {
+        return (
+          <g class:list={[!NB_NEAR[i] && "faded"]}>
+            <path class:list={["face", i === NB_FOCUS && "face--bind"]} d={b.top} {...HAIRLINE} />
+            <path class:list={["face", "face--front", i === NB_FOCUS && "face--bind"]} d={b.front} {...HAIRLINE} />
+            <path class:list={["face", "face--side", i === NB_FOCUS && "face--bind"]} d={b.side} {...HAIRLINE} />
+          </g>
+        );
+      })}
+    </g>
+  )}
+
+  {(figure === "exposed-wet" || figure === "buried-wet") && (
+    <g>
+      {WET_A.map(({ b }, i) => {
+        const moist = i === (figure === "exposed-wet" ? WET_A_MOIST : WET_B_MOIST);
+        return (
+          <g>
+            <path class:list={["face", moist && "face--moist"]} d={b.top} {...HAIRLINE} />
+            <path class:list={["face", "face--front", moist && "face--moist"]} d={b.front} {...HAIRLINE} />
+            <path class:list={["face", "face--side", moist && "face--moist"]} d={b.side} {...HAIRLINE} />
+          </g>
+        );
+      })}
+      {/* The front's route to the outer layer. Direct when the moist layer
+          touches it; crossing an interface first when it does not. */}
+      <path
+        class="front"
+        d={arrow(
+          [-0.75, 0.5, WET_A[figure === "exposed-wet" ? WET_A_MOIST : WET_B_MOIST].z + FILL / 2],
+          [-0.06, 0.5, WET_A[figure === "exposed-wet" ? WET_A_MOIST : WET_B_MOIST].z + FILL / 2],
+        )}
+        {...HAIRLINE}
+      />
+      {figure === "buried-wet" && (
+        <path
+          class="barrier"
+          d={box([-0.16, -0.16, WET_A[WET_B_MOIST].z + FILL], [SPAN + 0.32, SPAN + 0.32, 0]).top}
+          {...HAIRLINE}
+        />
+      )}
+    </g>
+  )}
+
+  {(figure === "neutral-axis" || figure === "stiff-outer") && (
+    <g>
+      {NA.map(({ b }, i) => {
+        const stiff = i === (figure === "neutral-axis" ? NA_MID : NA_TOP);
+        return (
+          <g>
+            <path class:list={["face", stiff && "face--stiff"]} d={b.top} {...HAIRLINE} />
+            <path class:list={["face", "face--front", stiff && "face--stiff"]} d={b.front} {...HAIRLINE} />
+            <path class:list={["face", "face--side", stiff && "face--stiff"]} d={b.side} {...HAIRLINE} />
+          </g>
+        );
+      })}
+      {/* The axis that neither stretches nor compresses. */}
+      <path class="axis" d={seg([-0.45, 0.5, NA_AXIS_Z], [SPAN + 0.45, 0.5, NA_AXIS_Z])} {...HAIRLINE} />
+      {/* The lever arm: what the pair of figures is actually comparing. */}
+      <path
+        class="dim"
+        d={seg(
+          [SPAN + 0.28, 0.5, NA_AXIS_Z],
+          [SPAN + 0.28, 0.5, naTopZ(figure === "neutral-axis" ? NA_MID : NA_TOP)],
+        )}
+        {...HAIRLINE}
+      />
+      <path
+        class="dim"
+        d={`${barbs([SPAN + 0.28, 0.5, NA_AXIS_Z], [SPAN + 0.28, 0.5, naTopZ(figure === "neutral-axis" ? NA_MID : NA_TOP)], 7)}`}
+        {...HAIRLINE}
+      />
+    </g>
+  )}
+
+  {figure === "adjacency-note" && (
+    <g>
+      {AN.map(({ b }) => (
+        <g>
+          <path class="face" d={b.top} {...HAIRLINE} />
+          <path class="face face--front" d={b.front} {...HAIRLINE} />
+          <path class="face face--side" d={b.side} {...HAIRLINE} />
+        </g>
+      ))}
+      <path class="plane" d={AN_PLANE.top} {...HAIRLINE} />
+      <path class="leader" d={AN_LEADER} {...HAIRLINE} />
+      {AN_RULES.map((d) => <path class="rule" d={d} {...HAIRLINE} />)}
+    </g>
+  )}
+
+  {(figure === "predict" || figure === "compare") && (
+    <g>
+      {[...PC_A, ...PC_B].map(({ b }) => (
+        <g>
+          <path class="face" d={b.top} {...HAIRLINE} />
+          <path class="face face--front" d={b.front} {...HAIRLINE} />
+          <path class="face face--side" d={b.side} {...HAIRLINE} />
+        </g>
+      ))}
+      {/* The call, dashed: a prediction is not yet a reading. */}
+      <path class="mark mark--predicted" d={PREDICT_PLANE.top} {...HAIRLINE} />
+      {figure === "compare" && (
+        /* What went, solid, and at a different junction: the two are told apart
+           by line style and position, not by colour alone. */
+        <path class="mark mark--observed" d={OBSERVED_PLANE.top} {...HAIRLINE} />
+      )}
+    </g>
+  )}
+</svg>
+
+<style>
+  .of { display: block; max-width: 100%; height: auto; }
+
+  /* Bodies. The two vertical faces are the same shape at 15 degrees, so they
+     are told apart by tone rather than by outline. */
+  .face { fill: var(--slop-paper, #fff); stroke: var(--slop-charcoal, #1f1e1c); stroke-width: 2; }
+  .face--front { fill: color-mix(in srgb, var(--slop-charcoal, #1f1e1c) 7%, var(--slop-paper, #fff)); }
+  .face--side { fill: color-mix(in srgb, var(--slop-charcoal, #1f1e1c) 14%, var(--slop-paper, #fff)); }
+
+  .face--bind { fill: color-mix(in srgb, var(--slop-lettuce, #3f6b2b) 55%, var(--slop-paper, #fff)); }
+  .face--moist { fill: color-mix(in srgb, var(--slop-toast, #7a4a1e) 42%, var(--slop-paper, #fff)); }
+  .face--stiff { fill: color-mix(in srgb, var(--slop-charcoal, #1f1e1c) 34%, var(--slop-paper, #fff)); }
+
+  /* An interface belongs to neither body, so it is drawn as a plane they
+     share rather than as a face of either. */
+  .plane { fill: none; stroke: var(--slop-charcoal, #1f1e1c); stroke-width: 2; stroke-dasharray: 7 5; }
+
+  .faded { opacity: 0.28; }
+  .fading { opacity: 0.4; }
+
+  .front { fill: none; stroke: var(--slop-toast, #7a4a1e); stroke-width: 2.5; }
+  .barrier { fill: none; stroke: var(--slop-toast, #7a4a1e); stroke-width: 2.5; stroke-dasharray: 3 4; }
+
+  .axis { fill: none; stroke: var(--slop-charcoal, #1f1e1c); stroke-width: 2; stroke-dasharray: 12 5 3 5; }
+  .dim { fill: none; stroke: var(--slop-charcoal, #1f1e1c); stroke-width: 2; }
+
+  .leader { fill: none; stroke: var(--slop-charcoal, #1f1e1c); stroke-width: 1.6; }
+  .rule { fill: none; stroke: var(--slop-rule-hair, #c9c6c1); stroke-width: 2.5; }
+
+  /* The call and the reading. Dashed is a prediction; solid is what happened.
+     Both are tomato because both are failure claims, and they are separated by
+     line style and by which junction they sit on. */
+  .mark { fill: none; stroke: var(--slop-tomato, #b32d1a); stroke-width: 3.5; }
+  .mark--predicted { stroke-dasharray: 8 6; }
+</style>

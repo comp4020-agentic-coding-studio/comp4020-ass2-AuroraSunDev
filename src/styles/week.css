@@ -571,3 +571,25 @@
   border-top: var(--slop-rule-heavy) solid var(--slop-rule);
 }
 .week .ev-note b { display: block; margin-bottom: 0.35rem; }
+
+/* --- The slides link ---------------------------------------------------- *
+ *
+ * A week that ships a deck gets a primary action in its identity block, not a
+ * text link among the metadata: arriving from a timetable, the slides are the
+ * thing being looked for, and routing that through a notes page costs a click
+ * that answers nothing. The notes stay linked beneath it --- the deck needs a
+ * presenter, the notes do not.
+ *
+ * Week 11 prints its identity block on charcoal, so the button has to state
+ * its own inks there rather than inherit paper-ground ones.
+ */
+.week .wh-marks .btn--slides {
+  margin-bottom: var(--slop-space-xs);
+  white-space: nowrap;
+}
+
+.week--ink .wh-marks .btn--slides {
+  background: var(--slop-tomato-on-ink);
+  border-color: var(--slop-tomato-on-ink);
+  color: var(--slop-ink);
+}
