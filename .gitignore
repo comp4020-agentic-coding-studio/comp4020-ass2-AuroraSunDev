@@ -27,9 +27,15 @@ mise.local.toml
 # harness is CLAUDE.md (and any AGENTS.md), not this directory.
 .claude/
 
-# Local QA screenshots for viewport checks. Rendered output, never
-# committed, and kept apart from design-references/, which are approved inputs.
-.qa/
+# Local QA renders --- screenshots, candidate generations, crops. Output,
+# never committed, and kept apart from design-references/, which are approved
+# inputs. Around 90M of it.
+.qa/*
+
+# The instruments are not output. They are how the viewport, contrast,
+# overflow and clipping claims in PROCESS.md were measured, and a claim whose
+# instrument is missing cannot be rechecked. 84K of code.
+!.qa/tools/
 
 # Intermediates from scripts/compose-social-card.mjs. The card itself is
 # committed; these are the page and screenshot it is rendered through.
