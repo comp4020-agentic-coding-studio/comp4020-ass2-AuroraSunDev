@@ -1,0 +1,197 @@
+/**
+ * The Field Manual's two-column register.
+ *
+ * The manual is the one page on this site that is consulted rather than read,
+ * so its chapters stay on screen while the body scrolls past --- the handbook
+ * tab strip plan.md asks for. Below the breakpoint the rail becomes an inline
+ * jump list at the top, which is plan.md's own instruction for sticky side
+ * contents on a phone.
+ *
+ * Loaded from the page rather than from course.css: nothing else on the site
+ * has this shape, and course.css is already the file every page pays for.
+ */
+
+.manual {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+@media (width >= 1100px) {
+  .manual {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.manual-body { min-width: 0; }
+
+/* --- The register ------------------------------------------------------- */
+
+.manual-contents {
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+  padding-top: var(--slop-space-sm);
+}
+
+@media (width >= 1100px) {
+  .manual-contents {
+    position: sticky;
+    /* Clear of the theme's sticky nav bar, which the page scrolls under. */
+    top: 5.5rem;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+  }
+}
+
+.manual-contents-k {
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--slop-toast);
+  margin: 0 0 var(--slop-space-xs);
+}
+
+.manual-contents ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* On a phone the chapters read as a wrapped strip of records rather than a
+   tall list that pushes the manual itself below the fold. */
+@media (width < 1100px) {
+  .manual-contents ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+  }
+}
+
+.manual-contents a {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-block: 0.45rem;
+  color: var(--slop-charcoal);
+  text-decoration-color: var(--slop-rule-hair);
+  text-underline-offset: 0.2em;
+}
+.manual-contents a:hover,
+.manual-contents a:focus-visible {
+  color: var(--slop-tomato);
+  text-decoration-color: currentColor;
+}
+
+@media (width >= 1100px) {
+  .manual-contents li + li a {
+    border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  }
+}
+
+.manual-contents-n {
+  font-size: var(--at-font-size-sm);
+  color: var(--slop-toast);
+}
+.manual-contents-t { font-size: var(--at-font-size-sm); }
+
+/* --- Chapter numbering in the body -------------------------------------- *
+ *
+ * The body's own h2s carry the same record number as the register, so a
+ * reader who followed "04" arrives at something that says 04. The counter is
+ * on the body wrapper rather than the page, so the manual's own h2s are
+ * numbered and nothing else on the page is.
+ */
+
+.manual-body { counter-reset: manual-chapter; }
+
+.manual-body h2 { counter-increment: manual-chapter; }
+
+.manual-body h2::before {
+  content: counter(manual-chapter, decimal-leading-zero);
+  display: block;
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-sm);
+  letter-spacing: 0.12em;
+  color: var(--slop-toast);
+  margin-bottom: 0.15rem;
+}
+
+/* --- Wide tables on a phone --------------------------------------------- *
+ *
+ * plan.md asks for wide comparison tables to become labelled records rather
+ * than a pinched grid. The theme wraps every table in a horizontally
+ * scrollable box, which keeps the data reachable but hides the fact that
+ * there is more of it off the right edge --- a marker can miss a column
+ * entirely. The rule below restores the scroll affordance by drawing the
+ * edge, so the box reads as something that moves.
+ */
+@media (width < 700px) {
+  .manual-body .at-table-wrap {
+    border-inline-end: var(--slop-rule-width) dashed var(--slop-rule-hair);
+  }
+  .manual-body .at-table-wrap::after {
+    content: "Scrolls sideways →";
+    display: block;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.1em;
+    color: var(--slop-toast);
+    padding-block: 0.35rem;
+  }
+}
+
+/* --- Placement ---------------------------------------------------------- *
+ *
+ * The theme puts every direct child of <main> in its `content` column, which
+ * is capped at 48rem --- right for an article, far too narrow for a manual
+ * with a register beside it. page.css already takes the `full` column for the
+ * course's apparatus pages; this page is MDX, so it never got that class, and
+ * the register was folded into a reading column with the body.
+ */
+/* `.at-main` itself only spans inset-start to content-end, and its columns are
+   a subgrid of those, so a child asking for `full` gets clamped and nothing
+   moves. The main element has to widen first --- the same move page.css makes
+   for `main.slop-page`, which this page could not use because it is MDX. */
+body:has(.manual) .at-main {
+  grid-column: full;
+  display: block;
+  padding-inline: 0;
+}
+
+/* The theme draws a 1px accent rule down the content edge. On a reading page
+   it is a margin rule; across a full-width register it cuts through the
+   layout. page.css turns it off for the apparatus pages for the same reason. */
+body:has(.manual)::after {
+  display: none;
+}
+
+.manual {
+  max-width: 1760px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+/* The title belongs to the body column, not to the page above the register. */
+.manual-body > h1 {
+  margin-top: 0;
+}
+.manual-body > h1::before { content: none; }
+
+.manual-caveat {
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+  border-bottom: var(--slop-rule-width) solid var(--slop-rule-hair);
+  padding-block: var(--slop-space-xs);
+  font-size: var(--at-font-size-sm);
+  color: var(--at-text-secondary);
+  max-width: var(--slop-measure);
+}
+
+/* The theme's table head wears the Slop brand gold. That is right for site
+   chrome and wrong inside a technical manual, where the same gold means
+   "brand" two rules above and "column heading" here. Structural content is
+   charcoal on this site. */
+.manual-body th {
+  background: var(--slop-ink);
+  color: var(--slop-paper-on-ink);
+}

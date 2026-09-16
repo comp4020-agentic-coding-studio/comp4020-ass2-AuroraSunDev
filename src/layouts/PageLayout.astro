@@ -34,7 +34,10 @@ const { title, description, ownTitle = false } = props;
 
 <MdxPageLayout siteConfig={siteConfig} lead={false} {...Astro.props}>
   {!ownTitle && <h1>{title}</h1>}
-  {description && <p class="lead">{description}</p>}
+  {/* A page that lays out its own title lays out its own lead with it; printing
+      the frontmatter description here as well puts the same sentence on the
+      page twice, once above the register and once inside it. */}
+  {!ownTitle && description && <p class="lead">{description}</p>}
   <slot />
   {/* The shared archive layer closes every page that renders through this
       layout. It records the course the page belongs to rather than decorating

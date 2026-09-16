@@ -1,0 +1,49 @@
+---
+/**
+ * The Field Manual's chapter register.
+ *
+ * The manual is a reference, not a reading: a marker arrives wanting one
+ * method and should not have to scroll 400 lines of prose to find it. So its
+ * contents are numbered chapters rather than a run-on list of links, and on a
+ * wide viewport they stay on screen while the body scrolls past them --- the
+ * handbook tab strip plan.md asks for, and the register the reference draws
+ * down the left edge.
+ *
+ * Below the two-column breakpoint the rail becomes an inline jump list at the
+ * top of the page, which is plan.md's own instruction for sticky side
+ * contents on a phone. It is the same markup either way; only the placement
+ * changes, so there is no second copy to keep in step.
+ *
+ * The numbers are positions in the manual, not a sequence to be worked
+ * through --- nobody reads a field manual front to back --- so they are set
+ * as record numbers in the mono face rather than as an ordered list a reader
+ * is invited to start at 01 and finish at 09.
+ */
+
+/** The chapters, in page order. `id` must match the heading's generated slug. */
+const CHAPTERS = [
+  { n: "01", id: "system-vocabulary", text: "System vocabulary" },
+  { n: "02", id: "the-four-failure-families", text: "Failure families" },
+  { n: "03", id: "observation-protocol", text: "Observation protocol" },
+  { n: "04", id: "test-methods", text: "Test methods" },
+  { n: "05", id: "evidence-records", text: "Evidence records" },
+  { n: "06", id: "observed-inferred-unknown", text: "Observed / Inferred / Unknown" },
+  { n: "07", id: "failure-notation", text: "Failure notation" },
+  { n: "08", id: "recording-sheets", text: "Recording sheets" },
+  { n: "09", id: "method-limits", text: "Method limits" },
+];
+---
+
+<nav class="manual-contents" aria-label="Manual chapters">
+  <p class="manual-contents-k mono">Contents</p>
+  <ul role="list">
+    {CHAPTERS.map((c) => (
+      <li>
+        <a href={`#${c.id}`}>
+          <span class="manual-contents-n mono" aria-hidden="true">{c.n}</span>
+          <span class="manual-contents-t">{c.text}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>

@@ -3,11 +3,29 @@ title: Field Manual
 description:
   Measure first. Explain second. The course methods for recording a specimen,
   applying a load, identifying failure and defending a claim.
+# This page lays out its own title inside the register, beside the contents,
+# as the reference sets it --- so the layout must not print a second one.
+ownTitle: true
 ---
 
-<div class="slop-measure">
+import ManualContents from "../../components/manual/ManualContents.astro";
+import "../../styles/manual.css";
 
-> **Measure first. Explain second.**
+<div class="manual">
+
+<ManualContents />
+
+<div class="manual-body">
+
+# Measure first. Explain second.
+
+<p class="lead">The Field Manual defines the course methods for recording a
+specimen, applying a load, identifying failure, and defending a claim.</p>
+
+<p class="manual-caveat">Course methods support comparative reasoning. They are
+not professional engineering or food-safety certification.</p>
+
+<div class="slop-measure">
 
 This manual holds the methods, the vocabulary and the evidence standards used
 across all twelve weeks and all four assessments, so that a week's brief can
@@ -16,19 +34,6 @@ week page and every assessment brief links to the section it uses; where a
 brief and this page disagree on method, tell a member of staff so one of the
 two can be corrected. The conditions under which any test may be run are set
 by [the participation policies](/policies/), which govern this page.
-
-## On this page
-
-[System vocabulary](#system-vocabulary) ·
-[The four failure families](#the-four-failure-families) ·
-[Observation protocol](#observation-protocol) ·
-[Test methods](#test-methods) ·
-[Evidence records](#evidence-records) ·
-[Observed, inferred, unknown](#observed-inferred-unknown) ·
-[Failure notation](#failure-notation) ·
-[Recording sheets](#recording-sheets) ·
-[Method limits](#method-limits) ·
-[Where each method is used](#where-each-method-is-used)
 
 ## System vocabulary
 
@@ -425,5 +430,9 @@ records of all six methods backwards, which is why it adds none of its own.
 The full schedule sits on [the weeks index](/sessions/), the weightings and due
 dates on [the assessment overview](/assessments/), and the course-level framing
 on [the course guide](/course/).
+
+</div>
+
+</div>
 
 </div>
