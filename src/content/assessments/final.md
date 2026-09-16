@@ -1,0 +1,183 @@
+---
+title: The Sandwich Must Hold
+description:
+  One declared load case, one system designed against it, and the record of
+  the test, the failure, the revision and the defence
+week: 12
+due: 2027-05-28T12:00:00+10:00
+weight: 40
+marking:
+  mode: weighted
+  criteria:
+    - name: Response to the load case
+      weight: 25
+    - name: Test quality
+      weight: 30
+    - name: Structural reasoning
+      weight: 25
+    - name: Iteration
+      weight: 10
+    - name: Communication
+      weight: 10
+spec:
+  - one load case is declared before the first test, and the design answers that case
+  - the protocol, its evidence and at least one documented failure are all present
+  - one revision is justified by the failure it responds to, with evidence either side
+  - the final defence states the conditions the design is not claimed to survive
+related:
+  - sessions/week-10
+  - sessions/week-11
+  - sessions/week-12
+  - field-log
+  - component-test
+  - failure-autopsy
+---
+
+**Weight 40% · Capability: Synthesise · Due 28 May 2027, end of Week 12**
+
+> Design, test, revise and defend one sandwich system against a load case you
+> declare in advance.
+
+## Task at a glance
+
+- **Mode** — individual.
+- **Format** — a design and test dossier: load-case brief, exploded diagram,
+  declared constraints, protocol, evidence, one documented failure, one
+  justified revision, and a final structural defence.
+- **Scale** — one system, one load case, at least two rounds of testing with a
+  revision between them.
+- **Load case** — choose one: backpack transport, one-handed use, delayed
+  service, vertical storage, or repeated handling.
+- **Evidence** — physical specimens, non-food analogues, supplied evidence, or
+  any combination.
+- **Route** — one file, submitted to the SLOP2895 submission point before the
+  deadline.
+
+## The brief
+
+The three earlier tasks each held one part of the method still. The Field Log
+observed structures without changing them; the Component Test changed one
+variable and held the rest; the Failure Autopsy worked backwards from a failure
+someone else had documented. This task runs the whole loop forwards, on a
+system you are responsible for, against a condition you commit to before you
+know whether your design survives it.
+
+The declared problem is that structural performance is meaningless without a
+stated load case. A system is not strong; it is strong against something. An
+assembly that holds perfectly on a bench may not survive forty minutes upright
+in a bag, and one built for that journey may be unusable in one hand. Declaring
+the load case first is what makes the rest of the dossier arguable: it fixes
+what counts as success, what counts as failure, and which trade-offs you were
+entitled to make.
+
+The iteration record is the core of this submission. You are required to
+document a failure, and to make one revision that answers it, with evidence on
+both sides of the change. This is not a penalty clause. A design that never
+failed was tested too gently, and a dossier with no failure in it will be read
+as a dossier with no test in it. A structure that holds only when it is carried
+carefully has not been tested; it has been escorted.
+
+Taste, visual appeal, culinary skill, ingredient expense and whether the result
+is eaten are explicitly excluded from marking. An attractive system with no load
+case, no protocol and no evidence marks low. An unattractive one with a declared
+load case, a repeatable test, an honest failure and a defensible revision marks
+high.
+
+## Required submission
+
+1. A load-case brief: the case chosen, the conditions it imposes, the duration
+   or repetitions involved, and the criteria that separate holding from failing.
+2. An annotated exploded diagram of the system, showing every layer, every
+   interface and the load path through the assembly.
+3. Declared design constraints, including the ones imposed by the load case and
+   the ones you accepted for cost, waste or accessibility reasons.
+4. A test protocol capable of applying the declared load case repeatably.
+5. Test evidence from every round, keyed to the protocol.
+6. One documented failure, located at the interface or layer where it began.
+7. One justified revision, stating the failure it answers, what changed, what
+   was deliberately left unchanged, and the evidence after the change.
+8. A final structural defence.
+
+## Recommended process
+
+1. **Declare** the load case and the criteria for holding and failing, and date
+   the declaration before the first test.
+2. **Classify** the layers of your system by function — structural, interface,
+   or carried load — and mark the load path on the diagram.
+3. **Document** the constraints you are designing within before you design
+   within them.
+4. **Test** the system against the declared case, in full, without moderating
+   the conditions to protect it.
+5. **Observe** and **measure** the failure where it initiates rather than where
+   it becomes obvious.
+6. **Diagnose** the failure using the causal discipline of the Autopsy:
+   evidence, sequence, and at least one alternative you ruled out.
+7. **Revise** one thing, deliberately, and record what you held constant so the
+   second round remains a comparison.
+8. **Compare** the two rounds under the identical protocol.
+9. **Defend** the final system by stating what it survives, what it does not,
+   and the evidence for each.
+
+## Evidence standard
+
+The dossier must let a marker separate four things at a glance.
+
+**Observed** is the recorded behaviour under the protocol: what deflected, what
+migrated, what separated, when, and at which point in the load case. Failed
+rounds are reported in the same detail as successful ones.
+
+**Inferred** is your structural reasoning — why the load path explains the
+observation, why the revision should address it. Each inference names the
+evidence behind it.
+
+**Uncertain** covers spread between repeats, conditions you could not reproduce
+exactly between rounds, and any result you would not stake the defence on.
+
+**Limitation** is the boundary of the claim. The defence must state the
+conditions under which the system is not claimed to hold, including the load
+cases you did not test. A defence that claims general robustness from one load
+case overstates its evidence and is marked as overstating it.
+
+## Equivalent participation
+
+Three routes are available, and all three assess the same outcome:
+
+- **Physical specimen** — build and test a real assembly, with no requirement
+  to consume it.
+- **Non-food analogue** — build the system in foam, sponge, cardboard, clay or
+  textile, declaring how each analogue stands in for the layer it represents.
+  Repeated destructive testing against a load case is often better served this
+  way.
+- **Supplied evidence** — design against the supplied specimen and measurement
+  packs, using their documented conditions as your test rounds.
+
+No route loses marks, and the same criteria apply to all three. The load case,
+the protocol, the failure and the revision are assessable in every route. See
+[the participation policies](/policies/).
+
+## Safety, cost and waste
+
+No student is required to prepare, purchase, handle or consume food to complete
+this task, and no assessment here depends on specialist or expensive materials.
+Your protocol must justify the material each round consumes; minimising it is a
+design constraint you may declare and defend, not a bonus mark. Tested material
+must never be presented as safe to eat, and cutting must use supplied pre-cut
+specimens, diagrams or supervised equipment. Full detail is on
+[the policies page](/policies/).
+
+## Preparation
+
+The whole semester prepares this task, and the final three teaching weeks
+prepare it directly.
+
+- [Week 10: Packaging Is Part of the Structure](/sessions/week-10/) —
+  transport as a declared load case rather than an afterthought.
+- [Week 11: Failure Autopsy](/sessions/week-11/) — the diagnostic discipline
+  your documented failure is held to.
+- [Week 12: The Final Stress Test](/sessions/week-12/) — whether a design stays
+  coherent under a declared use condition.
+
+The three earlier assessments supply the components: observation from the
+[Sandwich Field Log](/assessments/field-log/), isolation and protocol from the
+[Component Test](/assessments/component-test/), and causal reasoning from the
+[Failure Autopsy](/assessments/failure-autopsy/).

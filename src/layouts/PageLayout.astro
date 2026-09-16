@@ -1,14 +1,43 @@
 ---
+/**
+ * The layout every MDX page in this site renders through.
+ *
+ * It adds two things to the theme's MdxPageLayout: the page's own `<h1>`, and
+ * the shared archive rule that closes the page.
+ *
+ * The heading is not a style choice. MdxPageLayout emits a heading only when
+ * the page supplies BOTH `heroTitle` and a resolved `heroImage`; this course's
+ * MDX pages supply neither, so /assessments/, /policies/, /people/ and
+ * /lectures/ were each building with no h1 at all, and with their first
+ * heading an h2. Caught by reading the built HTML's heading order rather than
+ * by looking at the pages, which looked fine --- the theme sets the lead
+ * paragraph large enough to pass for a title.
+ *
+ * `lead={false}`: the theme would otherwise print the frontmatter description
+ * as a lead paragraph *above* the h1 this layout inserts, which puts the
+ * page's first text before its own title. This layout prints it underneath
+ * instead, in the same `.lead` class the theme styles.
+ */
 import MdxPageLayout from "astro-theme-university/layouts/MdxPageLayout.astro";
 import ArchiveRule from "../components/course/ArchiveRule.astro";
 import { courseMeta } from "../course-config";
 import { siteConfig } from "../site-config";
+
+const props = (Astro.props.frontmatter ?? Astro.props) as {
+  title: string;
+  description?: string;
+  /** Set on a page that lays out its own title, so it does not get two. */
+  ownTitle?: boolean;
+};
+const { title, description, ownTitle = false } = props;
 ---
 
-<MdxPageLayout siteConfig={siteConfig} {...Astro.props}>
+<MdxPageLayout siteConfig={siteConfig} lead={false} {...Astro.props}>
+  {!ownTitle && <h1>{title}</h1>}
+  {description && <p class="lead">{description}</p>}
   <slot />
   {/* The shared archive layer closes every page that renders through this
       layout. It records the course the page belongs to rather than decorating
-      it, and it is the one place Phase 1 exercises the archive-rule mark. */}
+      it. */}
   <ArchiveRule label={`${courseMeta.code} / ${courseMeta.session} ${courseMeta.year}`} />
 </MdxPageLayout>

@@ -1,0 +1,859 @@
+---
+/**
+ * The dominant visual for one slide of the Week 4 lecture.
+ *
+ * Twelve figures, drawn rather than photographed: plan.md reserves realistic
+ * specimen imagery for the homepage and for evidence-based specimen cases, and
+ * uses technical line drawings for concepts, forces, test rigs, failure
+ * sequences and lecture explanations. This is the last of those.
+ *
+ * Each figure is `role="presentation"`. The slide stage prints the figure's
+ * description from `SLIDES[n].figureAlt` and the whole transcript underneath,
+ * so nothing here is the only carrier of anything --- which is also what makes
+ * the deck usable with reduced motion, since there is no state to animate.
+ *
+ * One drawing convention, used throughout: a measured interval is drawn solid,
+ * and an interval nobody measured is left undrawn or dashed. Slide 8 is the
+ * slide that says so out loud, but the whole deck obeys it.
+ */
+interface Props {
+  figure: string;
+}
+const { figure } = Astro.props;
+
+/** A porous layer in cross-section, optionally wetted from the bottom up. */
+const wetTop = (y: number, h: number, depth: number) => y + h - depth;
+---
+
+<div class:list={["sf", `sf--${figure}`]}>
+  {/* --- 01 -- the instrumented specimen ------------------------------- */}
+  {figure === "instrumented" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      <defs>
+        <pattern id="sf-pore" width="14" height="14" patternUnits="userSpaceOnUse">
+          <circle class="pore" cx="4" cy="4.5" r="2.6" />
+          <circle class="pore" cx="10.5" cy="10" r="1.7" />
+          <circle class="pore" cx="11" cy="3" r="1.1" />
+        </pattern>
+      </defs>
+
+      <rect class="layer" x="300" y="80" width="300" height="52" />
+      <rect x="300" y="80" width="300" height="52" fill="url(#sf-pore)" stroke="none" />
+      <rect class="fillmat" x="300" y="132" width="300" height="46" />
+      <rect class="layer" x="300" y="178" width="300" height="52" />
+      <rect x="300" y="178" width="300" height="52" fill="url(#sf-pore)" stroke="none" />
+
+      {/* The bench, hatched: the datum every reading is taken from. */}
+      <path class="bench" d="M240 230 H660" />
+      <path class="hatchline" d="M248 230 l-14 16 M278 230 l-14 16 M308 230 l-14 16 M338 230 l-14 16 M368 230 l-14 16 M398 230 l-14 16 M428 230 l-14 16 M458 230 l-14 16 M488 230 l-14 16 M518 230 l-14 16 M548 230 l-14 16 M578 230 l-14 16 M608 230 l-14 16 M638 230 l-14 16 M668 230 l-14 16" />
+
+      {/* Penetration-depth scale at the left edge. */}
+      <path class="dim" d="M258 230 V130 m-6 6 l6 -6 l6 6 m-6 100 l-6 -6 l6 6 l6 -6" />
+      <path class="dimtick" d="M248 230 H300 M248 130 H300" />
+      <text class="ann" x="244" y="172" text-anchor="end">Penetration</text>
+      <text class="ann" x="244" y="192" text-anchor="end">depth</text>
+
+      {/* Moisture arriving at the lower boundary. */}
+      <path class="wetarrow" d="M340 300 V244 m-6 8 l6 -8 l6 8" />
+      <path class="wetarrow" d="M450 300 V244 m-6 8 l6 -8 l6 8" />
+      <path class="wetarrow" d="M560 300 V244 m-6 8 l6 -8 l6 8" />
+      <text class="ann ann--wet" x="450" y="332" text-anchor="middle">Moisture at the boundary</text>
+
+      <text class="ann" x="620" y="110">Outer layer</text>
+      <text class="ann" x="620" y="162">Interface</text>
+      <text class="ann" x="620" y="212">Outer layer</text>
+      <path class="leader" d="M604 104 H614 M604 156 H614 M604 206 H614" />
+
+      <text class="note" x="884" y="386" text-anchor="end">Specimen 004 — section</text>
+    </svg>
+  )}
+
+  {/* --- 02 -- the failure arrives late -------------------------------- */}
+  {figure === "late" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      {[
+        { x: 60, depth: 0, label: "At assembly", sep: 0 },
+        { x: 340, depth: 30, label: "After a delay", sep: 0 },
+        { x: 620, depth: 52, label: "End of delay", sep: 16 },
+      ].map((s) => (
+        <g>
+          <text class="cond" x={s.x + 110} y="56" text-anchor="middle">{s.label}</text>
+          {/* Upper layer, displaced once the interface has let go. */}
+          <rect class="layer" x={s.x + (s.sep ? 18 : 0)} y="90" width="220" height="40" />
+          <rect class="fillmat" x={s.x + (s.sep ? 18 : 0)} y="130" width="220" height="34" />
+          <rect class="layer" x={s.x} y={164 + s.sep} width="220" height="40" />
+          {/* The wetted region, measured up from the lower boundary. */}
+          {s.depth > 0 && (
+            <rect class="wet" x={s.x} y={wetTop(164 + s.sep, 40, s.depth)} width="220" height={s.depth} />
+          )}
+          {s.sep > 0 && (
+            <g>
+              <path class="failmark" d={`M${s.x + 8} ${158} H${s.x + 232}`} />
+              <text class="ann ann--fail" x={s.x + 110} y="248" text-anchor="middle">
+                Interface separated
+              </text>
+            </g>
+          )}
+          <path class="bench" d={`M${s.x - 10} ${204 + s.sep} H${s.x + 230}`} />
+        </g>
+      ))}
+
+      {/* One axis under all three: the delay is the variable. */}
+      <path class="axis" d="M60 320 H850 m-12 -6 l12 6 l-12 6" />
+      <path class="dimtick" d="M170 314 v12 M450 314 v12 M730 314 v12" />
+      <text class="ann" x="60" y="356">Elapsed time — nothing is touched between these three states</text>
+      <text class="note" x="884" y="386" text-anchor="end">Illustrative course model</text>
+    </svg>
+  )}
+
+  {/* --- 03 -- what is the boundary doing? ----------------------------- */}
+  {figure === "boundary" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      <defs>
+        <pattern id="sf-pore3" width="14" height="14" patternUnits="userSpaceOnUse">
+          <circle class="pore" cx="4" cy="4.5" r="2.6" />
+          <circle class="pore" cx="10.5" cy="10" r="1.7" />
+        </pattern>
+      </defs>
+
+      <rect class="layer" x="180" y="120" width="420" height="56" />
+      <rect x="180" y="120" width="420" height="56" fill="url(#sf-pore3)" stroke="none" />
+      <rect class="fillmat" x="180" y="176" width="420" height="40" />
+      <rect class="layer" x="180" y="216" width="420" height="56" />
+      <rect x="180" y="216" width="420" height="56" fill="url(#sf-pore3)" stroke="none" />
+
+      {/* 01 the layer: a route through the material. */}
+      <circle class="callout" cx="300" cy="148" r="15" />
+      <text class="callout-n" x="300" y="154" text-anchor="middle">01</text>
+      <path class="leader leader--long" d="M315 148 H660" />
+      <text class="ann ann--head" x="672" y="142">The layer</text>
+      <text class="ann" x="672" y="166">Porous. Liquid travels through it.</text>
+
+      {/* 02 the interface: a route along the join. */}
+      <circle class="callout" cx="430" cy="196" r="15" />
+      <text class="callout-n" x="430" y="202" text-anchor="middle">02</text>
+      <path class="leader leader--long" d="M445 196 H660" />
+      <text class="ann ann--head" x="672" y="190">The interface</text>
+      <text class="ann" x="672" y="214">A join. Liquid travels along it.</text>
+
+      {/* 03 the exposed edge: the shortest route in. */}
+      <circle class="callout callout--hot" cx="180" cy="244" r="15" />
+      <text class="callout-n callout-n--hot" x="180" y="250" text-anchor="middle">03</text>
+      <path class="leader leader--long" d="M195 296 H660 M180 259 V296" />
+      <text class="ann ann--head" x="672" y="290">The exposed edge</text>
+      <text class="ann" x="672" y="314">No layer to cross first. The shortest route in.</text>
+
+      <path class="edgemark" d="M180 120 V272" />
+      <text class="note" x="884" y="386" text-anchor="end">Three things called "the boundary"</text>
+    </svg>
+  )}
+
+  {/* --- 04 -- the simplified moisture-front model ---------------------- */}
+  {figure === "front" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      <defs>
+        <pattern id="sf-pore4" width="15" height="15" patternUnits="userSpaceOnUse">
+          <circle class="pore" cx="4" cy="5" r="3" />
+          <circle class="pore" cx="11" cy="11" r="2" />
+          <circle class="pore" cx="12" cy="3.5" r="1.2" />
+        </pattern>
+        <pattern id="sf-pore4w" width="15" height="15" patternUnits="userSpaceOnUse">
+          <circle class="pore pore--wet" cx="4" cy="5" r="3" />
+          <circle class="pore pore--wet" cx="11" cy="11" r="2" />
+          <circle class="pore pore--wet" cx="12" cy="3.5" r="1.2" />
+        </pattern>
+      </defs>
+
+      {[
+        { x: 150, t: "t = 0", depth: 0, mm: "0 mm" },
+        { x: 420, t: "t = 5 min", depth: 44, mm: "8 mm" },
+        { x: 690, t: "t = 15 min", depth: 98, mm: "18 mm" },
+      ].map((s) => {
+        const top = 90;
+        const h = 170;
+        const base = top + h;
+        const fy = wetTop(top, h, s.depth);
+        return (
+          <g>
+            <text class="cond" x={s.x + 80} y="62" text-anchor="middle">{s.t}</text>
+
+            {/* The dry remainder of the layer. */}
+            <rect class="layer" x={s.x} y={top} width="160" height={h} />
+            <rect x={s.x} y={top} width="160" height={h} fill="url(#sf-pore4)" stroke="none" />
+
+            {/* The wetted region, with an irregular front: the advance is not
+                a straight line, and drawing it straight would overstate what
+                a rule can read off a real specimen. */}
+            {s.depth > 0 && (
+              <g>
+                <path
+                  class="wet"
+                  d={`M${s.x} ${base} H${s.x + 160} V${fy + 6} q -16 -9 -32 0 t -32 0 t -32 0 t -32 0 t -32 0 Z`}
+                />
+                <path
+                  d={`M${s.x} ${base} H${s.x + 160} V${fy + 6} q -16 -9 -32 0 t -32 0 t -32 0 t -32 0 t -32 0 Z`}
+                  fill="url(#sf-pore4w)"
+                  stroke="none"
+                />
+                <path
+                  class="frontline"
+                  d={`M${s.x} ${fy + 6} q 16 -9 32 0 t 32 0 t 32 0 t 32 0 t 32 0`}
+                />
+              </g>
+            )}
+
+            {/* The penetration depth, dimensioned from the boundary. */}
+            <path class="dimtick" d={`M${s.x - 44} ${base} H${s.x}`} />
+            <path class="dimtick" d={`M${s.x - 44} ${fy + 6} H${s.x}`} />
+            <path
+              class="dim"
+              d={`M${s.x - 30} ${base} V${fy + 6} m-6 6 l6 -6 l6 6 m-6 ${base - fy - 12} l-6 -6 l6 6 l6 -6`}
+            />
+            <text class="dimlabel" x={s.x - 40} y={(base + fy) / 2 + 10} text-anchor="end">{s.mm}</text>
+
+            <path class="bench" d={`M${s.x - 14} ${base} H${s.x + 174}`} />
+            <path class="hatchline" d={`M${s.x - 6} ${base} l-12 14 M${s.x + 24} ${base} l-12 14 M${s.x + 54} ${base} l-12 14 M${s.x + 84} ${base} l-12 14 M${s.x + 114} ${base} l-12 14 M${s.x + 144} ${base} l-12 14 M${s.x + 174} ${base} l-12 14`} />
+          </g>
+        );
+      })}
+
+      <text class="ann" x="16" y="300">Boundary</text>
+      <path class="leader" d="M78 296 L136 264" />
+      <text class="note" x="884" y="386" text-anchor="end">Illustrative course model</text>
+    </svg>
+  )}
+
+  {/* --- 05 -- soften, swell, lubricate -------------------------------- */}
+  {figure === "three-effects" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      {/* Softening: the wetted layer deflects further under the same load. */}
+      <g>
+        <text class="cond" x="145" y="58" text-anchor="middle">Soften</text>
+        <path class="force" d="M145 74 V104 m-7 -9 l7 9 l7 -9" />
+        <path class="ghost" d="M50 130 H240" />
+        <path class="layerline" d="M50 130 q 95 46 190 0" />
+        <rect class="wet wet--band" x="50" y="130" width="190" height="16" />
+        <path class="support" d="M40 190 H70 M220 190 H250" />
+        <path class="dimtick" d="M50 130 v60 M240 130 v60" />
+        <text class="ann" x="145" y="232" text-anchor="middle">Same load.</text>
+        <text class="ann" x="145" y="252" text-anchor="middle">More deflection.</text>
+        <text class="ann ann--head" x="145" y="298" text-anchor="middle">Stiffness lost</text>
+      </g>
+
+      {/* Swelling: the wetted region gains thickness and fights its own dry
+          material. */}
+      <g>
+        <text class="cond" x="450" y="58" text-anchor="middle">Swell</text>
+        <path class="ghost" d="M355 120 H545 M355 156 H545" />
+        <path class="layerline" d="M355 108 H545" />
+        <path class="layerline" d="M355 168 H545" />
+        <rect class="wet" x="355" y="130" width="190" height="38" />
+        <path class="frontline" d="M355 130 H545" />
+        <path class="swell" d="M450 128 V104 m-6 6 l6 -6 l6 6" />
+        <path class="swell" d="M450 170 V194 m-6 -6 l6 6 l6 -6" />
+        <text class="ann" x="450" y="232" text-anchor="middle">Volume taken up.</text>
+        <text class="ann" x="450" y="252" text-anchor="middle">Geometry changed.</text>
+        <text class="ann ann--head" x="450" y="298" text-anchor="middle">Dry material in tension</text>
+      </g>
+
+      {/* Lubrication: liquid at an interface is a slip problem. */}
+      <g>
+        <text class="cond" x="755" y="58" text-anchor="middle">Lubricate</text>
+        <rect class="layer" x="672" y="106" width="190" height="30" />
+        <path class="film" d="M672 142 H862" />
+        <rect class="layer" x="660" y="148" width="190" height="30" />
+        <path class="force" d="M878 121 H898 m-7 -6 l7 6 l-7 6" />
+        <path class="force" d="M644 163 H624 m7 -6 l-7 6 l7 6" />
+        <text class="ann" x="755" y="232" text-anchor="middle">Grip reduced at the join.</text>
+        <text class="ann" x="755" y="252" text-anchor="middle">Layers move.</text>
+        <text class="ann ann--head" x="755" y="298" text-anchor="middle">A slip problem, not strength</text>
+      </g>
+
+      <path class="divide" d="M300 40 V320 M600 40 V320" />
+      <text class="note" x="884" y="386" text-anchor="end">One front, three possible effects</text>
+    </svg>
+  )}
+
+  {/* --- 06 -- observation is not cause -------------------------------- */}
+  {figure === "oiu" && (
+    <table class="sf-table">
+      <caption>One specimen, one delay: the same case split three ways.</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="c-obs">Observed</th>
+          <th scope="col" class="c-inf">Inferred</th>
+          <th scope="col" class="c-unk">Unknown</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The lower 18 mm of the layer changed colour.</td>
+          <td>Liquid entered from the lower boundary and advanced upward.</td>
+          <td>Whether it reached the interface, or stopped short of it.</td>
+        </tr>
+        <tr>
+          <td>The specimen separated at the interface.</td>
+          <td>The interface lost grip.</td>
+          <td>Whether grip was lost to liquid, or to shear from the softened layer above.</td>
+        </tr>
+        <tr>
+          <td>The upper layer was dry throughout.</td>
+          <td>Liquid did not reach the upper layer within the delay.</td>
+          <td>Nothing. This one is settled.</td>
+        </tr>
+      </tbody>
+    </table>
+  )}
+
+  {/* --- 07 -- designing a controlled comparison ----------------------- */}
+  {figure === "bench" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      {[
+        { x: 40, label: "Control", sub: "no moisture", depth: 0, ctl: true },
+        { x: 260, label: "Condition A", sub: "5 min", depth: 22, ctl: false },
+        { x: 480, label: "Condition B", sub: "10 min", depth: 44, ctl: false },
+        { x: 700, label: "Condition C", sub: "15 min", depth: 66, ctl: false },
+      ].map((c) => (
+        <g>
+          <text class:list={["cond", c.ctl && "cond--ctl"]} x={c.x + 80} y="52" text-anchor="middle">
+            {c.label}
+          </text>
+          <text class="ann" x={c.x + 80} y="74" text-anchor="middle">{c.sub}</text>
+          <rect class="layer" x={c.x} y="100" width="160" height="34" />
+          <rect class="fillmat" x={c.x} y="134" width="160" height="28" />
+          <rect class="layer" x={c.x} y="162" width="160" height="34" />
+          {c.depth > 0 && <rect class="wet" x={c.x} y={wetTop(162, 34, c.depth)} width="160" height={c.depth} />}
+          <path class="bench" d={`M${c.x - 10} 196 H${c.x + 170}`} />
+          {/* The control is drawn in the same size and detail as the three
+              conditions. A smaller control reads as an afterthought. */}
+          {c.ctl && <path class="ctlmark" d={`M${c.x - 14} 92 V204 M${c.x + 174} 92 V204`} />}
+        </g>
+      ))}
+
+      <path class="axis" d="M40 250 H880" />
+      <text class="ann ann--head" x="40" y="286">Held constant across all four</text>
+      <text class="ann" x="40" y="312">Specimen dimensions · layer order · ambient temperature · elapsed time at reading · who read it</text>
+      <text class="ann ann--fail" x="40" y="348">A constant you did not name is a variable you did not control.</text>
+      <text class="note" x="884" y="386" text-anchor="end">One variable: delay before observation</text>
+    </svg>
+  )}
+
+  {/* --- 08 -- reading the evidence ------------------------------------ */}
+  {figure === "plot" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      {/* Axes. */}
+      <path class="axis" d="M120 320 H840" />
+      <path class="axis" d="M120 320 V50" />
+      <text class="ann" x="480" y="358" text-anchor="middle">Elapsed time (min)</text>
+      <text class="ann" x="112" y="44" text-anchor="end">Penetration depth (mm)</text>
+
+      <path class="dimtick" d="M240 320 v9 M360 320 v9 M480 320 v9 M600 320 v9 M720 320 v9" />
+      <text class="axnum" x="240" y="342" text-anchor="middle">5</text>
+      <text class="axnum" x="360" y="342" text-anchor="middle">10</text>
+      <text class="axnum" x="480" y="342" text-anchor="middle">15</text>
+      <text class="axnum" x="600" y="342" text-anchor="middle">20</text>
+      <text class="axnum" x="720" y="342" text-anchor="middle">25</text>
+      <path class="dimtick" d="M120 250 h-9 M120 180 h-9 M120 110 h-9" />
+      <text class="axnum" x="104" y="256" text-anchor="end">10</text>
+      <text class="axnum" x="104" y="186" text-anchor="end">20</text>
+      <text class="axnum" x="104" y="116" text-anchor="end">30</text>
+
+      {/* Three wetted conditions. Only the measured points are drawn; the
+          intervals between them are deliberately left empty, which is the
+          slide's whole argument. */}
+      {[
+        { cls: "s1", pts: [[240, 264], [360, 216], [480, 186], [720, 150]] },
+        { cls: "s2", pts: [[240, 236], [360, 176], [480, 138], [720, 96]] },
+      ].map((s) => (
+        <g class:list={["series", s.cls]}>
+          {s.pts.map((p) => (
+            <circle class="pt" cx={p[0]} cy={p[1]} r="6.5" />
+          ))}
+          {/* A dashed guide, not a fit: it joins the readings without claiming
+              to describe what happened between them. */}
+          <path
+            class="guide"
+            d={s.pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]} ${p[1]}`).join(" ")}
+          />
+        </g>
+      ))}
+
+      {/* The dry control, flat along the axis. */}
+      <g class="series s0">
+        {[240, 360, 480, 720].map((x) => (
+          <circle class="pt pt--ctl" cx={x} cy="316" r="6.5" />
+        ))}
+        <path class="guide guide--ctl" d="M240 316 H720" />
+      </g>
+
+      <text class="ann ann--head" x="752" y="146">Condition B</text>
+      <text class="ann ann--head" x="752" y="92">Condition C</text>
+      <text class="ann ann--ctl" x="752" y="320">Dry control</text>
+
+      <text class="ann" x="150" y="86">Advance is slowing — a diffusive mechanism,</text>
+      <text class="ann" x="150" y="106">not a leak.</text>
+      <text class="note" x="884" y="386" text-anchor="end">Illustrative course values — intervals not measured</text>
+    </svg>
+  )}
+
+  {/* --- 09 -- competing explanations ---------------------------------- */}
+  {figure === "branch" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      {/* Three candidate causes on the left, one observation on the right.
+          Live branches are solid; the ruled-out branch is struck through, and
+          the reason is printed beside it. */}
+      <g>
+        <rect class="cause cause--live" x="30" y="60" width="280" height="62" />
+        <text class="cause-t" x="48" y="88">Liquid reached the interface</text>
+        <text class="ann" x="48" y="110">and lubricated it</text>
+        <path class="chain" d="M310 91 H470 L560 190" />
+      </g>
+      <g>
+        <rect class="cause cause--live" x="30" y="160" width="280" height="62" />
+        <text class="cause-t" x="48" y="188">The layer above softened</text>
+        <text class="ann" x="48" y="210">and loaded the join in shear</text>
+        <path class="chain" d="M310 191 H560" />
+      </g>
+      <g>
+        <rect class="cause cause--out" x="30" y="260" width="280" height="62" />
+        <text class="cause-t cause-t--out" x="48" y="288">The specimen was handled</text>
+        <text class="ann ann--out" x="48" y="310">before the delay began</text>
+        <path class="chain chain--out" d="M310 291 H470 L560 192" />
+        {/* Struck out, with the evidence that rules it out named. */}
+        <path class="strike" d="M40 300 H300" />
+        <text class="ann ann--head" x="30" y="352">Ruled out: the packaging seal was intact when opened.</text>
+      </g>
+
+      <g>
+        <rect class="obs" x="580" y="150" width="292" height="82" />
+        <text class="obs-t" x="600" y="184">Observed</text>
+        <text class="cause-t" x="600" y="212">Interface separated</text>
+      </g>
+
+      <text class="ann ann--fail" x="330" y="128">Two branches stay live.</text>
+      <text class="ann ann--fail" x="330" y="148">Nothing recorded separates them.</text>
+      <text class="note" x="884" y="386" text-anchor="end">Read right to left</text>
+    </svg>
+  )}
+
+  {/* --- 10 -- investigation brief ------------------------------------- */}
+  {figure === "protocol" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      {/* The route branch comes first: the choice of material is made before
+          the protocol starts, and every route rejoins the same protocol. */}
+      {[
+        { y: 52, label: "Physical specimen" },
+        { y: 112, label: "Non-food analogue" },
+        { y: 172, label: "Supplied evidence pack" },
+      ].map((r) => (
+        <g>
+          <rect class="route" x="20" y={r.y} width="250" height="42" />
+          <text class="step-t" x="36" y={r.y + 27}>{r.label}</text>
+          <path class="chain chain--route" d={`M270 ${r.y + 21} H330 V112`} />
+        </g>
+      ))}
+      <text class="ann ann--ok" x="20" y="222">Three equivalent routes. Same artefact leaves the session.</text>
+
+      <path class="chain" d="M330 112 H380 m-8 -6 l8 6 l-8 6" />
+
+      {/* The protocol itself. */}
+      {[
+        { x: 390, t: "Declare", s: "one variable" },
+        { x: 520, t: "Condition", s: "three + control" },
+        { x: 650, t: "Read", s: "at stated times" },
+        { x: 780, t: "Compare", s: "and state limits" },
+      ].map((s, i) => (
+        <g>
+          <rect class="step" x={s.x} y="82" width="110" height="60" />
+          <text class="step-n" x={s.x + 10} y="76">{String(i + 1).padStart(2, "0")}</text>
+          <text class="step-t" x={s.x + 14} y="110">{s.t}</text>
+          <text class="ann" x={s.x + 14} y="130">{s.s}</text>
+          {i < 3 && <path class="chain" d={`M${s.x + 110} 112 H${s.x + 130} m-8 -6 l8 6 l-8 6`} />}
+        </g>
+      ))}
+
+      {/* The safety branch the plan requires on this flow. */}
+      <path class="chain chain--safety" d="M445 142 V270 H820" />
+      <rect class="safety" x="390" y="270" width="480" height="70" />
+      <text class="step-t" x="408" y="298">Safety branch</text>
+      <text class="ann" x="408" y="320">
+        No specimen is eaten. No cutting without supplied pre-cut stock or supervision.
+      </text>
+      <text class="note" x="884" y="386" text-anchor="end">Week 4 — absorption observation</text>
+    </svg>
+  )}
+
+  {/* --- 11 -- check your diagnosis ------------------------------------ */}
+  {figure === "case" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      <text class="cond" x="30" y="46">Case 04-C — opened after 40 minutes</text>
+
+      {/* The specimen as recorded: wetted below, layers displaced, dry above. */}
+      <g>
+        <rect class="layer" x="30" y="90" width="300" height="42" />
+        <rect class="fillmat" x="54" y="132" width="300" height="30" />
+        <rect class="layer" x="30" y="162" width="300" height="46" />
+        <rect class="wet" x="30" y="170" width="300" height="38" />
+        <path class="frontline" d="M30 170 H330" />
+        <path class="bench" d="M20 208 H340" />
+        {/* The displacement, dimensioned: six millimetres, measured. */}
+        <path class="dim" d="M330 146 H354 m-6 -5 l6 5 l-6 5" />
+        <text class="dimlabel" x="362" y="151">6 mm</text>
+        <text class="ann" x="30" y="238">Lower layer darkened across its width.</text>
+        <text class="ann" x="30" y="258">Inner layers displaced 6 mm.</text>
+        <text class="ann" x="30" y="278">Upper layer dry throughout.</text>
+      </g>
+
+      <path class="divide" d="M440 40 V350" />
+
+      {/* The question, and the reveal the lecturer opens after discussion. */}
+      <text class="cause-t" x="480" y="72">Which families, and what is missing?</text>
+      <g>
+        <rect class="cause cause--live" x="480" y="100" width="180" height="52" />
+        <text class="step-t" x="498" y="132">Soak</text>
+        <path class="chain" d="M660 126 H700 m-8 -6 l8 6 l-8 6" />
+        <rect class="cause cause--live" x="700" y="100" width="180" height="52" />
+        <text class="step-t" x="718" y="132">Slip</text>
+      </g>
+      <g>
+        <rect class="cause cause--out" x="480" y="172" width="180" height="52" />
+        <text class="step-t cause-t--out" x="498" y="204">Crush</text>
+        <path class="strike" d="M490 198 H650" />
+        <text class="ann ann--out" x="676" y="204">Nothing lost height.</text>
+      </g>
+      <text class="ann ann--fail" x="480" y="266">The order of events is not established:</text>
+      <text class="ann ann--fail" x="480" y="286">no intermediate observation was taken.</text>
+      <text class="ann ann--head" x="480" y="326">That last sentence is the part worth marks.</text>
+      <text class="note" x="884" y="386" text-anchor="end">Course classification — not a professional standard</text>
+    </svg>
+  )}
+
+  {/* --- 12 -- from Week 4 to Component Test --------------------------- */}
+  {figure === "path" && (
+    <svg viewBox="0 0 900 400" role="presentation" focusable="false">
+      {/* A segment of the course load path, not the whole semester: three
+          stations and the milestone they feed. */}
+      <path class="railline" d="M80 200 H800" />
+      {[
+        { x: 140, n: "04", t: "Moisture Is a Load", here: true },
+        { x: 380, n: "05", t: "Load-Bearing Fillings", here: false },
+        { x: 620, n: "06", t: "Sauce at the Interface", here: false },
+      ].map((s) => (
+        <g>
+          <circle class:list={["stn", s.here && "stn--here"]} cx={s.x} cy="200" r="13" />
+          <text class:list={["stn-n", s.here && "stn-n--here"]} x={s.x} y="160" text-anchor="middle">
+            {s.n}
+          </text>
+          <text class="ann" x={s.x} y="248" text-anchor="middle">{s.t}</text>
+          {s.here && (
+            <g>
+              <text class="ann ann--fail" x={s.x} y="128" text-anchor="middle">You are here</text>
+              <path class="dimtick" d={`M${s.x} 134 V146`} />
+            </g>
+          )}
+        </g>
+      ))}
+
+      {/* The milestone, hanging off the end of the segment. */}
+      <circle class="ms" cx="800" cy="200" r="13" />
+      <path class="chain chain--drop" d="M800 213 V282" />
+      <rect class="obs" x="640" y="282" width="248" height="72" />
+      <text class="obs-t" x="660" y="310">Assessment 2 — 20%</text>
+      <text class="cause-t" x="660" y="338">Component Test</text>
+
+      <text class="ann ann--head" x="80" y="320">One declared variable. Three conditions.</text>
+      <text class="ann" x="80" y="344">A protocol, a comparison, an interpretation, and its limits.</text>
+      <text class="note" x="884" y="386" text-anchor="end">Course load path — Phase II</text>
+    </svg>
+  )}
+</div>
+
+<style>
+  .sf {
+    display: block;
+    width: 100%;
+  }
+  .sf svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* --- Materials --------------------------------------------------------- */
+
+  .layer {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 2.2;
+  }
+  .layerline,
+  .fillmat {
+    fill: color-mix(in srgb, var(--slop-tomato) 26%, var(--slop-paper));
+    stroke: var(--slop-charcoal);
+    stroke-width: 2.2;
+  }
+  .layerline { fill: none; }
+  .pore { fill: color-mix(in srgb, var(--slop-toast) 30%, transparent); }
+  .pore--wet { fill: color-mix(in srgb, var(--slop-toast) 62%, transparent); }
+
+  /* The wetted region. Brown, because on this site brown is moisture and
+     material condition --- and outlined by its own front line, so the extent
+     is legible without the fill. */
+  .wet {
+    fill: color-mix(in srgb, var(--slop-toast) 46%, var(--slop-paper));
+    stroke: none;
+  }
+  .wet--band { opacity: 0.85; }
+  .frontline {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 2.4;
+  }
+  .film {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+  }
+
+  /* --- Structure and measurement ---------------------------------------- */
+
+  .bench,
+  .support {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 3.2;
+  }
+  .hatchline {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.3;
+    opacity: 0.75;
+  }
+  .axis,
+  .railline {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .dim,
+  .dimtick,
+  .leader {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.4;
+  }
+  .dimtick { stroke-dasharray: 5 4; }
+  .leader--long { stroke-dasharray: none; opacity: 0.6; }
+  .divide {
+    fill: none;
+    stroke: var(--slop-rule-hair);
+    stroke-width: 1.6;
+  }
+  .ctlmark {
+    fill: none;
+    stroke: var(--slop-lettuce);
+    stroke-width: 2.4;
+  }
+
+  /* A reference state: present, dashed, never the subject. */
+  .ghost {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 5;
+    opacity: 0.5;
+  }
+
+  /* --- Load, moisture arrival and failure ------------------------------- */
+
+  .force,
+  .failmark,
+  .strike {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .failmark { stroke-width: 3.4; }
+  .strike { stroke-width: 2.6; }
+
+  .wetarrow,
+  .swell {
+    fill: none;
+    stroke: var(--slop-toast);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* --- Callouts, chains and boxes --------------------------------------- */
+
+  .callout {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 2;
+  }
+  .callout--hot { stroke: var(--slop-tomato); }
+  .callout-n,
+  .stn-n {
+    font-family: var(--slop-font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    fill: var(--slop-charcoal);
+  }
+  .callout-n--hot { fill: var(--slop-tomato); }
+  .stn-n { font-size: 26px; }
+  .stn-n--here { fill: var(--slop-tomato); }
+
+  .edgemark {
+    fill: none;
+    stroke: var(--slop-tomato);
+    stroke-width: 4;
+  }
+
+  .chain {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .chain--route { stroke: var(--slop-lettuce); stroke-width: 1.8; }
+  .chain--safety { stroke: var(--slop-tomato); stroke-dasharray: 7 5; }
+  .chain--drop { stroke-dasharray: 5 5; }
+  /* A branch the evidence rules out: dashed and faded, with the strike-through
+     and the reason printed beside it doing the actual saying. */
+  .chain--out { opacity: 0.35; stroke-dasharray: 6 5; }
+
+  .cause,
+  .step,
+  .route,
+  .obs,
+  .safety {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 2;
+  }
+  .cause--live { stroke-width: 2.4; }
+  .cause--out { opacity: 0.45; stroke-dasharray: 7 5; }
+  .route { stroke: var(--slop-lettuce); }
+  .obs { stroke-width: 3; }
+  .safety { stroke: var(--slop-tomato); fill: color-mix(in srgb, var(--slop-tomato) 6%, var(--slop-paper)); }
+  .stn {
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
+    stroke-width: 2.6;
+  }
+  .stn--here { fill: var(--slop-tomato); stroke: var(--slop-tomato); }
+  .ms { fill: var(--slop-tomato); stroke: var(--slop-tomato); stroke-width: 2.6; }
+
+  /* --- Series on the plot ----------------------------------------------- */
+
+  .pt {
+    fill: var(--slop-charcoal);
+    stroke: var(--slop-paper);
+    stroke-width: 2;
+  }
+  .s2 .pt { fill: var(--slop-tomato); }
+  .pt--ctl { fill: var(--slop-paper); stroke: var(--slop-lettuce); stroke-width: 2.6; }
+  .guide {
+    fill: none;
+    stroke: var(--slop-charcoal);
+    stroke-width: 1.6;
+    stroke-dasharray: 6 6;
+    opacity: 0.55;
+  }
+  .s2 .guide { stroke: var(--slop-tomato); }
+  .guide--ctl { stroke: var(--slop-lettuce); opacity: 0.75; }
+
+  /* --- Type ------------------------------------------------------------- */
+
+  .cond,
+  .note,
+  .ann,
+  .axnum,
+  .dimlabel,
+  .step-n,
+  .obs-t {
+    font-family: var(--slop-font-mono);
+    fill: var(--slop-charcoal);
+  }
+
+  .cond {
+    font-size: 21px;
+    letter-spacing: 0.04em;
+  }
+  .cond--ctl { fill: var(--slop-lettuce); }
+
+  .ann { font-size: 16px; }
+  .ann--head { font-weight: 600; letter-spacing: 0.03em; }
+  .ann--wet { fill: var(--slop-toast); }
+  .ann--fail { fill: var(--slop-tomato); }
+  .ann--ok,
+  .ann--ctl { fill: var(--slop-lettuce); }
+  .ann--out { opacity: 0.5; }
+
+  .axnum,
+  .dimlabel { font-size: 15px; }
+  .dimlabel { font-weight: 600; }
+  .step-n { font-size: 14px; fill: var(--slop-toast); }
+  .obs-t { font-size: 14px; letter-spacing: 0.1em; fill: var(--slop-toast); }
+
+  .cause-t,
+  .step-t {
+    font-family: var(--slop-font-body);
+    font-size: 19px;
+    fill: var(--slop-charcoal);
+  }
+  .step-t { font-weight: 600; }
+  .cause-t--out { opacity: 0.55; }
+
+  .note {
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    fill: var(--slop-toast);
+  }
+
+  /* --- Slide 6: a table, because it is one ------------------------------ */
+
+  .sf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+  .sf-table caption {
+    caption-side: top;
+    text-align: left;
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.06em;
+    color: var(--slop-toast);
+    padding-bottom: 0.75rem;
+  }
+  .sf-table th,
+  .sf-table td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.75rem 1rem 0.75rem 0;
+    border-bottom: var(--slop-rule-width) solid var(--slop-rule-hair);
+  }
+  .sf-table thead th {
+    font-family: var(--slop-font-mono);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: var(--slop-rule-heavy) solid var(--slop-rule);
+  }
+  /* The three columns are told apart by position, heading and rule, and only
+     then by colour. */
+  .sf-table .c-obs { color: var(--slop-charcoal); }
+  .sf-table .c-inf { color: var(--slop-toast); }
+  .sf-table .c-unk { color: var(--slop-tomato); }
+  .sf-table tbody td:nth-child(2) { border-left: var(--slop-rule-width) solid var(--slop-rule-hair); padding-left: 1rem; }
+  .sf-table tbody td:nth-child(3) { border-left: var(--slop-rule-width) solid var(--slop-rule-hair); padding-left: 1rem; }
+  .sf-table thead th:nth-child(2),
+  .sf-table thead th:nth-child(3) { padding-left: 1rem; }
+</style>

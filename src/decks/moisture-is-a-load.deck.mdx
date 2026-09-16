@@ -1,0 +1,243 @@
+---
+title: "Moisture Is a Load"
+description:
+  Week 4 of SLOP2895 — how liquid progressively compromises a boundary, and how
+  to design a comparison that can say so
+---
+
+import SlideFigure from "../components/lecture/SlideFigure.astro";
+
+```comment
+The presenter deck. The lecture page at /lectures/moisture-is-a-load/ is the
+accessible presentation of the same twelve slides: it carries the complete
+transcript, describes every figure in words, and works with the keyboard alone.
+This file is the artefact for the room.
+
+Both read the same drawings from src/components/lecture/SlideFigure.astro, so a
+figure cannot differ between the deck and the page. The spoken content lives in
+src/lib/lecture-moisture.ts and is reproduced here as speaker notes, which is
+the one place the deck needs its own copy.
+```
+
+{/* _class: banner */}
+
+# Moisture Is a Load
+
+## SLOP2895 · Week 4
+
+**How does liquid progressively compromise a boundary?**
+
+```notes
+Week 2 loaded the outer layer mechanically. This week nothing is pressed and
+nothing is lifted. The specimen is left alone on the bench, and it still fails.
+```
+
+---
+
+## Moisture Is a Load
+
+<SlideFigure figure="instrumented" />
+
+Calling it a load is a modelling decision: declare it, apply it under a stated
+condition, measure what it does.
+
+```notes
+Slide 1. The title is a claim, not a metaphor. Treating moisture as a load
+means treating it the way the course treats any other load.
+```
+
+---
+
+## The Failure Arrives Late
+
+<SlideFigure figure="late" />
+
+A compression failure happens while you watch. This one does not.
+
+```notes
+Slide 2. The specimen that fails is the specimen you tested, plus a delay.
+
+Every record this week carries its elapsed time. A measurement without a time
+is an anecdote with a number in it.
+```
+
+---
+
+## What Is the Boundary Doing?
+
+<SlideFigure figure="boundary" />
+
+The layer, the interface and the exposed edge are three different things.
+
+```notes
+Slide 3. When a record says "the boundary failed", ask which one.
+
+Liquid travels *through* a layer, *along* an interface, and straight in at an
+exposed edge. Three findings, three remedies.
+```
+
+---
+
+## A Simplified Moisture-Front Model
+
+<SlideFigure figure="front" />
+
+One measurable quantity: penetration depth, at a stated time.
+
+```notes
+Slide 4. The values are illustrative course values.
+
+What matters is the shape: fast, then slower. That is the square-root-of-time
+behaviour the standard capillary model predicts, and it is why doubling the
+delay does not double the damage.
+
+The model records what changes and where. Not why — that is the next slide.
+```
+
+---
+
+## Soften, Swell, Lubricate
+
+<SlideFigure figure="three-effects" />
+
+One front. Three possible structural effects, and they need different
+revisions.
+
+```notes
+Slide 5. Softening is a stiffness problem. Swelling is a geometry problem.
+Lubrication is a slip problem.
+
+A specimen can show all three. The question is which one accounts for the
+failure you observed — and whether your evidence can tell them apart at all.
+```
+
+---
+
+## Observation Is Not Cause
+
+<SlideFigure figure="oiu" />
+
+```notes
+Slide 6. The failure mode here is not a wrong answer. It is a confident answer:
+a record that writes the inference into the observation column and so removes
+the reader's ability to disagree with it.
+```
+
+---
+
+## Designing a Controlled Comparison
+
+<SlideFigure figure="bench" />
+
+One declared variable. Three conditions. One dry control.
+
+```notes
+Slide 7. Then list what you held constant: dimensions, layer order, ambient
+temperature, elapsed time at reading, and who read it.
+
+A constant you did not name is a variable you did not control, and the marker
+will find it before you do.
+```
+
+---
+
+## Reading the Evidence
+
+<SlideFigure figure="plot" />
+
+Read the order, the shape and the control. Do not read the points you did not
+measure.
+
+```notes
+Slide 8. The curve between two readings is a drawing convention, not data. This
+plot leaves those intervals dashed on purpose, and student plots should too.
+
+If the dry control also deformed, part of what you attributed to moisture
+belongs to something else.
+```
+
+---
+
+## Competing Explanations
+
+<SlideFigure figure="branch" />
+
+Two branches stay live. Nothing recorded separates them.
+
+```notes
+Slide 9. A good autopsy does not pick the most familiar cause. It states all of
+them, says which recorded evidence rules any out, and leaves the rest live.
+
+Week 11 is built entirely on doing this well.
+```
+
+---
+
+## Investigation Brief
+
+<SlideFigure figure="protocol" />
+
+Three equivalent routes. The same artefact leaves the session.
+
+```notes
+Slide 10. Physical specimen, never eaten. Non-food analogue — sponge and card
+read more cleanly than the real thing, because their pore structure is more
+uniform. Or the supplied evidence pack, with timed photographs and measurements
+from a prepared comparison.
+```
+
+---
+
+## Check Your Diagnosis
+
+<SlideFigure figure="case" />
+
+Which families, and what is missing?
+
+```notes
+Slide 11. Take a minute before revealing.
+
+Soak reaching an interface and producing Slip. Not Crush: nothing lost height.
+The order of events is not established, because no intermediate observation was
+taken — and that sentence is the part worth marks.
+
+Say out loud: Slip, Soak, Crush and Splay are this course's own analytical
+categories. They are not a recognised professional classification.
+```
+
+---
+
+## From Week 4 to Component Test
+
+<SlideFigure figure="path" />
+
+One declared variable, three conditions, a protocol, a comparison, an
+interpretation and its limits.
+
+```notes
+Slide 12. That is the structure of slides 7 and 8.
+
+Moisture is the most tractable variable to isolate, because the front is
+visible and the measurement is a length. It is not the only one: interface grip
+and stiffness category are equally legitimate, and Weeks 5 and 6 supply both.
+
+Before next week: bring the absorption observation, with uncertain readings
+marked uncertain.
+```
+
+---
+
+{/* _class: centered */}
+
+## Week 4 — Absorption Observation
+
+**Declare one variable. Three conditions and a dry control. Read the front at
+three stated times.**
+
+No specimen is eaten. Non-food analogues and the supplied evidence pack are
+equivalent routes.
+
+```notes
+Closing frame. Point at the Field Manual's moisture-migration section and at
+the Component Test brief.
+```

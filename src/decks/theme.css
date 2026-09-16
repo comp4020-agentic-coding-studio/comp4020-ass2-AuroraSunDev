@@ -11,3 +11,46 @@
  * slide class you reach for (`_class: quote`), a code-heavy layout, a
  * background. */
 @import url("astro-theme-university/styles/deck.css");
+
+/* --- This course's deck ------------------------------------------------
+ *
+ * Deck pages load only the brand CSS and this file, not the site's own
+ * stylesheets --- so the `--slop-*` tokens the course's drawings are built on
+ * would be undefined here, and every stroke in a SlideFigure would fall back
+ * to black on a dark slide. Importing the course token layer is what makes the
+ * same component render identically on the lecture page and in the deck.
+ *
+ * It also brings this course's ground with it. SLOP2895's whole visual system
+ * is laboratory white with charcoal ink, and the Week 4 reference sets the deck
+ * on white for that reason: a moisture front drawn in toasted brown over a dark
+ * slide loses the one thing it is there to show.
+ */
+@import url("/src/styles/course.css");
+
+:root {
+  /* The deck stylesheet derives the slide surface from the theme's own
+     tokens, which course.css has already moved to paper and charcoal. These
+     two are the ones deck.css sets independently. */
+  --at-deck-bg: var(--slop-paper);
+  --at-deck-fg: var(--slop-charcoal);
+}
+
+.reveal,
+.reveal .slides section {
+  background: var(--slop-paper);
+  color: var(--slop-charcoal);
+}
+
+/* Slide titles take the course's condensed display face, as every other title
+   on the site does. */
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+
+/* A figure is the slide's subject, so it gets the room. */
+.reveal .sf { margin-block: 0.5em; }
