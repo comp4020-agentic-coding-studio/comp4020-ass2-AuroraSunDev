@@ -1,0 +1,128 @@
+---
+/**
+ * The three equivalent participation routes, as three cards rather than three
+ * table rows.
+ *
+ * This is the one place on the site where a student decides how they are going
+ * to do every practical in the course, and it was a three-column markdown
+ * table --- the widest table on the longest page, needing a sideways scroll
+ * below 700px to reach the third column, which is the column that says what
+ * the route proves. A route whose value you have to scroll to find does not
+ * read as equivalent to the one you can see.
+ *
+ * The drawings are RouteGlyph, which was written for exactly this and had
+ * never been placed on a page. Its note is worth repeating because it governs
+ * the layout too: the three are drawn at the same size and weight, and the
+ * cards are laid out in one row of equal columns, because the routes are
+ * equivalent and a layout that made one look primary would contradict the
+ * policy it is illustrating.
+ *
+ * The text stays in the page that governs it. This component takes it as a
+ * prop rather than holding a copy, so the policy cannot be edited here and
+ * silently disagree with the page that claims precedence over every brief.
+ */
+import RouteGlyph from "./RouteGlyph.astro";
+
+interface Props {
+  routes: readonly {
+    route: "specimen" | "analogue" | "supplied";
+    name: string;
+    /** What the route is, in materials. */
+    is: string;
+    /** What completing it demonstrates --- the reason it is equivalent. */
+    proves: string;
+  }[];
+}
+const { routes } = Astro.props;
+---
+
+<ul class="pr" role="list">
+  {
+    routes.map(({ route, name, is, proves }) => (
+      <li class="pr-card">
+        <span class="pr-fig" aria-hidden="true"><RouteGlyph route={route} /></span>
+        <h3 class="pr-name">{name}</h3>
+        <p class="pr-is">{is}</p>
+        <p class="pr-proves">
+          <span class="pr-k mono">Proves</span>
+          {proves}
+        </p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .pr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* Four named rows the cards share, so the drawing, the name, the
+       description and PROVES each sit on one line across all three. Ragged
+       rows would read as three cards of different weight, which is the one
+       thing this figure must not say. */
+    grid-template-rows: auto auto auto auto;
+    gap: 1.75rem;
+    margin: 2rem 0 2.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pr-card {
+    display: grid;
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+    gap: 0;
+    margin: 0;
+    padding-top: 1rem;
+    border-top: 2px solid var(--slop-charcoal);
+  }
+
+  .pr-fig {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .pr-name {
+    margin: 0 0 0.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.25;
+  }
+
+  .pr-is {
+    margin: 0 0 0.85rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .pr-proves {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--slop-charcoal) 72%, var(--slop-paper));
+    text-wrap: pretty;
+  }
+
+  .pr-k {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--slop-toast);
+  }
+
+  /* Three equal columns down to the width where a column is narrower than the
+     longest word in it; then one per row, still in the same order. */
+  @media (width < 56rem) {
+    .pr {
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+      gap: 1.5rem;
+    }
+    /* One per row: there is nothing left to align across, and holding the
+       subgrid would stretch every card to the tallest one's rows. */
+    .pr-card { display: block; }
+    .pr-fig { margin-bottom: 0.75rem; }
+  }
+</style>

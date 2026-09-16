@@ -5,6 +5,8 @@ description:
   participation, and the three routes any practical test can be completed by.
 ---
 
+import ParticipationRoutes from "../../components/course/ParticipationRoutes.astro";
+
 <div class="slop-measure">
 
 > **Safe participation. Equivalent evidence.**
@@ -23,11 +25,31 @@ routes.
 
 </div>
 
-| Route | What it is | What it proves |
-| --- | --- | --- |
-| Physical specimen | Real, low-cost materials, loaded and observed. Nothing is eaten. | That you can set up a physical test, load it, and record what happened. |
-| Non-food analogue | Foam, sponge, cardboard, clay, textile or another suitable material standing in for the one under test. | That you can isolate the variable and measure it, in a material you can handle comfortably. |
-| Supplied evidence | Course-provided photographs, measurements, video frames, or a failure-case pack. | That you can read a record you did not produce and argue from it. |
+<ParticipationRoutes
+  routes={[
+    {
+      route: "specimen",
+      name: "Physical specimen",
+      is: "Real, low-cost materials, loaded and observed. Nothing is eaten.",
+      proves:
+        "That you can set up a physical test, load it, and record what happened.",
+    },
+    {
+      route: "analogue",
+      name: "Non-food analogue",
+      is: "Foam, sponge, cardboard, clay, textile or another suitable material standing in for the one under test.",
+      proves:
+        "That you can isolate the variable and measure it, in a material you can handle comfortably.",
+    },
+    {
+      route: "supplied",
+      name: "Supplied evidence",
+      is: "Course-provided photographs, measurements, video frames, or a failure-case pack.",
+      proves:
+        "That you can read a record you did not produce and argue from it.",
+    },
+  ]}
+/>
 
 <div class="slop-measure">
 
