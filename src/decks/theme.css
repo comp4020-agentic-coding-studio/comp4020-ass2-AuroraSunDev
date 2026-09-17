@@ -67,17 +67,99 @@
 
 /* The Week 8 figures are the slide's subject, not an illustration beside it.
    They ship at page magnification, which is small in a projected 1600px frame,
-   so they are given the room here rather than drawn twice at two scales. */
+   so they are given the room here rather than drawn twice at two scales.
+
+   The room has two dimensions. Enlarging on width alone is what a `width` with
+   an `auto` height does, and for a figure that is about as tall as it is wide
+   --- the single stacks, the exploded interfaces, the bending pair --- filling
+   1120px of slide width means asking for 800 to 1400px of slide height inside
+   a 592px content box. The drawing then runs off the bottom of the slide and
+   the caption prints on top of it. `max-height` is what makes the cap
+   two-dimensional: on a replaced element with an intrinsic ratio, clamping the
+   height shrinks the width to match, so a tall figure lands at its own
+   proportion instead of a cropped one. 360px leaves the 53px heading and a
+   two-line caption their room inside the 592px box.
+
+   The budget is in px, not vh: the slide is a fixed 1280x720 box that reveal
+   scales to the window, so a viewport unit here would measure the window and
+   not the slide it has to fit. */
 .reveal .of {
   width: min(100%, 60vw);
   height: auto;
+  max-height: 360px;
   margin-block: 0.4em;
 }
 
-/* The exploded pair carries two stacks and a notes panel, so it needs more of
-   the slide than a single-subject figure does. */
+/* The exploded pair carries two stacks, so it needs more of the slide than a
+   single-subject figure does --- it gets all of it. */
 .reveal .lox,
 .reveal .layer-order-exploded {
   width: 100%;
   max-width: none;
+}
+
+/* Three things about the pair on a slide that its own stylesheet cannot know.
+ *
+ * First, its breakpoints are viewport media queries, and a slide is a fixed
+ * 1280px box that reveal scales to the window. So on any full-size screen the
+ * component picks its widest PAGE layout --- the one that puts the adjacency
+ * notes in a rail --- while the box it actually has is 1120px wide. The deck
+ * passes notes="omit", so that rail was 368px of the slide held open for an
+ * element that is never rendered, and the two stacks were left 188px each.
+ *
+ * Second, inside 188px the drawing takes its 13rem and the label column is
+ * handed what is left, which is nothing. A zero-width label column does not
+ * disappear: every label wraps to one character a line, and the pair reads as
+ * two vertical smears of letters over the drawings. The label column is given
+ * a floor here so it cannot be squeezed out again.
+ *
+ * Third, the annotations are sized for a page, and the deck's base font is
+ * 36px. An order name, a layer label and the word on the arrow are captions on
+ * a drawing, not slide text, so they are set back down to a caption's size ---
+ * which is also what buys the two stacks the width they need.
+ */
+.reveal .lox {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "baseline move revised"
+    "cap      cap  cap";
+}
+
+/* The drawing's column is capped rather than its height: the labels are placed
+   as percentages of the row, which is exactly as tall as the drawing beside
+   it, so shrinking the svg's box instead would letterbox the drawing inside it
+   and slide every label off its slab. Width is the safe handle --- 10rem of
+   drawing is 344px of row, which leaves the 592px slide box room for the
+   heading above it and the caption below. The row gap goes with it: the page
+   sets a generous one because the pair stacks vertically on a phone, and here
+   the two stacks are side by side. */
+.reveal .lox {
+  row-gap: 0.5rem;
+}
+
+.reveal .lox .lox-order {
+  grid-template-columns: minmax(0, 10rem) minmax(9rem, 1fr);
+}
+
+.reveal .lox .lox-order-name,
+.reveal .lox .lox-label-text,
+.reveal .lox .lox-move-word,
+.reveal .lox .lox-moved {
+  font-size: 0.42em;
+}
+
+/* The figure's own figcaption is page apparatus: five lines explaining that
+   only the binding layer moves and what follows from it. The slide prints that
+   as its own caption in one line, so on a slide the figcaption is two captions
+   saying one thing, and it is the half that costs the drawing its room.
+   It is taken out of the visual flow rather than removed --- a figure keeps its
+   accessible caption, and `display: none` would take it out of the
+   accessibility tree along with the layout. */
+.reveal .lox .lox-cap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

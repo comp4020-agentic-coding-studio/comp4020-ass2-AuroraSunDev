@@ -151,6 +151,14 @@ const WET_A = contact([SLAB, FILL, FILL, FILL, SLAB]);
 const WET_A_MOIST = 3;
 const WET_B_MOIST = 1;
 
+/* The pair shares one extent, so both stacks project at exactly the same size
+   and the only difference a viewer can see is where the moist layer sits. It
+   has to enclose the barrier plane as well: buried-wet draws that 0.16 units
+   proud of the bodies on all four sides, and a frame sized to the bodies alone
+   clips its right-hand tip with no other symptom --- the same failure mode as
+   a label overrunning its viewBox. */
+const WET_EXTENT: P3[] = corners([-0.9, -0.16, 0], [SPAN + 1.06, SPAN + 0.32, 1.2]);
+
 /* --- neutral-axis / stiff-outer ---------------------------------------- *
    One assembly in bending. The axis that neither stretches nor compresses is
    drawn through the middle, and the stiff layer sits once on it and once at
@@ -193,8 +201,8 @@ const EXTENT: Record<OrderFigureName, P3[]> = {
     corners([acrossX(i * ORDER_PITCH), acrossY(i * ORDER_PITCH), 0], [SPAN, SPAN, 1.2]),
   ),
   neighbours: corners([0, 0, 0], [SPAN, SPAN, 1.2]),
-  "exposed-wet": corners([-0.9, 0, 0], [SPAN + 0.9, SPAN, 1.2]),
-  "buried-wet": corners([-0.9, 0, 0], [SPAN + 0.9, SPAN, 1.2]),
+  "exposed-wet": WET_EXTENT,
+  "buried-wet": WET_EXTENT,
   "neutral-axis": corners([-0.5, 0, -0.3], [SPAN + 1.3, SPAN, 1.6]),
   "stiff-outer": corners([-0.5, 0, -0.3], [SPAN + 1.3, SPAN, 1.6]),
   "adjacency-note": corners([0, 0, 0], [SPAN + 2.0, SPAN, 1.1]),
