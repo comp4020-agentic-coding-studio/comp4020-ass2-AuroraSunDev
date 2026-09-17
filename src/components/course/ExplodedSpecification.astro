@@ -36,8 +36,13 @@
  * out correctly projected without being re-derived by hand. */
 const W = 232;
 const PD = 100;
-const DX = 56;
-const DY = 32;
+const DX = 58;
+/* The vertical foreshortening has to be larger than a slab is thick, or the
+   top face is no deeper on the page than the side and the two copies that
+   draw the extrusion separate into two sheets floating one above the other.
+   At DY 32 against a 30-unit slab they did exactly that. The reference's own
+   proportion is about two to one; this is 52 against 26. */
+const DY = 52;
 const X = 48;
 const KX = DX / PD;
 const KY = DY / PD;
@@ -54,12 +59,15 @@ interface Layer {
   kind: "porous" | "film" | "discrete" | "sheet";
 }
 
+/* `y` is the near-front-bottom edge. A layer occupies DY + t of page height
+   above it, so the gaps below are what is left over --- kept between 14 and
+   25 so the stack reads as exploded rather than as five separate drawings. */
 const LAYERS: Layer[] = [
-  { y: 112, t: 24, label: "Material", kind: "porous" },
-  { y: 188, t: 9, label: "Interface", kind: "film" },
-  { y: 258, t: 16, label: "Load", kind: "discrete" },
-  { y: 322, t: 6, label: "Observation", kind: "sheet" },
-  { y: 402, t: 24, label: "Evidence", kind: "porous" },
+  { y: 150, t: 26, label: "Material", kind: "porous" },
+  { y: 238, t: 11, label: "Interface", kind: "film" },
+  { y: 326, t: 18, label: "Load", kind: "discrete" },
+  { y: 404, t: 8, label: "Observation", kind: "sheet" },
+  { y: 496, t: 26, label: "Evidence", kind: "porous" },
 ];
 
 /* --- Plan outlines ------------------------------------------------------ */
@@ -83,7 +91,7 @@ const leafPlan = (() => {
   const n = 26;
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
-    const ripple = 1 + 0.085 * Math.sin(i * 2.6) + 0.05 * Math.cos(i * 1.4);
+    const ripple = 1 + 0.13 * Math.sin(i * 2.6) + 0.075 * Math.cos(i * 1.4);
     const x = cx + Math.cos(a) * (W / 2 - 6) * ripple;
     const y = cy + Math.sin(a) * (PD / 2 - 5) * ripple;
     pts.push(`${x.toFixed(1)} ${y.toFixed(1)}`);
@@ -107,15 +115,24 @@ const uid = "xspec";
 
 <svg
   class="xspec"
-  viewBox="0 0 620 470"
+  viewBox="0 70 620 460"
   role="img"
   aria-label="An exploded drawing of one specimen in five layers. From the top: a porous outer slab, labelled material; a rippled continuous film, labelled interface; two round load-bearing bodies side by side, labelled load; a thin recording sheet, labelled observation; and a second porous outer slab, labelled evidence."
 >
   <defs>
-    <pattern id={`${uid}-pore`} width="11" height="11" patternUnits="userSpaceOnUse">
-      <circle class="pore" cx="3" cy="3.2" r="1.9" />
-      <circle class="pore" cx="8.1" cy="7.8" r="1.4" />
-      <circle class="pore" cx="9.1" cy="2.2" r="0.9" />
+    {/* Crumb. A three-dot tile on an 11px grid repeated visibly enough to
+        read as a halftone screen rather than as a porous surface, so the
+        tile is larger, carries more pores, and none of them share a row or
+        a column with another. */}
+    <pattern id={`${uid}-pore`} width="23" height="23" patternUnits="userSpaceOnUse">
+      <circle class="pore" cx="3.1" cy="5.4" r="1.9" />
+      <circle class="pore" cx="10.8" cy="1.7" r="1.1" />
+      <circle class="pore" cx="17.6" cy="7.9" r="1.6" />
+      <circle class="pore" cx="6.4" cy="13.2" r="1.3" />
+      <circle class="pore" cx="14.1" cy="17.4" r="2.1" />
+      <circle class="pore" cx="21.2" cy="14.6" r="0.9" />
+      <circle class="pore" cx="1.4" cy="20.1" r="1.2" />
+      <circle class="pore" cx="9.7" cy="21.8" r="0.8" />
     </pattern>
   </defs>
 
@@ -129,7 +146,9 @@ const uid = "xspec";
   {LAYERS.map((layer, i) => {
     const top = layer.y - layer.t;
     const mid = layer.y - layer.t / 2;
-    const labelY = mid - DY / 2;
+    /* The far-right corner, at mid-thickness: where the leader can touch the
+       body without crossing it. */
+    const labelY = mid - DY;
     return (
       <g class:list={["slab", `slab--${layer.kind}`]}>
         {(layer.kind === "porous" || layer.kind === "sheet") && (
@@ -152,10 +171,13 @@ const uid = "xspec";
                 <path class="texture" d={slabPlan} fill={`url(#${uid}-pore)`} />
               )}
               {layer.kind === "sheet" && (
-                <path
-                  class="record"
-                  d={`M${SHEET_INSET + 14} ${PD * 0.38} q 20 -7 40 0 t 40 0 t 40 0 t 38 0`}
-                />
+                <g>
+                  {/* Two surface waves rather than a ruled line: the sheet is
+                      thin enough to lie unevenly, which is what says it was
+                      laid over the stack and not built into it. */}
+                  <path class="record" d={`M${SHEET_INSET + 10} ${PD * 0.34} q 22 -8 44 0 t 44 0 t 44 0 t 42 0`} />
+                  <path class="record" d={`M${SHEET_INSET + 10} ${PD * 0.66} q 22 -7 44 0 t 44 0 t 44 0 t 42 0`} />
+                </g>
               )}
             </g>
           </g>
@@ -205,26 +227,10 @@ const uid = "xspec";
         />
         <circle class="leader-dot" cx={X + W + DX - 2} cy={labelY + 4} r="3" />
         <text class="label" x={LABEL_X} y={labelY + 9}>{layer.label.toUpperCase()}</text>
-
-        {/* The specimen's own numbering: layers are counted from the top. */}
-        <text class="layer-n" x={X - 12} y={labelY + 34} text-anchor="end">
-          {String(i + 1).padStart(2, "0")}
-        </text>
       </g>
     );
   })}
 
-  {/* A scale bar, so the drawing states its size rather than implying one. */}
-  <g class="scale">
-    <path class="scale-line" d={`M${X} 452 H${X + W}`} />
-    <path
-      class="scale-tick"
-      d={`M${X} 446 v12 M${X + W / 4} 448 v8 M${X + W / 2} 446 v12 M${X + (3 * W) / 4} 448 v8 M${X + W} 446 v12`}
-    />
-    <text class="scale-label" x={X} y="442">0</text>
-    <text class="scale-label" x={X + W / 2} y="442" text-anchor="middle">60</text>
-    <text class="scale-label" x={X + W} y="442" text-anchor="end">120 mm</text>
-  </g>
 </svg>
 
 <style>
@@ -241,57 +247,66 @@ const uid = "xspec";
     stroke-width: 1.7;
     stroke-linejoin: round;
   }
-  .face--lid { fill: color-mix(in srgb, var(--slop-charcoal) 3%, var(--slop-paper)); }
+  .face--lid { fill: var(--slop-paper); }
 
   /* The thickness: the body repeated one thickness lower, in a heavier wash,
      so the band left showing below the lid reads as the slab's own edge. */
   .face--under {
-    fill: color-mix(in srgb, var(--slop-charcoal) 9%, var(--slop-paper));
+    fill: color-mix(in srgb, var(--slop-charcoal) 16%, var(--slop-paper));
   }
 
   .texture { stroke: none; }
-  .pore { fill: color-mix(in srgb, var(--slop-toast) 46%, transparent); }
+  /* Crumb, not rust. The pores were toast-brown at 46%, which read as a
+     tinted panel from a metre away rather than as a porous surface. */
+  .pore { fill: color-mix(in srgb, var(--slop-charcoal) 34%, transparent); }
 
   /* The interface layer: a continuous film, in the green that on this site
      means a route that is holding. */
+  /* The interface layer is the one solid in the drawing, as the reference
+     has it: a dark green body among white ones. It is also the only layer a
+     reader cannot see in a real assembled specimen, which is the reason to
+     let it carry the figure's only fill. */
   .film {
-    fill: color-mix(in srgb, var(--slop-lettuce) 30%, var(--slop-paper));
-    stroke: var(--slop-lettuce);
+    fill: var(--slop-lettuce);
+    stroke: color-mix(in srgb, var(--slop-lettuce) 55%, var(--slop-charcoal));
     stroke-width: 1.7;
     stroke-linejoin: round;
   }
   .film--under {
-    fill: color-mix(in srgb, var(--slop-lettuce) 52%, var(--slop-paper));
-    stroke: color-mix(in srgb, var(--slop-lettuce) 80%, var(--slop-charcoal));
+    fill: color-mix(in srgb, var(--slop-lettuce) 70%, var(--slop-charcoal));
+    stroke: color-mix(in srgb, var(--slop-lettuce) 40%, var(--slop-charcoal));
   }
   .filmline {
     fill: none;
-    stroke: color-mix(in srgb, var(--slop-lettuce) 75%, var(--slop-charcoal));
+    stroke: color-mix(in srgb, var(--slop-paper) 45%, transparent);
     stroke-width: 1.4;
   }
 
-  /* The load layer: red, because this is where the load is declared. */
+  /* The two load-bearing bodies are drawn like every other solid here:
+     white, edged, marked. They were red, which on this site means a load
+     being applied or an interface letting go --- neither is what a body
+     sitting in an exploded view is doing, and the reference draws them in
+     line only. The word LOAD on the leader is what names them. */
   .disc {
-    fill: color-mix(in srgb, var(--slop-tomato) 22%, var(--slop-paper));
-    stroke: var(--slop-tomato);
+    fill: var(--slop-paper);
+    stroke: var(--slop-charcoal);
     stroke-width: 1.7;
   }
   .disc--under {
-    fill: color-mix(in srgb, var(--slop-tomato) 40%, var(--slop-paper));
-    stroke: color-mix(in srgb, var(--slop-tomato) 80%, var(--slop-charcoal));
+    fill: color-mix(in srgb, var(--slop-charcoal) 16%, var(--slop-paper));
+    stroke: var(--slop-charcoal);
   }
   .disc-mark {
-    fill: color-mix(in srgb, var(--slop-tomato) 40%, var(--slop-paper));
-    stroke: color-mix(in srgb, var(--slop-tomato) 70%, var(--slop-charcoal));
-    stroke-width: 1.1;
+    fill: none;
+    stroke: color-mix(in srgb, var(--slop-charcoal) 55%, var(--slop-paper));
+    stroke-width: 1.2;
   }
 
   /* The observation sheet: a record, so it carries a ruled line. */
   .record {
     fill: none;
-    stroke: var(--slop-toast);
-    stroke-width: 1.3;
-    stroke-dasharray: 7 4;
+    stroke: color-mix(in srgb, var(--slop-charcoal) 45%, var(--slop-paper));
+    stroke-width: 1.2;
   }
 
   .axis {
@@ -316,25 +331,4 @@ const uid = "xspec";
     fill: var(--slop-lettuce);
   }
 
-  .layer-n {
-    font-family: var(--slop-font-mono);
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    fill: var(--slop-charcoal);
-    opacity: 0.55;
-  }
-
-  .scale-line,
-  .scale-tick {
-    fill: none;
-    stroke: var(--slop-charcoal);
-    stroke-width: 1.3;
-  }
-  .scale-label {
-    font-family: var(--slop-font-mono);
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    fill: var(--slop-charcoal);
-    opacity: 0.7;
-  }
 </style>
