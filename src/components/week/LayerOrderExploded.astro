@@ -624,7 +624,11 @@ const VERDICT_WORD = { accepted: "Accepted", rejected: "Rejected" } as const;
      the accepted arrangement --- but the word is there too. */
   .lox-label--moved { color: var(--slop-lettuce); }
   .lox-label--moved::before { border-top-color: var(--slop-lettuce); }
+  /* Its own line, declared rather than left to the wrap: the note is a
+     different kind of thing from the layer's name, and every sibling label
+     is a two-line stack of the name alone. */
   .lox-moved {
+    display: block;
     white-space: nowrap;
     opacity: 0.85;
   }

@@ -67,6 +67,20 @@ for (const W of widths){
          Nor does it help with the visually-hidden pattern, which is a real
          1px box on purpose. */
       if (el.closest("[inert]") || el.closest('[aria-hidden="true"]')) continue;
+      /* Two shapes that are lines by intent, not by crushing, and that the
+         leaf-ish filter above does not catch because no single child holds
+         most of the text:
+         - an element carrying a .visually-hidden sibling of its visible
+           label. "Observe" plus a hidden "--- Sandwich Field Log, 15%" reads
+           as four lines of eight characters and renders as one word.
+         - an element whose children are broken deliberately, by a <br> or by
+           a child that is not inline. The stage captions on the homepage are
+           a label, a drawing and a two-line sentence in one <li>. */
+      if (el.querySelector(".visually-hidden, br")) continue;
+      if ([...el.children].some((c) => {
+        const d = getComputedStyle(c).display;
+        return d !== "inline" && d !== "none" && d !== "contents";
+      })) continue;
       if (r.width <= 2 || r.height <= 2) continue;
       const cs = getComputedStyle(el);
       /* Count the lines the TEXT occupies, not the lines the BOX could hold.
