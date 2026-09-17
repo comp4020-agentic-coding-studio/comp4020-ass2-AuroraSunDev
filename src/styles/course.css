@@ -432,27 +432,55 @@ h1,
 
 /* --- Wide tables on a phone --------------------------------------------- *
  *
- * plan.md asks for wide comparison tables to become labelled records rather
- * than a pinched grid. The theme instead wraps every table in a horizontally
- * scrollable box, which keeps the data reachable --- the page itself never
- * scrolls --- but says nothing about there being more of it past the right
- * edge, so a reader can miss a whole column and not know it.
+ * plan.md asks for wide comparison tables not to become a pinched grid on a
+ * phone. The theme wraps every table in a horizontally scrollable box, which
+ * keeps the data reachable --- the page itself never scrolls --- but says
+ * nothing about there being more of it past the right edge, so a reader can
+ * miss a whole column and not know it.
  *
- * Restructuring every table into stacked records is the better answer and a
- * larger change than this submission has room for. Drawing the edge is the
- * honest interim: the box reads as something that moves, and it says so.
+ * This used to answer that by drawing a dashed edge and printing "Scrolls
+ * sideways" under every table below 700px. Measuring showed two things wrong
+ * with that. The band was wrong: of the Field Manual's six tables, four
+ * scroll at 390px, one at 480px and none at 560px or above, so between 560
+ * and 699 the note appeared on six tables none of which moved. And the note
+ * was unnecessary, because the tables did not have to overflow at all.
+ *
+ * At 390px the widest of them --- four columns --- needs 481px, against a
+ * 345px container. 144px of that is cell padding: 18px each side of four
+ * columns. Padding alone was more than the 136px overflow. Taking the cells
+ * to 7px and the type to 15px brings that table to 337px and every other one
+ * further under, so all six fit with the table semantics intact --- which
+ * matters more here than anywhere else on the site, because the Field Manual
+ * is a document people look things up in.
+ *
+ * Below 24rem there is no honest fit. The container is 275px at 320px wide,
+ * and a four-column table only gets under that at 13px type with 4px cells ---
+ * about eight characters to a line, which is not a table anyone reads. So the
+ * scroll stays there, and so does the note --- but keyed to `data-scrolls`,
+ * which TableScrollNote.astro sets only on the wrappers that are really
+ * scrolling, rather than to a width query standing in for six tables of
+ * different shapes.
  */
-@media (width < 700px) {
-  .at-table-wrap {
-    border-inline-end: var(--slop-rule-width) dashed var(--slop-rule-hair);
+@media (width < 34rem) {
+  .at-table-wrap table {
+    font-size: 15px;
   }
-  .at-table-wrap::after {
-    content: "Scrolls sideways →";
-    display: block;
-    font-family: var(--slop-font-mono);
-    font-size: var(--at-font-size-xs);
-    letter-spacing: 0.1em;
-    color: var(--slop-toast);
-    padding-block: 0.35rem;
+  .at-table-wrap :is(th, td) {
+    padding: 7px;
   }
+}
+
+.at-table-wrap[data-scrolls],
+pre.astro-code[data-scrolls] {
+  border-inline-end: var(--slop-rule-width) dashed var(--slop-rule-hair);
+}
+.at-table-wrap[data-scrolls]::after,
+pre.astro-code[data-scrolls]::after {
+  content: "Scrolls sideways \2192";
+  display: block;
+  font-family: var(--slop-font-mono);
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.1em;
+  color: var(--slop-toast);
+  padding-block: 0.35rem;
 }

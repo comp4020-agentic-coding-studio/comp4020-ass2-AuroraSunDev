@@ -1,0 +1,47 @@
+---
+/**
+ * Marks the Field Manual's scrollable boxes --- its six table wrappers and its
+ * three pro-forma record sheets --- but only the ones that are actually
+ * scrolling, so the note is never printed over something with nothing past
+ * its right edge.
+ *
+ * CSS cannot ask whether a box overflows, so the note used to be driven by a
+ * width query, and a width query is a guess about six tables of different
+ * shapes. It was wrong in both directions: printed under all six below 700px,
+ * where measurement says none of them move above 560px, and --- once the
+ * cells were tightened so the tables fit at 390px --- still printed at 383px
+ * under three tables that fit. A label claiming there is more to see, on a
+ * table where there is not, is the kind of overstatement this whole site is
+ * about not making.
+ *
+ * The record sheets are here for the same reason, not for symmetry. They are
+ * fixed-width by nature --- 70 to 77 characters of monospace, which no type
+ * scale gets into 345px and still leaves readable --- so they will always
+ * scroll on a phone. What a reader can miss is the same thing: the evidence
+ * inventory's third column is "Does not show", and on a phone it begins past
+ * the right edge.
+ *
+ * Progressive enhancement, and the degradation is honest: with no JavaScript
+ * no attribute is set, no note is printed, and the box still scrolls, so
+ * nothing becomes unreachable --- a reader loses the hint, not the data.
+ */
+---
+
+<script>
+  const wraps = document.querySelectorAll<HTMLElement>(".at-table-wrap, pre.astro-code");
+
+  const mark = () => {
+    for (const wrap of wraps) {
+      // One pixel of slack: sub-pixel layout rounds scrollWidth up on boxes
+      // that fit exactly, and a note on something nobody can scroll is the
+      // bug this component exists to remove.
+      wrap.toggleAttribute("data-scrolls", wrap.scrollWidth > wrap.clientWidth + 1);
+    }
+  };
+
+  mark();
+  // The webfonts change every column's measure, so the first reading is taken
+  // before they land and has to be retaken after.
+  document.fonts?.ready.then(mark);
+  addEventListener("resize", mark, { passive: true });
+</script>
