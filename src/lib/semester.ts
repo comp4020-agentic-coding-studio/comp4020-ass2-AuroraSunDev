@@ -41,8 +41,6 @@ export interface Week {
   question: string;
   /** Monday the teaching week commences. */
   date: string;
-  /** Set where the week carries a real lecture deck. */
-  lecture?: boolean;
 }
 
 export const WEEKS: Week[] = [
@@ -52,7 +50,7 @@ export const WEEKS: Week[] = [
     question: "How does the outer layer bear, distribute and recover from load?" },
   { week: 3, slug: "week-03", title: "Grip, Friction and Slip", date: "2027-03-08",
     question: "Why do individually stable materials move once assembled?" },
-  { week: 4, slug: "week-04", title: "Moisture Is a Load", date: "2027-03-15", lecture: true,
+  { week: 4, slug: "week-04", title: "Moisture Is a Load", date: "2027-03-15",
     question: "How does liquid progressively compromise a boundary?" },
   { week: 5, slug: "week-05", title: "Load-Bearing Fillings", date: "2027-03-22",
     question: "Which layers support the assembly, and which only add load?" },

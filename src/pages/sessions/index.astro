@@ -35,6 +35,17 @@ const built = new Set(sessions.map((s) => s.id));
 const assessments = await getPublishedCollection("assessments");
 const builtAssessments = new Set(assessments.map((a) => a.id));
 
+/* Which weeks carry a slide deck. Read from the lectures collection rather
+   than kept as a flag beside the week: it was a flag, `lecture: true` was set
+   on Week 4 alone, and when Week 8 gained a deck the badge did not follow it
+   here or on the homepage --- and the legend below went on saying Week 4 was
+   the only one. A `slides:` frontmatter field is the fact; anything else is a
+   second copy of it waiting to disagree. */
+const lectures = await getPublishedCollection("lectures");
+const deckWeeks = new Set(
+  lectures.filter((l) => l.data.slides).map((l) => l.data.week as number),
+);
+
 const milestoneAt = (week: number) => ASSESSMENTS.find((a) => a.dueWeek === week);
 const shortDate = (iso: string) =>
   new Intl.DateTimeFormat("en-AU", { day: "2-digit", month: "short", timeZone: "UTC" })
@@ -143,7 +154,7 @@ const shortDate = (iso: string) =>
                   ) : (
                     <span class="pending">{w.title}</span>
                   )}
-                  {w.lecture && <span class="wk-deck mono">Lecture deck</span>}
+                  {deckWeeks.has(w.week) && <span class="wk-deck mono">Lecture deck</span>}
                 </h3>
 
                 <p class="wk-q">{w.question}</p>
@@ -225,8 +236,8 @@ const shortDate = (iso: string) =>
             Lecture deck
           </dt>
           <dd>
-            The week carries a full slide deck as well as its page. Week 4 is the
-            only one.
+            The week carries a full slide deck as well as its page. {deckWeeks.size} of
+            the twelve do.
           </dd>
         </div>
         <div class="legend-item">

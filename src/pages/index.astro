@@ -23,6 +23,17 @@ import "../styles/home.css";
 // alternative, and a marker clicking a dead link is worse than a marker
 // reading that a page is still coming.
 const sessions = await getPublishedCollection("sessions");
+
+/* Which weeks carry a slide deck. Read from the lectures collection rather
+   than kept as a flag beside the week: it was a flag, `lecture: true` was set
+   on Week 4 alone, and when Week 8 gained a deck the badge did not follow it
+   here or on the homepage --- and the legend below went on saying Week 4 was
+   the only one. A `slides:` frontmatter field is the fact; anything else is a
+   second copy of it waiting to disagree. */
+const lectures = await getPublishedCollection("lectures");
+const deckWeeks = new Set(
+  lectures.filter((l) => l.data.slides).map((l) => l.data.week as number),
+);
 const builtWeeks = new Set(sessions.map((s) => s.id));
 
 const FAMILIES = [
@@ -264,7 +275,7 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
                   Specimen<br />at start
                 </span>
               )}
-              {w.lecture && (
+              {deckWeeks.has(w.week) && (
                 <span class="rail-note rail-deck" style={`grid-column:${col}`}>
                   Lecture<br />deck
                 </span>
@@ -315,7 +326,7 @@ const maxWeight = Math.max(...ASSESSMENTS.map((a) => a.weight));
                 <span class="stn-date">{formatCourseDate(w.date)}</span>
               </span>
               <span class="stn-marks">
-                {w.lecture && <span class="tag tag--deck">Lecture deck</span>}
+                {deckWeeks.has(w.week) && <span class="tag tag--deck">Lecture deck</span>}
                 {milestone && (
                   <span class="tag tag--milestone">{milestone.title} · {milestone.weight}%</span>
                 )}

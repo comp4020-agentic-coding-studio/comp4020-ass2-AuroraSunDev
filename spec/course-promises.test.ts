@@ -287,4 +287,45 @@ describe("5. claims, classifications and navigation", () => {
     const page = html(`lectures/${slugOf(lecture!)}`);
     expect(page, `/lectures/${slugOf(lecture!)}/ does not link its deck`).toContain(deck);
   });
+
+  /* The weeks index badges the weeks that carry a deck and prints how many
+     there are. Both were hand-maintained, and both went stale the moment Week
+     8 gained one: the badge stayed on Week 4 alone and the legend went on
+     saying Week 4 was the only week with a deck. They are derived from the
+     lectures collection now, and this is what holds them there. Fed the build
+     from before that change, it printed:
+       week 8 declares a deck but the weeks index does not badge it */
+  it("badges every week that has a deck, and counts them correctly", () => {
+    const withDecks = nodesOf("lectures").filter((l) => typeof l.meta?.slides === "string");
+    expect(withDecks.length, "no lecture declares a deck").toBeGreaterThan(0);
+
+    const index = html("sessions");
+    /* Each row opens with its zero-padded number and closes at the heading the
+       badge sits in, so a badge is only credited to the week it is inside. */
+    const rows = [...index.matchAll(/wk-n display">(\d+)<\/p>([\s\S]*?)<\/h3>/g)];
+    const badged = new Set(
+      rows.filter(([, , block]) => block.includes("wk-deck")).map(([, n]) => Number(n)),
+    );
+
+    for (const lecture of withDecks) {
+      const week = Number(lecture.meta!.week);
+      expect(
+        badged.has(week),
+        `week ${week} declares a deck but the weeks index does not badge it`,
+      ).toBe(true);
+    }
+    expect(
+      badged.size,
+      `the weeks index badges ${badged.size} weeks but ${withDecks.length} declare a deck`,
+    ).toBe(withDecks.length);
+
+    /* Whitespace-insensitive: the sentence is wrapped across source lines and
+       the count is interpolated, so the built markup collapses differently
+       from the template. */
+    const legend = index.replace(/\s+/g, " ");
+    expect(
+      legend,
+      `the weeks index legend does not say ${withDecks.length} weeks carry a deck`,
+    ).toContain(`${withDecks.length} of the twelve do.`);
+  });
 });
