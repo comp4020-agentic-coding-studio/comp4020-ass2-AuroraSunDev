@@ -1,0 +1,95 @@
+---
+/**
+ * One glyph per policy, drawn at one weight in one 40-unit box.
+ *
+ * These are wayfinding marks, not illustrations: a reader who has been to the
+ * waste rule once should be able to find it again without reading. So each is
+ * the plainest object the rule is about --- a bin, a tag, a camera --- and
+ * none of them tries to depict the rule itself, which is what the sentence
+ * beside it is for.
+ *
+ * No fills. The register sets the stroke, so a glyph inherits the page's
+ * charcoal and stays legible if the row is ever set on another ground.
+ */
+export type PolicyName =
+  | "handling"
+  | "access"
+  | "cost"
+  | "waste"
+  | "consent"
+  | "respect"
+  | "fairness";
+
+interface Props {
+  name: PolicyName;
+}
+const { name } = Astro.props;
+---
+
+<svg viewBox="0 0 40 40" role="presentation" focusable="false">
+  {/* A specimen held, not eaten: two hands under a boxed stack. */}
+  {name === "handling" && (
+    <g>
+      <path d="M13 6 L20 3 L27 6 L20 9 Z M13 6 V14 L20 17 L27 14 V6 M20 9 V17" />
+      <path d="M6 22 q4 -3 7 1 l4 5 M34 22 q-4 -3 -7 1 l-4 5" />
+      <path d="M6 22 v7 q0 5 6 7 h16 q6 -2 6 -7 v-7" />
+    </g>
+  )}
+
+  {/* A shield with a tick: the alternative route is guaranteed, not granted. */}
+  {name === "access" && (
+    <g>
+      <path d="M20 4 L33 9 v11 q0 10 -13 16 Q7 30 7 20 V9 Z" />
+      <path d="M14 20 l4.5 4.5 L27 15" />
+    </g>
+  )}
+
+  {/* A price tag, struck through: cost buys nothing here. */}
+  {name === "cost" && (
+    <g>
+      <path d="M21 5 H33 a2 2 0 0 1 2 2 v12 L19 35 L5 21 Z" />
+      <circle cx="28" cy="12" r="2.6" />
+      <path d="M8 6 L34 32" />
+    </g>
+  )}
+
+  {/* A bin with its lid: material used is material accounted for. */}
+  {name === "waste" && (
+    <g>
+      <path d="M6 11 H34 M16 11 V7 h8 v4" />
+      <path d="M9 11 l2 24 a2 2 0 0 0 2 2 h14 a2 2 0 0 0 2 -2 l2 -24" />
+      <path d="M16 17 v14 M24 17 v14" />
+    </g>
+  )}
+
+  {/* A camera whose frame is empty: the record is of a specimen, not a face. */}
+  {name === "consent" && (
+    <g>
+      <path d="M4 12 h8 l3 -4 h10 l3 4 h8 a2 2 0 0 1 2 2 v18 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 V14 a2 2 0 0 1 2 -2 Z" />
+      <circle cx="20" cy="23" r="7" />
+    </g>
+  )}
+
+  {/* Three outlines over one footprint: more than one definition fits. */}
+  {name === "respect" && (
+    <g>
+      <path d="M20 5 L35 13 L20 21 L5 13 Z" />
+      <path d="M5 20 L20 28 L35 20" />
+      <path d="M5 27 L20 35 L35 27" />
+    </g>
+  )}
+
+  {/* A marking sheet: what is assessed is the record, not the material. */}
+  {name === "fairness" && (
+    <g>
+      <path d="M8 4 h18 l7 7 v25 a1 1 0 0 1 -1 1 H8 a1 1 0 0 1 -1 -1 V5 a1 1 0 0 1 1 -1 Z" />
+      <path d="M26 4 v7 h7" />
+      <path d="M12 20 l3 3 l6 -7 M12 29 l3 3 l6 -7" />
+      <path d="M24 21 h5 M24 30 h5" />
+    </g>
+  )}
+</svg>
+
+<style>
+  svg { display: block; }
+</style>

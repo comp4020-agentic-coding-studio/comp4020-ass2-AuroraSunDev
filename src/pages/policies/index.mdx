@@ -3,13 +3,22 @@ title: Policies and participation
 description:
   The course-wide rules for safe, accessible, low-cost and equivalent
   participation, and the three routes any practical test can be completed by.
+# The reference makes the policy itself the page's title --- the largest thing
+# on the page is the promise, not the word "Policies". So the page prints its
+# own h1 inside the band and the layout must not print a second one above it.
+ownTitle: true
 ---
 
 import ParticipationRoutes from "../../components/course/ParticipationRoutes.astro";
+import RouteDecision from "../../components/course/RouteDecision.astro";
+import PolicyRegister from "../../components/course/PolicyRegister.astro";
+import "../../styles/policies.css";
+
+<div class="policies">
 
 <div class="slop-measure">
 
-> **Safe participation. Equivalent evidence.**
+# Safe participation. Equivalent evidence.
 
 No student is required to prepare, purchase, handle, or consume food to meet a
 course learning outcome.
@@ -24,6 +33,9 @@ Every practical activity in the course can be completed by any one of three
 routes.
 
 </div>
+
+<div class="pol-top">
+<div class="pol-top-main">
 
 <ParticipationRoutes
   routes={[
@@ -53,33 +65,28 @@ routes.
 
 <div class="slop-measure">
 
-All three routes assess the same learning outcome and are marked using the same
-criteria. In every marking scheme in the course their status is the same:
+In every marking scheme in the course the three have the same status:
 <span class="slop-stamp slop-stamp--held">Equivalent</span>. You cannot lose
 marks for choosing an alternative to direct food handling, and you are not
 asked to justify the choice.
 
-## Choosing a route
+</div>
 
-> Can you safely and comfortably use a physical specimen?
->
-> If yes, the physical route is available. If no or uncertain, choose a
-> non-food analogue or supplied-evidence pack. All routes target the same
-> learning outcome and are marked using the same criteria.
+</div>
 
-This offers you options. No medical information is requested at any point, by
-anyone, and no route is academically superior to another. If you are uncertain,
-that is itself an answer: take the analogue or the supplied-evidence pack.
+<RouteDecision />
 
-## On this page
+</div>
 
-[Food handling and consumption](#food-handling-and-consumption) ·
-[Allergies and sensory access](#allergies-and-sensory-access) ·
-[Cost and materials](#cost-and-materials) ·
-[Waste](#waste) ·
-[Photography, privacy and consent](#photography-privacy-and-consent) ·
-[Cultural and dietary respect](#cultural-and-dietary-respect) ·
-[Assessment fairness](#assessment-fairness)
+<div class="slop-measure">
+
+## The seven policies
+
+</div>
+
+<PolicyRegister />
+
+<div class="slop-measure">
 
 ## Food handling and consumption
 
@@ -192,5 +199,7 @@ course-level questions, with feedback on work handled in the weekly session.
 cannot wait until the next session. Either of them can confirm an equivalent
 route for you, and neither will ask you why. Full entries for both are on
 [the people page](/people/).
+
+</div>
 
 </div>

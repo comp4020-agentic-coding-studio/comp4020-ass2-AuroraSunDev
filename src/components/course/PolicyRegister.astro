@@ -1,0 +1,93 @@
+---
+/**
+ * The seven policies, as a register rather than a run of links.
+ *
+ * This replaced an "On this page" line of titles separated by interpuncts.
+ * That told a reader the names of seven sections and nothing about any of
+ * them, on the longest page of the site --- so the only way to find the rule
+ * you needed was to read all seven. Each row now carries the sentence the
+ * section opens with, which is in every case the rule itself stated plainly;
+ * the section below expands it rather than revealing it.
+ *
+ * The summaries are quoted from the sections, not written for the register.
+ * A summary that paraphrases can drift from what it summarises, and on a
+ * policies page the drift is the failure: a reader would act on the row.
+ *
+ * The drawings are the third channel. Number first, then the name, then the
+ * rule; the glyph only helps you find a row you have seen before, which is
+ * why it is the part that goes when the row gets narrow.
+ */
+import PolicyIcon from "./PolicyIcon.astro";
+import type { PolicyName } from "./PolicyIcon.astro";
+
+interface Policy {
+  icon: PolicyName;
+  title: string;
+  /** The section's own opening sentence, verbatim. */
+  rule: string;
+  anchor: string;
+}
+
+const POLICIES: Policy[] = [
+  {
+    icon: "handling",
+    title: "Food handling and consumption",
+    rule: "Testing in this course is structural. Eating is not part of it.",
+    anchor: "#food-handling-and-consumption",
+  },
+  {
+    icon: "access",
+    title: "Allergies and sensory access",
+    rule: "An alternative route is available on request, and the request is the whole process.",
+    anchor: "#allergies-and-sensory-access",
+  },
+  {
+    icon: "cost",
+    title: "Cost and materials",
+    rule: "Nothing in the course is priced as a barrier to completing it.",
+    anchor: "#cost-and-materials",
+  },
+  {
+    icon: "waste",
+    title: "Waste",
+    rule: "Material used is material accounted for.",
+    anchor: "#waste",
+  },
+  {
+    icon: "consent",
+    title: "Photography, privacy and consent",
+    rule: "Evidence records a specimen, not a person.",
+    anchor: "#photography-privacy-and-consent",
+  },
+  {
+    icon: "respect",
+    title: "Cultural and dietary respect",
+    rule: "The course does not hold a single correct definition of a sandwich.",
+    anchor: "#cultural-and-dietary-respect",
+  },
+  {
+    icon: "fairness",
+    title: "Assessment fairness",
+    rule: "What is marked is the test and the reasoning, not the food.",
+    anchor: "#assessment-fairness",
+  },
+];
+---
+
+<ol class="pol-reg" role="list">
+  {
+    POLICIES.map((policy, i) => (
+      <li>
+        <a href={policy.anchor}>
+          <span class="pol-reg-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+          <span class="pol-reg-fig" aria-hidden="true"><PolicyIcon name={policy.icon} /></span>
+          <span>
+            <span class="pol-reg-t">{policy.title}</span>
+            <span class="pol-reg-s">{policy.rule}</span>
+          </span>
+          <span class="pol-reg-go" aria-hidden="true" />
+        </a>
+      </li>
+    ))
+  }
+</ol>

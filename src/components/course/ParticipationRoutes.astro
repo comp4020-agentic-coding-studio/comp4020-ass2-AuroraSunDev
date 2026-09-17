@@ -36,45 +36,177 @@ interface Props {
 const { routes } = Astro.props;
 ---
 
-<ul class="pr" role="list">
-  {
-    routes.map(({ route, name, is, proves }) => (
-      <li class="pr-card">
-        <span class="pr-fig" aria-hidden="true"><RouteGlyph route={route} /></span>
-        <h3 class="pr-name">{name}</h3>
-        <p class="pr-is">{is}</p>
-        <p class="pr-proves">
-          <span class="pr-k mono">Proves</span>
-          {proves}
-        </p>
-      </li>
-    ))
-  }
-</ul>
+<div class="pr-set">
+  <ol class="pr" role="list">
+    {
+      routes.map(({ route, name, is, proves }, i) => (
+        <>
+          {i > 0 && (
+            <li class="pr-or" role="presentation">
+              <span class="mono">or</span>
+            </li>
+          )}
+          <li class="pr-card">
+            <p class="pr-n display" aria-hidden="true">{String(i + 1).padStart(2, "0")}</p>
+            <h3 class="pr-name mono">{name}</h3>
+            <span class="pr-fig" aria-hidden="true"><RouteGlyph route={route} /></span>
+            <p class="pr-is">{is}</p>
+            <p class="pr-proves">
+              <span class="pr-k mono">Proves</span>
+              {proves}
+            </p>
+          </li>
+        </>
+      ))
+    }
+  </ol>
+
+  {/* The three routes converge: one outcome, one set of criteria. Drawn,
+      because the page can assert equivalence in prose all it likes and a
+      reader will still count three separate columns.
+      Borders, not an SVG: a 100x14 viewBox stretched to the full column width
+      with preserveAspectRatio="none" rendered the bar and the two legs at
+      three different weights. A box with three borders cannot distort. */}
+  <div class="pr-join" aria-hidden="true"><span></span></div>
+
+  <p class="pr-same">
+    <span class="pr-tick" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="11" /><path d="M6.5 12.5 l3.6 3.6 l7.4 -8.2" /></svg>
+    </span>
+    <span>
+      <b class="pr-same-h mono">Same learning outcome / same marking criteria</b>
+      All three routes are equivalent for assessment.
+    </span>
+  </p>
+</div>
 
 <style>
+  .pr-set { margin: 2rem 0 2.5rem; }
+
   .pr {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
     /* Four named rows the cards share, so the drawing, the name, the
        description and PROVES each sit on one line across all three. Ragged
        rows would read as three cards of different weight, which is the one
        thing this figure must not say. */
-    grid-template-rows: auto auto auto auto;
-    gap: 1.75rem;
-    margin: 2rem 0 2.5rem;
+    grid-template-rows: auto auto auto auto auto;
+    gap: 0 1.5rem;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
+  /* The separators sit in the flow as their own grid items, so they stay
+     between the routes at every width instead of being drawn on a card. */
+  .pr-or {
+    grid-row: span 5;
+    display: grid;
+    place-items: center;
+    font-family: var(--slop-font-mono);
+    color: var(--at-text-muted);
+    font-size: var(--at-font-size-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .pr-or::before,
+  .pr-or::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: var(--slop-rule-width);
+    background: var(--slop-rule-hair);
+  }
+  .pr-or::before { top: 0.5rem; bottom: calc(50% + 1.1rem); }
+  .pr-or::after { top: calc(50% + 1.1rem); bottom: 0.5rem; }
+
+  /* The `display` utility is scoped to `.slop-page`, and this component is
+     placed on an MDX page, which has no such class --- so the face is named
+     here rather than inherited from a class that silently does nothing. */
+  .pr-n {
+    font-family: var(--slop-font-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin: 0 0 0.2rem;
+    font-size: 2.25rem;
+    line-height: 1;
+    color: var(--slop-lettuce);
+  }
+
+  .pr-join {
+    position: relative;
+    height: 1.6rem;
+    margin: 1.1rem 8% 0;
+    border: 0 solid var(--slop-lettuce);
+    border-width: 0 var(--slop-rule-width) var(--slop-rule-width);
+  }
+  /* The stem, from the middle of the bar down to the box, and the arrowhead
+     that lands on it. The bracket says the three converge; the arrowhead says
+     what they converge on, which is the sentence in the box. */
+  .pr-join span {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: var(--slop-rule-width);
+    height: 0.55rem;
+    background: var(--slop-lettuce);
+    translate: -50% 0;
+  }
+  .pr-join span::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    translate: -50% 0;
+    border: 0.32rem solid transparent;
+    border-bottom: 0;
+    border-top: 0.45rem solid var(--slop-lettuce);
+  }
+  .pr-same { margin-top: 1rem; }
+
+  .pr-same {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border: var(--slop-rule-heavy) solid var(--slop-lettuce);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .pr-same-h {
+    display: block;
+    font-family: var(--slop-font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slop-lettuce);
+  }
+  .pr-tick { flex: 0 0 auto; display: block; }
+  .pr-tick svg {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    fill: none;
+    stroke: var(--slop-lettuce);
+    stroke-width: 1.6;
+  }
+
+  /* Centred on its own axis, which is what makes the three read as three
+     specimens on one plate rather than three cards in a row: the number, the
+     name and the drawing stack on the same centre line, and the hairline
+     between two routes is the only vertical the eye can use to tell them
+     apart. `balance` rather than `pretty` --- a centred paragraph with one
+     word on the last line is the failure mode of this arrangement. */
   .pr-card {
     display: grid;
-    grid-row: span 4;
+    grid-row: span 5;
     grid-template-rows: subgrid;
+    justify-items: center;
     gap: 0;
     margin: 0;
-    padding-top: 1rem;
-    border-top: 2px solid var(--slop-charcoal);
+    padding-top: 0;
+    text-align: center;
   }
 
   .pr-fig {
@@ -82,17 +214,24 @@ const { routes } = Astro.props;
     margin-bottom: 1rem;
   }
 
+  /* The name is a specimen label, not a card heading: set in the mono face,
+     uppercase and letterspaced like every other label on the site. */
   .pr-name {
-    margin: 0 0 0.5rem;
-    font-size: 1.0625rem;
+    font-family: var(--slop-font-mono);
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 700;
     line-height: 1.25;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slop-lettuce);
   }
 
   .pr-is {
     margin: 0 0 0.85rem;
     font-size: 0.9375rem;
     line-height: 1.5;
-    text-wrap: pretty;
+    text-wrap: balance;
   }
 
   .pr-proves {
@@ -100,11 +239,12 @@ const { routes } = Astro.props;
     font-size: 0.875rem;
     line-height: 1.5;
     color: color-mix(in srgb, var(--slop-charcoal) 72%, var(--slop-paper));
-    text-wrap: pretty;
+    text-wrap: balance;
   }
 
   .pr-k {
     display: block;
+    font-family: var(--slop-font-mono);
     margin-bottom: 0.15rem;
     font-size: 0.6875rem;
     letter-spacing: 0.09em;
@@ -114,15 +254,70 @@ const { routes } = Astro.props;
 
   /* Three equal columns down to the width where a column is narrower than the
      longest word in it; then one per row, still in the same order. */
+  /* One per row below the width where three columns can hold a line of text.
+     The card becomes number | drawing | text, and the OR rule goes across. */
   @media (width < 56rem) {
     .pr {
-      grid-template-columns: 1fr;
+      grid-template-columns: auto auto minmax(0, 1fr);
       grid-template-rows: none;
-      gap: 1.5rem;
+      gap: 1.1rem;
+      align-items: center;
     }
-    /* One per row: there is nothing left to align across, and holding the
-       subgrid would stretch every card to the tallest one's rows. */
-    .pr-card { display: block; }
-    .pr-fig { margin-bottom: 0.75rem; }
+    .pr-card {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      grid-template-rows: none;
+      align-items: center;
+      justify-items: stretch;
+      column-gap: 1.1rem;
+      padding-top: 0;
+      text-align: start;
+    }
+    .pr-n { grid-row: 1 / span 3; margin: 0; align-self: center; }
+    .pr-fig { grid-column: 2; grid-row: 1 / span 3; margin: 0; align-self: center; }
+    .pr-name { grid-column: 3; margin-bottom: 0.2rem; }
+    .pr-is { grid-column: 3; margin-bottom: 0.35rem; }
+    .pr-proves { grid-column: 3; }
+
+    .pr-or {
+      grid-column: 1 / -1;
+      grid-row: auto;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.75rem;
+      padding-block: 0.15rem;
+    }
+    .pr-or::before,
+    .pr-or::after {
+      position: static;
+      width: auto;
+      height: var(--slop-rule-width);
+      inset: auto;
+    }
+    .pr-join { display: none; }
+    .pr-same { margin-top: 1.1rem; }
+  }
+
+  /* Measured at 390: the number is 44px, the drawing 96px and the two gaps
+     35px, so a three-column row leaves the text 165px --- five or six
+     characters a line for the longest description, which is the crush this
+     component was written to remove, reappearing one breakpoint lower. Below
+     30rem the head stays a row (number, drawing, name) and the two paragraphs
+     take the full width under it. */
+  @media (width < 30rem) {
+    .pr-card {
+      grid-template-columns: auto auto minmax(0, 1fr);
+      column-gap: 0.9rem;
+      row-gap: 0.4rem;
+      align-items: center;
+    }
+    .pr-n { grid-row: 1; font-size: 1.9rem; }
+    .pr-fig { grid-column: 2; grid-row: 1; }
+    .pr-fig :global(svg) { width: 72px; }
+    .pr-name { grid-column: 3; grid-row: 1; margin-bottom: 0; }
+    .pr-is { grid-column: 1 / -1; grid-row: 2; margin-bottom: 0; }
+    .pr-proves { grid-column: 1 / -1; grid-row: 3; }
   }
 </style>

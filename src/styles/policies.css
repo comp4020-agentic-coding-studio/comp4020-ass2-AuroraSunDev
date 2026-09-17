@@ -1,0 +1,172 @@
+/* --- Placement ---------------------------------------------------------- *
+ *
+ * The reference sets this page wide: the three routes and the decision that
+ * chooses between them sit side by side across the frame. In the theme's
+ * 48rem content column they cannot --- 62% of 900px is 160px a route, which
+ * breaks "Physical specimen" over two lines and sets its description one word
+ * wide. The same squeeze the registers elsewhere were fixed for.
+ *
+ * So the page takes the `full` column, exactly as the Field Manual does and
+ * for the same reason. `.at-main` has to widen first: its own columns are a
+ * subgrid of inset-start/content-end, so a child asking for `full` is clamped
+ * and nothing moves. The prose keeps its measure through `.slop-measure`,
+ * which every text block on the page is already wrapped in.
+ */
+body:has(.policies) .at-main {
+  grid-column: full;
+  display: block;
+  padding-inline: 0;
+}
+
+/* The theme's 1px accent rule down the content edge is a margin rule on an
+   article and a line through the middle of a full-width band. */
+body:has(.policies)::after { display: none; }
+
+.policies {
+  max-width: 1760px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+/* Policies and participation.
+ *
+ * The page's own rhythm, which the reference sets as three bands: the routes
+ * and the decision side by side at the top, then the seven policies as a
+ * numbered register, then the sections themselves.
+ *
+ * Everything else on this page is theme prose inside `.slop-measure`, which
+ * is why this file is short --- it styles the two structures the reference
+ * adds and nothing else.
+ */
+
+/* --- The statement ------------------------------------------------------ *
+ *
+ * In the reference this sentence is the largest thing on the page, above the
+ * rule that everything below it elaborates. It was a blockquote --- the
+ * theme's quote treatment, a short accent rule and body-size text, which
+ * reads as an aside from somewhere else rather than as the page's own claim.
+ * It is now the page's h1, with `ownTitle` set in the frontmatter so the
+ * layout does not print "Policies and participation" above it --- the
+ * reference has no such line, and a title one size smaller than the sentence
+ * under it inverts the hierarchy it is meant to establish. */
+.policies h1 {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  margin: 0 0 0.9rem;
+  font-size: clamp(2rem, 1.1rem + 3.2vw, 3.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+/* The theme hangs a marker off an h1 in the content column. This one is a
+   statement across the top of a full-width page, not an article heading. */
+.policies h1::before { content: none; }
+
+/* --- Routes beside the decision ---------------------------------------- */
+
+.pol-top { margin-bottom: var(--slop-space-lg); }
+
+/* Two columns once the decision's own nodes and text fit beside the three
+   routes. Below that the decision follows the routes, which is the order the
+   mobile reference uses and the order they are read in anyway. */
+@media (width >= 78rem) {
+  .pol-top {
+    display: grid;
+    /* Two children, named: the routes and their equivalence note are one
+       column together, or the grid lays the note out as a third item and the
+       decision drops under it. */
+    grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+    column-gap: clamp(2rem, 4vw, 4rem);
+    align-items: start;
+  }
+  .pol-top-main { min-width: 0; }
+}
+
+/* --- The policy register ------------------------------------------------ */
+
+.pol-reg {
+  margin: var(--slop-space-md) 0 var(--slop-space-lg);
+  padding: 0;
+  list-style: none;
+  border-top: var(--slop-rule-heavy) solid var(--slop-rule);
+}
+
+.pol-reg li { border-bottom: var(--slop-rule-width) solid var(--slop-rule-hair); }
+
+.pol-reg a {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.9rem, 2vw, 1.75rem);
+  padding-block: clamp(0.7rem, 1.4vw, 1rem);
+  text-decoration: none;
+  color: inherit;
+}
+.pol-reg a:hover .pol-reg-t,
+.pol-reg a:focus-visible .pol-reg-t { text-decoration: underline; }
+
+.pol-reg-n {
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+  line-height: 1;
+  color: var(--slop-lettuce);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The hairline the reference puts between the drawing and the text: it is
+   what makes the row read as a register entry --- mark, then specimen, then
+   what it is --- rather than as a list item with two decorations in front. */
+.pol-reg-fig {
+  display: block;
+  padding-inline-end: clamp(0.9rem, 2vw, 1.75rem);
+  border-inline-end: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+.pol-reg-fig svg {
+  display: block;
+  width: clamp(1.75rem, 4vw, 2.5rem);
+  height: auto;
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.pol-reg-t {
+  display: block;
+  font-family: var(--slop-font-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 1.8vw, 1.1875rem);
+  line-height: 1.2;
+}
+.pol-reg-s {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--at-text-secondary);
+  text-wrap: pretty;
+}
+
+/* Drawn rather than set: the reference's chevron is a two-stroke mark at the
+   weight of the drawings beside it, and a text "›" in the body face is a
+   different weight at every size the register is read at. */
+.pol-reg-go {
+  display: block;
+  width: 0.62em;
+  height: 0.62em;
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  border: 0 solid var(--slop-toast);
+  border-width: 2px 2px 0 0;
+  rotate: 45deg;
+  translate: -0.14em 0;
+}
+
+/* The drawing is the second channel and the number is the first, so below the
+   width where all four columns fit, the drawing is what goes. */
+@media (width < 30rem) {
+  .pol-reg a { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .pol-reg-fig { display: none; }
+  .pol-reg-n { padding-inline-end: 0.9rem; border-inline-end: var(--slop-rule-width) solid var(--slop-rule-hair); }
+}
