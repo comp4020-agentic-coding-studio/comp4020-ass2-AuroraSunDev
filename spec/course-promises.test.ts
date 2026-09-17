@@ -26,6 +26,9 @@ import { describe, expect, it } from "vitest";
 interface ApiNode {
   id: string;
   type: string;
+  /* Top-level on the node, not in meta --- meta carries only the fields the
+     collection schema adds beyond the shared course-node shape. */
+  title?: string;
   meta?: Record<string, unknown>;
   body?: string;
 }
@@ -327,5 +330,25 @@ describe("5. claims, classifications and navigation", () => {
       legend,
       `the weeks index legend does not say ${withDecks.length} weeks carry a deck`,
     ).toContain(`${withDecks.length} of the twelve do.`);
+  });
+
+  /* /lectures/ says how many weeks leave the bench and then says what each one
+     is for. The card grid under it renders the collection, so a lecture added
+     without being written up appears in the grid and nowhere else --- which is
+     how the page came to claim two lectures while listing four. A written-up
+     lecture is named twice: once in the prose, once on its card. Fed the page
+     with the Week 1 paragraph deleted, it printed:
+       /lectures/ lists "A Sandwich Is a Structure" but does not introduce it */
+  it("introduces every lecture it lists", () => {
+    const page = html("lectures");
+    for (const lecture of nodesOf("lectures")) {
+      const title = String(lecture.title ?? "");
+      expect(title, `a lecture node has no title`).not.toBe("");
+      const times = page.split(title).length - 1;
+      expect(
+        times,
+        `/lectures/ lists "${title}" but does not introduce it`,
+      ).toBeGreaterThan(1);
+    }
   });
 });
