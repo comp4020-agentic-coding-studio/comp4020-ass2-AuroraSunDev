@@ -7,9 +7,20 @@
  * material, interface, load, observation and evidence, avoiding a decorative
  * finished sandwich". So this is a line drawing rather than a photograph --- the
  * page's image rule reserves realistic specimen imagery for the homepage and
- * for evidence-based specimen cases. The five slabs are drawn in cabinet
- * projection with their own thicknesses, because the point of the drawing is
- * that the layers are not interchangeable.
+ * for evidence-based specimen cases.
+ *
+ * The five layers are five different BODIES, and that is the whole point of
+ * the redraw. They were five identical rectangular prisms distinguished only
+ * by a fill, which made the drawing read as a colour key rather than as a
+ * specimen: a reader could not see why a film and a pair of load-bearing
+ * bodies are not the same kind of thing. Against the reference they are now a
+ * rounded porous slab, a wavy continuous film, two discrete discs, a thin
+ * recording sheet, and a second porous slab.
+ *
+ * Every body is drawn in plan and pushed through one oblique projection, so
+ * the stack reads as one specimen taken apart rather than five drawings at
+ * five angles --- and a disc stays a disc instead of being guessed at as an
+ * ellipse. `PROJ` below is that projection, written once as an SVG matrix.
  *
  * The labels are drawn as SVG text so they sit on their leader lines, and the
  * whole figure carries one `aria-label` naming the stack in order. The page
@@ -17,44 +28,78 @@
  * here is the only place a reader can learn what `interface` means.
  */
 
-interface Layer {
-  /** Front-bottom baseline of the slab, in user units. */
-  y: number;
-  /** Slab thickness. */
-  t: number;
-  label: string;
-  /** Drawn treatment: a porous outer layer, a continuous film, discrete
-   *  load-bearing bodies, or a thin recording sheet. */
-  kind: "porous" | "film" | "discrete" | "sheet";
-}
-
-/* One projection for every slab, so the stack reads as one specimen taken
-   apart rather than five drawings at five angles. */
+/* --- One projection for the whole stack --------------------------------- *
+ * Plan space is W wide and PD deep, with the origin at the near-left corner
+ * of a layer. The oblique push is (DX, -DY) at full depth, so a point (x, d)
+ * lands at (X + x + d·DX/PD, base - d·DY/PD). Written as a matrix, any shape
+ * drawn in plan --- a rounded rectangle, a circle, a wavy outline --- comes
+ * out correctly projected without being re-derived by hand. */
 const W = 232;
+const PD = 100;
 const DX = 56;
 const DY = 32;
 const X = 48;
+const KX = DX / PD;
+const KY = DY / PD;
+
+/** The plan-to-screen matrix for a layer whose near-front edge sits at `base`. */
+const proj = (base: number) => `matrix(1 0 ${KX} ${-KY} ${X} ${base})`;
+
+interface Layer {
+  /** Screen y of the layer's near-front-bottom edge. */
+  y: number;
+  /** Thickness, in screen units --- a vertical push, unaffected by the projection. */
+  t: number;
+  label: string;
+  kind: "porous" | "film" | "discrete" | "sheet";
+}
 
 const LAYERS: Layer[] = [
-  { y: 104, t: 26, label: "Material", kind: "porous" },
-  { y: 182, t: 11, label: "Interface", kind: "film" },
-  { y: 252, t: 15, label: "Load", kind: "discrete" },
-  { y: 318, t: 8, label: "Observation", kind: "sheet" },
-  { y: 398, t: 26, label: "Evidence", kind: "porous" },
+  { y: 112, t: 24, label: "Material", kind: "porous" },
+  { y: 188, t: 9, label: "Interface", kind: "film" },
+  { y: 258, t: 16, label: "Load", kind: "discrete" },
+  { y: 322, t: 6, label: "Observation", kind: "sheet" },
+  { y: 402, t: 24, label: "Evidence", kind: "porous" },
 ];
 
-/** The three visible faces of one slab. */
-const faces = (y: number, t: number) => {
-  const top = y - t;
-  return {
-    front: `M${X} ${y} H${X + W} V${top} H${X} Z`,
-    lid: `M${X} ${top} L${X + DX} ${top - DY} H${X + W + DX} L${X + W} ${top} Z`,
-    side: `M${X + W} ${y} L${X + W + DX} ${y - DY} V${top - DY} L${X + W} ${top} Z`,
-  };
-};
+/* --- Plan outlines ------------------------------------------------------ */
 
-/* The leader line leaves the slab's right face at its mid-height and runs to
-   the label column. */
+/** A slab's plan: a rectangle with eased corners, as the reference draws it. */
+const SLAB_R = 16;
+const slabPlan =
+  `M${SLAB_R} 0 H${W - SLAB_R} Q${W} 0 ${W} ${SLAB_R} V${PD - SLAB_R} ` +
+  `Q${W} ${PD} ${W - SLAB_R} ${PD} H${SLAB_R} Q0 ${PD} 0 ${PD - SLAB_R} ` +
+  `V${SLAB_R} Q0 0 ${SLAB_R} 0 Z`;
+
+/**
+ * A leaf: one closed outline whose edge ripples, so it reads as a material
+ * that drapes rather than a sheet that was cut. Deterministic, not random ---
+ * a redraw must not produce a different leaf.
+ */
+const leafPlan = (() => {
+  const pts: string[] = [];
+  const cx = W / 2;
+  const cy = PD / 2;
+  const n = 26;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const ripple = 1 + 0.085 * Math.sin(i * 2.6) + 0.05 * Math.cos(i * 1.4);
+    const x = cx + Math.cos(a) * (W / 2 - 6) * ripple;
+    const y = cy + Math.sin(a) * (PD / 2 - 5) * ripple;
+    pts.push(`${x.toFixed(1)} ${y.toFixed(1)}`);
+  }
+  return `M${pts[0]} L${pts.slice(1).join(" L")} Z`;
+})();
+
+/** Two load-bearing bodies, side by side, each carrying where it touches. */
+const DISCS = [
+  { cx: W * 0.28, cy: PD / 2, r: 41 },
+  { cx: W * 0.74, cy: PD / 2, r: 41 },
+];
+
+/** The recording sheet is inset: it documents the stack, it is not part of it. */
+const SHEET_INSET = 10;
+
 const LEADER_X = X + W + DX + 14;
 const LABEL_X = 466;
 const uid = "xspec";
@@ -64,13 +109,13 @@ const uid = "xspec";
   class="xspec"
   viewBox="0 0 620 470"
   role="img"
-  aria-label="An exploded drawing of one specimen in five layers. From the top: a porous outer layer, labelled material; a continuous film, labelled interface; two discrete load-bearing bodies, labelled load; a thin recording sheet, labelled observation; and a second porous outer layer, labelled evidence."
+  aria-label="An exploded drawing of one specimen in five layers. From the top: a porous outer slab, labelled material; a rippled continuous film, labelled interface; two round load-bearing bodies side by side, labelled load; a thin recording sheet, labelled observation; and a second porous outer slab, labelled evidence."
 >
   <defs>
-    <pattern id={`${uid}-pore`} width="9" height="9" patternUnits="userSpaceOnUse">
-      <circle class="pore" cx="2.4" cy="2.6" r="1.5" />
-      <circle class="pore" cx="6.6" cy="6.4" r="1.1" />
-      <circle class="pore" cx="7.4" cy="1.8" r="0.7" />
+    <pattern id={`${uid}-pore`} width="11" height="11" patternUnits="userSpaceOnUse">
+      <circle class="pore" cx="3" cy="3.2" r="1.9" />
+      <circle class="pore" cx="8.1" cy="7.8" r="1.4" />
+      <circle class="pore" cx="9.1" cy="2.2" r="0.9" />
     </pattern>
   </defs>
 
@@ -82,35 +127,75 @@ const uid = "xspec";
   />
 
   {LAYERS.map((layer, i) => {
-    const f = faces(layer.y, layer.t);
+    const top = layer.y - layer.t;
     const mid = layer.y - layer.t / 2;
     const labelY = mid - DY / 2;
     return (
       <g class:list={["slab", `slab--${layer.kind}`]}>
-        <path class="face face--side" d={f.side} />
-        <path class="face face--lid" d={f.lid} />
-        <path class="face face--front" d={f.front} />
-
-        {/* The layer's own condition, drawn on the face that shows it. */}
-        {layer.kind === "porous" && (
-          <path class="texture" d={f.front} fill={`url(#${uid}-pore)`} />
-        )}
-        {layer.kind === "film" && (
-          <path
-            class="filmline"
-            d={`M${X + 6} ${mid} q 14 -3.5 28 0 t 28 0 t 28 0 t 28 0 t 28 0 t 28 0 t 28 0 t 24 0`}
-          />
-        )}
-        {layer.kind === "discrete" && (
+        {(layer.kind === "porous" || layer.kind === "sheet") && (
           <g>
-            {/* Two bodies rather than a continuous slab: a load layer carries
-                through where it touches, and not in between. */}
-            <path class="gap" d={`M${X + 106} ${layer.y} v${-layer.t} l${DX} ${-DY} v${layer.t} Z`} />
-            <path class="gapline" d={`M${X + 106} ${layer.y} V${layer.y - layer.t} M${X + 122} ${layer.y} V${layer.y - layer.t}`} />
+            {/* The body first, one thickness lower, then the lid over it. The
+                sliver left showing between the two outlines IS the thickness
+                --- the same construction the film and the discs use. Drawing
+                a skirt instead meant pushing verticals through the oblique
+                matrix, which sheared them into hooks at the corners. */}
+            <g transform={proj(layer.y)}>
+              <path class="face face--under" d={layer.kind === "sheet"
+                ? `M${SHEET_INSET} ${SHEET_INSET} H${W - SHEET_INSET} V${PD - SHEET_INSET} H${SHEET_INSET} Z`
+                : slabPlan} />
+            </g>
+            <g transform={proj(top)}>
+              <path class="face face--lid" d={layer.kind === "sheet"
+                ? `M${SHEET_INSET} ${SHEET_INSET} H${W - SHEET_INSET} V${PD - SHEET_INSET} H${SHEET_INSET} Z`
+                : slabPlan} />
+              {layer.kind === "porous" && (
+                <path class="texture" d={slabPlan} fill={`url(#${uid}-pore)`} />
+              )}
+              {layer.kind === "sheet" && (
+                <path
+                  class="record"
+                  d={`M${SHEET_INSET + 14} ${PD * 0.38} q 20 -7 40 0 t 40 0 t 40 0 t 38 0`}
+                />
+              )}
+            </g>
           </g>
         )}
-        {layer.kind === "sheet" && (
-          <path class="record" d={`M${X + 10} ${mid} H${X + W - 10}`} />
+
+        {layer.kind === "film" && (
+          <g>
+            {/* Drawn twice, the lower copy offset by the thickness: a film has
+                a depth you can see at its edge but no side you can measure. */}
+            <g transform={proj(layer.y)}>
+              <path class="film film--under" d={leafPlan} />
+            </g>
+            <g transform={proj(top)}>
+              <path class="film" d={leafPlan} />
+              <path
+                class="filmline"
+                d={`M26 ${PD * 0.44} q 18 -6 36 0 t 36 0 t 36 0 t 34 0`}
+              />
+            </g>
+          </g>
+        )}
+
+        {layer.kind === "discrete" && (
+          <g>
+            {DISCS.map((d) => (
+              <g>
+                <g transform={proj(layer.y)}>
+                  <circle class="disc disc--under" cx={d.cx} cy={d.cy} r={d.r} />
+                </g>
+                <g transform={proj(top)}>
+                  <circle class="disc" cx={d.cx} cy={d.cy} r={d.r} />
+                  {/* Three marks, so a disc reads as a body with a surface
+                      rather than as a flat token. */}
+                  <circle class="disc-mark" cx={d.cx - 15} cy={d.cy - 9} r="4" />
+                  <circle class="disc-mark" cx={d.cx + 11} cy={d.cy + 3} r="5.5" />
+                  <circle class="disc-mark" cx={d.cx - 2} cy={d.cy + 14} r="3" />
+                </g>
+              </g>
+            ))}
+          </g>
         )}
 
         {/* Leader and label. */}
@@ -149,53 +234,56 @@ const uid = "xspec";
     height: auto;
   }
 
-  /* Paper-white solids with charcoal edges: a drawing, not a rendering. The
-     three faces differ by a wash rather than by a hue, so the projection reads
-     in greyscale and in print. */
+  /* Paper-white solids with charcoal edges: a drawing, not a rendering. */
   .face {
     fill: var(--slop-paper);
     stroke: var(--slop-charcoal);
     stroke-width: 1.7;
     stroke-linejoin: round;
   }
-  .face--lid { fill: color-mix(in srgb, var(--slop-charcoal) 4%, var(--slop-paper)); }
-  .face--side { fill: color-mix(in srgb, var(--slop-charcoal) 12%, var(--slop-paper)); }
+  .face--lid { fill: color-mix(in srgb, var(--slop-charcoal) 3%, var(--slop-paper)); }
+
+  /* The thickness: the body repeated one thickness lower, in a heavier wash,
+     so the band left showing below the lid reads as the slab's own edge. */
+  .face--under {
+    fill: color-mix(in srgb, var(--slop-charcoal) 9%, var(--slop-paper));
+  }
 
   .texture { stroke: none; }
-  .pore { fill: color-mix(in srgb, var(--slop-toast) 42%, transparent); }
+  .pore { fill: color-mix(in srgb, var(--slop-toast) 46%, transparent); }
 
   /* The interface layer: a continuous film, in the green that on this site
      means a route that is holding. */
-  .slab--film .face--front,
-  .slab--film .face--lid {
-    fill: color-mix(in srgb, var(--slop-lettuce) 22%, var(--slop-paper));
+  .film {
+    fill: color-mix(in srgb, var(--slop-lettuce) 30%, var(--slop-paper));
+    stroke: var(--slop-lettuce);
+    stroke-width: 1.7;
+    stroke-linejoin: round;
   }
-  .slab--film .face--side {
-    fill: color-mix(in srgb, var(--slop-lettuce) 34%, var(--slop-paper));
+  .film--under {
+    fill: color-mix(in srgb, var(--slop-lettuce) 52%, var(--slop-paper));
+    stroke: color-mix(in srgb, var(--slop-lettuce) 80%, var(--slop-charcoal));
   }
   .filmline {
     fill: none;
-    stroke: var(--slop-lettuce);
-    stroke-width: 1.6;
+    stroke: color-mix(in srgb, var(--slop-lettuce) 75%, var(--slop-charcoal));
+    stroke-width: 1.4;
   }
 
   /* The load layer: red, because this is where the load is declared. */
-  .slab--discrete .face--front,
-  .slab--discrete .face--lid {
-    fill: color-mix(in srgb, var(--slop-tomato) 20%, var(--slop-paper));
-  }
-  .slab--discrete .face--side {
-    fill: color-mix(in srgb, var(--slop-tomato) 32%, var(--slop-paper));
-  }
-  /* The interruption between the two load-bearing bodies. */
-  .gap {
-    fill: var(--slop-paper);
-    stroke: none;
-  }
-  .gapline {
-    fill: none;
-    stroke: var(--slop-charcoal);
+  .disc {
+    fill: color-mix(in srgb, var(--slop-tomato) 22%, var(--slop-paper));
+    stroke: var(--slop-tomato);
     stroke-width: 1.7;
+  }
+  .disc--under {
+    fill: color-mix(in srgb, var(--slop-tomato) 40%, var(--slop-paper));
+    stroke: color-mix(in srgb, var(--slop-tomato) 80%, var(--slop-charcoal));
+  }
+  .disc-mark {
+    fill: color-mix(in srgb, var(--slop-tomato) 40%, var(--slop-paper));
+    stroke: color-mix(in srgb, var(--slop-tomato) 70%, var(--slop-charcoal));
+    stroke-width: 1.1;
   }
 
   /* The observation sheet: a record, so it carries a ruled line. */
