@@ -92,6 +92,196 @@
 }
 .week--ink .wh-due a { color: var(--slop-tomato-on-ink); }
 
+/* Week 11's stamp is pressed, not printed. The reference cants it off the
+   grid and sets it larger than the chip `.slop-stamp` is elsewhere --- it is
+   the mark closing a record, not a label on a control. Scoped to this band so
+   the same component keeps its neat form on every other page that uses it. */
+.week--ink .wh-stamp { margin-top: 0.35rem; }
+.week--ink .wh-stamp .slop-stamp {
+  rotate: -4deg;
+  padding: 0.3em 0.7em;
+  font-size: var(--at-font-size-sm);
+  letter-spacing: 0.16em;
+}
+
+/* Measured, not assumed. `--slop-rule-hair` is white at 32%, which composites
+   to 102 on this band and reads 2.90:1 --- just under the 3:1 WCAG asks for
+   any graphic part a reader needs in order to follow the content. That is fine
+   for the divider above the plate, which carries nothing, and not fine for the
+   form's writing lines or for the ties that show three frames converging and
+   then forking: the fork is the drawing's whole claim. Those two get 40%,
+   which measures 3.77:1. The shared token is left alone --- it is correct
+   everywhere it was checked, and this is a local requirement.
+ *
+ * Contrast here cannot come from the build: axe runs over the DOM without
+ * rendered CSS, so its colour rule never fires on this band. These numbers are
+ * read out of a real browser.
+ */
+.week .ap { --ap-mark: color-mix(in srgb, var(--slop-paper-on-ink) 40%, transparent); }
+
+/* --- 1b. Week 11's autopsy plate ---------------------------------------- *
+ *
+ * The three panels the reference sets across the ink band: the collapse, the
+ * blank register, the frames. Every colour here resolves through the tokens
+ * `.slop-band--ink` already remaps --- `--slop-charcoal` is white inside this
+ * band and `--slop-tomato` is the on-ink red --- so nothing states an ink that
+ * was only checked against paper.
+ */
+
+.week .ap {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: clamp(1.75rem, 3.5vw, 2.75rem);
+  padding-top: clamp(1.5rem, 3vw, 2.25rem);
+  border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
+}
+
+/* Photograph and register pair first; the frames are wider than either and
+   only join the row when all three can hold their proportions. */
+@media (width >= 760px) {
+  .week .ap { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr); }
+  .week .ap-frames { grid-column: 1 / -1; }
+}
+@media (width >= 1180px) {
+  .week .ap {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+  .week .ap-frames { grid-column: auto; }
+}
+
+.week .ap-photo { margin: 0; }
+.week .ap-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The same theme bleed `.ev-img` resets below, hit for the same reason: any
+     `figure > img` gets a negative margin-inline under 640px. The width wins
+     on specificity and the margin does not, so without this the plate renders
+     at the right size 13.5px left of the page --- past the viewport edge. */
+  margin-inline: 0;
+  /* The generated ground is near-black but not the band's black. Cropping the
+     frame off would lose the debris field, so the plate keeps the full frame
+     and lets the corners sit slightly above the page instead. */
+  mix-blend-mode: screen;
+}
+
+/* --- the blank register ------------------------------------------------- */
+
+.week .ap-register {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 clamp(0.75rem, 1.6vw, 1.25rem);
+  align-content: start;
+}
+
+.week .ap-col { min-width: 0; }
+.week .ap-col + .ap-col {
+  border-left: var(--slop-rule-width) solid var(--slop-rule-hair);
+  padding-left: clamp(0.75rem, 1.6vw, 1.25rem);
+}
+
+.week .ap-col-h {
+  margin: 0 0 0.9rem;
+  font-size: var(--at-font-size-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--slop-charcoal);
+}
+
+.week .ap-rules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.week .ap-rules li {
+  height: 1.65rem;
+  border-bottom: var(--slop-rule-width) dotted var(--ap-mark);
+}
+
+/* Three narrow columns stop being three columns somewhere around here: the
+   headings still fit but the rules under them are shorter than a phrase. The
+   mobile reference stacks them as full-width rules, which is also what a
+   paper form would do. */
+@media (width < 33rem) {
+  .week .ap-register { grid-template-columns: 1fr; gap: 1.1rem 0; }
+  .week .ap-col + .ap-col { border-left: 0; padding-left: 0; }
+  .week .ap-col-h { margin-bottom: 0.5rem; }
+  .week .ap-rules li:nth-child(n + 4) { display: none; }
+}
+
+.week .ap-register-note {
+  grid-column: 1 / -1;
+  margin: 1rem 0 0;
+  font-size: var(--at-font-size-xs);
+  line-height: 1.5;
+  color: var(--at-text-muted);
+  max-width: 44ch;
+}
+
+/* --- the frames --------------------------------------------------------- */
+
+.week .ap-frames svg { display: block; width: 100%; height: auto; }
+
+.week .ap-box,
+.week .ap-out {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.4;
+}
+
+/* The rig is the instrument, not the specimen: one weight, no fill. */
+.week .ap-rig {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 2.4;
+  stroke-linecap: square;
+}
+.week .ap-rig-f {
+  fill: var(--slop-charcoal);
+  stroke: none;
+}
+.week .ap-platen {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 2.4;
+}
+
+.week .ap-lay {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.4;
+}
+/* The one layer that gives way. Filled, because it is the only thing in the
+   drawing whose quantity changes as the ram comes down. */
+.week .ap-soft {
+  fill: color-mix(in srgb, var(--slop-tomato) 55%, transparent);
+  stroke: var(--slop-tomato);
+  stroke-width: 1.4;
+}
+.week .ap-crack {
+  fill: none;
+  stroke: var(--slop-charcoal);
+  stroke-width: 1.4;
+}
+.week .ap-grit { fill: var(--slop-charcoal); stroke: none; opacity: 0.75; }
+
+/* Construction, not structure: thinner than everything it joins. */
+.week .ap-tie {
+  fill: none;
+  stroke: var(--ap-mark);
+  stroke-width: 1.2;
+}
+
+.week .ap-f-label,
+.week .ap-out-t {
+  fill: var(--slop-charcoal);
+  font-family: var(--slop-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+.week .ap-f-label { fill: var(--at-text-secondary); }
+
 /* --- 2. The test station ------------------------------------------------ */
 
 .week .st { margin-top: clamp(1.25rem, 2.5vw, 2rem); }

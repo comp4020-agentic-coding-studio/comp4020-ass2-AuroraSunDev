@@ -62,6 +62,32 @@ const HOUSE_RULES = [
   "Even diffuse studio lighting, neutral white balance, sharp focus throughout.",
 ].join(" ");
 
+/**
+ * Shared framing for the one image that is not shot on white.
+ *
+ * Week 11's page opens on charcoal --- plan.md allows exactly one ink page in
+ * twelve --- so the specimen in that band has to be lit and grounded for a
+ * dark field. HOUSE_RULES cannot be reused here: it mandates a seamless white
+ * studio background, which is the right rule everywhere else on the site and
+ * the wrong one inside an ink band, where a white cutout would read as a hole
+ * punched in the page.
+ *
+ * Everything else HOUSE_RULES exists to prevent still applies, so those clauses
+ * are repeated rather than dropped: no hands, no table, no lettering, nothing
+ * that makes the specimen look like a meal.
+ */
+const INK_RULES = [
+  "Photographed as forensic laboratory documentation, not food photography.",
+  "Seamless near-black studio background, unlit and featureless --- no table,",
+  "no surface pattern, no props, no horizon line.",
+  "Hard directional studio light from the upper left, raking across the",
+  "subject so every fracture edge and loose chip casts its own shadow.",
+  "Deep blacks, bright specular highlights, high contrast.",
+  "No hands, no people, no cutlery, no crockery, no napkins, no garnish.",
+  "No text, no lettering, no numbers, no watermarks, no logos anywhere.",
+  "Sharp focus throughout, neutral white balance, no coloured gels.",
+].join(" ");
+
 export const JOBS = {
   /**
    * The specimen artwork for the social preview card.
@@ -119,6 +145,48 @@ export const JOBS = {
    * a sequence, and the order these occurred in is exactly what the evidence
    * does not establish. The page that shows them makes that explicit.
    */
+
+  /**
+   * The collapsed specimen that opens Week 11, for the ink band.
+   *
+   * The week's subject is a failure someone else produced and left behind, so
+   * the specimen is a ruin: already collapsed, already cold, photographed
+   * after the fact. It is rendered in stone rather than in bread on purpose
+   * --- the course's whole conceit is that a sandwich is a structure, and a
+   * structure that has failed under load looks like masonry that has failed
+   * under load. Grey throughout except the one crushed red layer, which is
+   * where the eye goes and where the failure is.
+   *
+   * Framing carries a ratio anchor for the reason recorded above on the
+   * social card: asking this model not to touch the edges does not work, but
+   * telling it what fraction of the height the subject occupies does.
+   */
+  "autopsy-collapse": {
+    out: "src/assets/images/evidence/autopsy-collapse.png",
+    /* Landscape, because the band it sits in is a wide strip. Generated
+       square first, the model filled the frame top to bottom --- its usual
+       bias --- and a 4:3 crop then cut the top slab and half the debris off.
+       A wider frame gives the same instruction somewhere to put the margin. */
+    size: "1536x1024",
+    quality: "high",
+    prompt: [
+      INK_RULES,
+      "SUBJECT: a layered stack that has collapsed under vertical load, built",
+      "entirely of quarried grey stone and broken concrete --- a sandwich",
+      "rendered as masonry. From the top down: a thick cracked slab lying",
+      "askew, then broken slabs of pale grey stone stacked unevenly, their",
+      "edges spalled and crumbling, then a single bright red layer crushed",
+      "thin and squeezed outward between two of them, then more broken stone",
+      "beneath. The stack leans and sags where the red layer gave way.",
+      "A field of grit, chips and dust has fallen around the base.",
+      "Seen from slightly above, three-quarter view.",
+      "Everything is grey stone except that one red layer, which is the only",
+      "colour in the picture.",
+      "The stack spans about two thirds of the picture height, sits centred",
+      "with clear empty black to its left and right, and the whole debris",
+      "field around its base is inside the frame with room to spare.",
+    ].join(" "),
+  },
 
   "evidence-a-torn-edge": {
     out: "src/assets/images/evidence/evidence-a-torn-edge.png",

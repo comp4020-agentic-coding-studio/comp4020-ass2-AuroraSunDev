@@ -23,6 +23,7 @@ import ArchiveRule from "../../components/course/ArchiveRule.astro";
 import SpecimenLabel from "../../components/course/SpecimenLabel.astro";
 import Stamp from "../../components/course/Stamp.astro";
 import WeekGlyph from "../../components/course/WeekGlyph.astro";
+import AutopsyPlate from "../../components/week/AutopsyPlate.astro";
 import EvidenceSet from "../../components/week/EvidenceSet.astro";
 import LayerOrderExploded from "../../components/week/LayerOrderExploded.astro";
 import TestStation from "../../components/week/TestStation.astro";
@@ -165,9 +166,14 @@ const nn = String(n).padStart(2, "0");
               )}
             </p>
           )}
-          {ink && <p class="wh-stamp"><Stamp state="failed" label="Destructive testing" /></p>}
+          {ink && <p class="wh-stamp"><Stamp state="failed" label="Failure recorded" /></p>}
         </div>
       </div>
+
+      {/* Week 11 alone carries a plate under its identity block: the collapse
+          it works from, the blank register it has to be written into, and the
+          two explanations the record has to choose between. */}
+      {ink && <AutopsyPlate />}
     </div>
   </section>
 

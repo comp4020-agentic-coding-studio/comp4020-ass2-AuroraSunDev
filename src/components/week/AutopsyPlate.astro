@@ -1,0 +1,204 @@
+---
+/**
+ * The plate across Week 11's ink band: what failed, the form that records it,
+ * and the two conclusions the record has to choose between.
+ *
+ * Three panels, and they are three different kinds of thing on purpose. The
+ * photograph is the failure --- already collapsed, already cold, produced by
+ * somebody else, which is the premise of the whole week. The register beside
+ * it is the blank form that failure has to be written into, and it is blank
+ * because a filled one would be fabricated evidence on a page whose argument
+ * is that evidence has to be earned. The frames are the reasoning: three
+ * moments of one press run, converging on two explanations that the evidence
+ * does not choose between.
+ *
+ * The frames are deliberately not the causal diagram in the apparatus section
+ * below. That one starts from a fragment and reasons about what handled it;
+ * this one is a sequence of states of a single test. Same week, two different
+ * questions --- what order did this happen in, and what caused it.
+ */
+import { Image } from "astro:assets";
+/* The plate copy, not the generated file: its black point is crushed to
+   zero by scripts/compose-autopsy-plate.mjs so the ground disappears into the
+   band instead of reading as a rectangle on it. */
+import collapse from "../../assets/images/evidence/autopsy-collapse-plate.png";
+
+/** The three registers the Failure Autopsy brief marks, kept apart. */
+const REGISTERS = ["Observed", "Inferred", "Unknown"] as const;
+/** Rules per column. Six is what fills the panel beside the photograph. */
+const RULES = 6;
+
+/* --- The frames ---------------------------------------------------------
+   One press rig drawn three times, in a 536-unit row. Geometry is computed
+   rather than typed so the three boxes cannot drift apart, and so the bus
+   line below meets each one at its own centre. */
+const FRAME_W = 168;
+const FRAME_H = 176;
+const GAP = 16;
+const TOP = 20;
+const COL = [0, FRAME_W + GAP, 2 * (FRAME_W + GAP)];
+const mid = (bx: number) => bx + FRAME_W / 2;
+
+/**
+ * One layer of the specimen, bowed by `sag` at its centre.
+ *
+ * A layer is a closed path rather than a rect so the same function draws it
+ * intact and collapsed: at sag 0 the curves are straight and it is a bar.
+ * `grow` widens it, which is what a soft layer does when the load squeezes it
+ * out sideways.
+ */
+function layer(bx: number, y: number, h: number, sag: number, grow = 0) {
+  const x0 = bx + 38 - grow;
+  const x1 = bx + 130 + grow;
+  const xm = bx + FRAME_W / 2;
+  return (
+    `M${x0} ${y} Q${xm} ${y + sag * 2} ${x1} ${y} ` +
+    `L${x1} ${y + h} Q${xm} ${y + h + sag * 2} ${x0} ${y + h} Z`
+  );
+}
+
+/** Grit thrown out as the stack goes. Seeded by index, so it never reflows. */
+function grit(bx: number, n: number) {
+  return Array.from({ length: n }, (_, i) => {
+    const a = (i * 2.399) % 1;
+    const x = bx + 26 + a * 116;
+    const y = TOP + 150 + ((i * 7) % 3) * 4;
+    const r = 1.2 + ((i * 3) % 2) * 0.7;
+    return `M${x} ${y} m${-r} 0 a${r} ${r} 0 1 0 ${r * 2} 0 a${r} ${r} 0 1 0 ${-r * 2} 0`;
+  }).join(" ");
+}
+
+/** Platen height, sag and grit for each of the three states. */
+const STATES = [
+  { label: "Frame A", platen: 96, sag: 0, squeeze: 0, grit: 0, broken: false },
+  { label: "Frame B", platen: 104, sag: 5, squeeze: 4, grit: 4, broken: false },
+  { label: "Frame C", platen: 116, sag: 11, squeeze: 13, grit: 8, broken: true },
+];
+
+const BUS = TOP + FRAME_H + 26;   /* where the three frames meet   */
+const SPLIT = BUS + 20;           /* where the one becomes two     */
+const OUT_Y = SPLIT + 20;         /* top of the two outcome boxes  */
+const OUT_H = 40;
+const OUT_W = 224;
+const CENTRE = mid(COL[1]);
+---
+
+<div class="ap">
+  <figure class="ap-photo">
+    <Image
+      src={collapse}
+      alt="A layered stack of grey stone slabs that has collapsed under
+           vertical load. The slabs are cracked and their edges have crumbled;
+           a single red layer near the bottom is crushed thin and squeezed
+           outward between two of them. Grit and chips have fallen around the
+           base. Everything is grey except the red layer."
+      widths={[420, 700, 1040]}
+      sizes="(min-width: 1180px) 28vw, (min-width: 760px) 44vw, 90vw"
+      format="avif"
+      class="ap-img"
+    />
+  </figure>
+
+  <div class="ap-register">
+    {
+      REGISTERS.map((name) => (
+        <div class="ap-col">
+          <p class="ap-col-h mono">{name}</p>
+          <ul class="ap-rules" role="list" aria-hidden="true">
+            {Array.from({ length: RULES }, () => <li />)}
+          </ul>
+        </div>
+      ))
+    }
+    <p class="ap-register-note">
+      The record is blank because the week has not been done yet. Filling it in
+      here would be inventing the evidence.
+    </p>
+  </div>
+
+  <div class="ap-frames">
+    <svg
+      viewBox="0 0 536 320"
+      role="img"
+      aria-label="Three frames of one press run. In Frame A a layered specimen
+                  sits intact under the platen. In Frame B the platen has
+                  descended, the layers bow and grit has fallen. In Frame C the
+                  stack has collapsed, the soft layer is squeezed out sideways
+                  and the top layer has broken in two. Lines from all three
+                  frames converge and then split towards two boxes: primary
+                  failure, with a question mark, and competing explanation."
+      focusable="false"
+    >
+      {
+        STATES.map((state, i) => {
+          const bx = COL[i];
+          const py = TOP + state.platen;
+          const top = py + 9;
+          return (
+            <g>
+              <text class="ap-f-label" x={mid(bx)} y={12} text-anchor="middle">
+                {state.label.toUpperCase()}
+              </text>
+              <rect class="ap-box" x={bx} y={TOP} width={FRAME_W} height={FRAME_H} />
+
+              {/* The rig: crosshead and ram above, two uprights, a base. */}
+              <path class="ap-rig" d={`M${bx + 18} ${TOP + 22} H${bx + 150}`} />
+              <rect class="ap-rig-f" x={bx + 74} y={TOP + 22} width={20} height={14} />
+              <path class="ap-rig" d={`M${bx + 28} ${TOP + 22} V${TOP + 152}`} />
+              <path class="ap-rig" d={`M${bx + 140} ${TOP + 22} V${TOP + 152}`} />
+              <path class="ap-rig" d={`M${bx + 18} ${TOP + 152} H${bx + 150}`} />
+
+              {/* The ram, down as far as this frame has taken it. */}
+              <path class="ap-rig" d={`M${bx + 84} ${TOP + 36} V${py}`} />
+              <rect class="ap-platen" x={bx + 44} y={py} width={80} height={9} />
+
+              {/* The specimen: outer, soft, outer. Only the soft one spreads. */}
+              {state.broken ? (
+                <>
+                  <path class="ap-lay" d={layer(bx, top + 2, 11, state.sag)} />
+                  <path
+                    class="ap-crack"
+                    d={`M${bx + 84} ${top + 1} l4 ${13 + state.sag * 2}`}
+                  />
+                </>
+              ) : (
+                <path class="ap-lay" d={layer(bx, top + 2, 11, state.sag)} />
+              )}
+              <path
+                class="ap-soft"
+                d={layer(bx, top + 15, 13 - state.squeeze / 3, state.sag, state.squeeze)}
+              />
+              <path class="ap-lay" d={layer(bx, top + 30, 11, state.sag)} />
+
+              {state.grit > 0 && <path class="ap-grit" d={grit(bx, state.grit)} />}
+
+              {/* Down to the bus. */}
+              <path class="ap-tie" d={`M${mid(bx)} ${TOP + FRAME_H} V${BUS}`} />
+            </g>
+          );
+        })
+      }
+
+      {/* The three readings become one account, and the account forks. */}
+      <path class="ap-tie" d={`M${mid(COL[0])} ${BUS} H${mid(COL[2])}`} />
+      <path class="ap-tie" d={`M${CENTRE} ${BUS} V${SPLIT}`} />
+      <path
+        class="ap-tie"
+        d={`M${CENTRE} ${SPLIT} H${26 + OUT_W / 2} V${OUT_Y} m-4 -6 l4 6 l4 -6`}
+      />
+      <path
+        class="ap-tie"
+        d={`M${CENTRE} ${SPLIT} H${510 - OUT_W / 2} V${OUT_Y} m-4 -6 l4 6 l4 -6`}
+      />
+
+      <rect class="ap-out" x={26} y={OUT_Y} width={OUT_W} height={OUT_H} />
+      <text class="ap-out-t" x={26 + OUT_W / 2} y={OUT_Y + 25} text-anchor="middle">
+        PRIMARY FAILURE?
+      </text>
+      <rect class="ap-out" x={510 - OUT_W} y={OUT_Y} width={OUT_W} height={OUT_H} />
+      <text class="ap-out-t" x={510 - OUT_W / 2} y={OUT_Y + 25} text-anchor="middle">
+        COMPETING EXPLANATION
+      </text>
+    </svg>
+  </div>
+</div>

@@ -12,6 +12,7 @@
     "check:evidence": "node scripts/check-evidence.ts",
     "images:specimen": "node scripts/generate-image.mjs social-specimen",
     "images:card": "node scripts/compose-social-card.mjs",
+    "images:autopsy": "node scripts/compose-autopsy-plate.mjs",
     "test": "pnpm build && vitest run spec",
     "test:template": "vitest run scripts"
   },
