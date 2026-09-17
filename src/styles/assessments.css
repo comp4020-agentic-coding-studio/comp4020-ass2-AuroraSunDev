@@ -217,8 +217,19 @@
 }
 .assess .ab-spec li { margin-bottom: 0.15rem; }
 
-/* --- Desktop: the band becomes a register row -------------------------- */
-@media (width >= 1150px) {
+/* --- Desktop: the band becomes a register row -------------------------- *
+ *
+ * 1450px, measured. Seven tracks, of which number, weight and capability are
+ * fixed and the artefact takes what is left, so at 1150 the drawing's caption
+ * had 92px and ran to nine lines --- and its line boxes then crossed the due
+ * date and "Read the brief" beside it. The caption only clears the others and
+ * reaches a readable measure at 1450:
+ *
+ *     1150    92px / 9 lines        1450   205px / 4 lines
+ *     1350   124px / 7 lines        1700   408px / 2 lines
+ *
+ * Below it the band stacks, which is longer and legible. */
+@media (width >= 1450px) {
   .assess .ab {
     grid-template-columns:
       5.5rem minmax(0, 16rem) 5.5rem 7rem minmax(0, 9rem) minmax(0, 11rem)

@@ -154,7 +154,7 @@
 
 .weeks .colheads { display: none; }
 
-@media (width >= 1100px) {
+@media (width >= 1500px) {
   .weeks .colheads {
     display: grid;
     grid-template-columns: var(--wk-cols);
@@ -363,8 +363,22 @@
   letter-spacing: 0.12em;
 }
 
-/* --- Desktop: the ruled register --------------------------------------- */
-@media (width >= 1100px) {
+/* --- Desktop: the ruled register --------------------------------------- *
+ *
+ * 1500px, measured, not 1100px as this began. The eight tracks include 44rem
+ * of fixed width --- rail, number, date, milestone, artefact, action --- plus
+ * seven gaps, so about 800px is spoken for before the two prose columns get
+ * anything. At a 1100px viewport that left the structural question 58px wide
+ * and eleven lines tall, a column of single words. The question only reaches a
+ * readable measure at 1500:
+ *
+ *     1100    58px / 11 lines        1400   173px / 4 lines
+ *     1200    97px /  7 lines        1500   211px / 3 lines
+ *     1300   135px /  4 lines        1760   311px / 2 lines
+ *
+ * Below it the stacked layout above is used, which is longer but readable at
+ * every width. A register nobody can read is not a register. */
+@media (width >= 1500px) {
   .weeks .wk {
     grid-template-columns: var(--wk-cols);
     grid-template-areas: "rail n date title q ms art act";

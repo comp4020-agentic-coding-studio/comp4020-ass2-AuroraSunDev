@@ -105,15 +105,21 @@
 
 .guide .facts-list { margin: 0; }
 .guide .facts-list > div {
-  display: grid;
-  /* The term takes the width it needs and the value wraps. The other way round
-     squeezed "Assessment" into two lines to keep its own value on one. */
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.75rem;
+  /* The term takes the width it needs and the value wraps --- the other way
+     round squeezed "Assessment" into two lines to keep its own value on one.
+     But `auto minmax(0, 1fr)` lets the value go to nothing: in the narrower of
+     the guide's two columns "Not required" came out 18px wide and eleven lines
+     tall, one character to a line. A flex basis keeps the same arrangement
+     where both fit and drops the value onto its own line where they do not. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
   align-items: baseline;
   padding-block: 0.6rem;
   border-bottom: var(--slop-rule-width) solid var(--slop-rule-hair);
 }
+.guide .facts-list dt { flex: 0 1 auto; }
+.guide .facts-list dd { flex: 1 1 11rem; min-width: 0; }
 .guide .facts-list dt {
   font-family: var(--slop-font-mono);
   font-size: var(--at-font-size-xs);

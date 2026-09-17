@@ -197,10 +197,25 @@ body:has(.manual)::after {
   .vocab-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
+/* Drawing beside text where the cell can hold both, drawing above it where it
+   cannot --- and never drawing beside a sliver.
+ *
+ * This was `grid-template-columns: auto minmax(0, 1fr)`, which gives the
+ * drawing its intrinsic width and lets the text go to zero. A family figure is
+ * 296px wide and its cell is 332px in the two-column layout, so the text got
+ * 11px: "Components exceed useful load." set one character to a line, 27 lines
+ * tall. The vocabulary glosses were doing a milder version of the same thing
+ * at 101px.
+ *
+ * A flex basis fixes it without a breakpoint: the text asks for 13rem, and if
+ * the drawing and 13rem do not both fit, the text takes the next line at full
+ * width instead of being crushed onto this one. The chapter's rule that the
+ * drawing must never be separated from its term still holds --- the two stay
+ * in the same cell, one above the other. */
 .vocab-item,
 .fam-cell {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--slop-space-sm);
   border-top: var(--slop-rule-width) solid var(--slop-rule-hair);
@@ -208,11 +223,19 @@ body:has(.manual)::after {
   min-width: 0;
 }
 
+.vocab-text,
+.fam-text { flex: 1 1 13rem; min-width: 0; }
+
 .vocab-fig,
-.fam-fig { display: block; }
+.fam-fig {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
 .vocab-fig svg,
 .fam-fig svg,
-.protocol-fig svg { display: block; }
+.protocol-fig svg { display: block; max-width: 100%; height: auto; }
 
 .vocab-term { display: block; }
 .vocab-gloss,
