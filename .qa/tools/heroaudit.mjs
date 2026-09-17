@@ -10,7 +10,7 @@ const reduced = flags.includes("--reduced");
 const { proc, wsUrl } = await launch(9343);
 const s = await connect(wsUrl);
 await s.send("Emulation.setDeviceMetricsOverride", {
-  width: W, height: H, deviceScaleFactor: 1, mobile: W < 700,
+  width: W, height: H, deviceScaleFactor: 1, mobile: false, // see note in cdp.mjs: mobile:true now yields a 980px layout
 });
 if (reduced) {
   await s.send("Emulation.setEmulatedMedia", {

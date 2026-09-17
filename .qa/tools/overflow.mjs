@@ -10,7 +10,7 @@ const H = Number(process.env.QA_H ?? 844);
 const { proc, wsUrl } = await launch(9353);
 const s = await connect(wsUrl);
 await s.send("Emulation.setDeviceMetricsOverride", {
-  width: W, height: H, deviceScaleFactor: 1, mobile: W < 700,
+  width: W, height: H, deviceScaleFactor: 1, mobile: false, // see note in cdp.mjs: mobile:true now yields a 980px layout
 });
 await goto(s, URL_);
 await evaluate(s, `new Promise(r => setTimeout(r, 800))`);

@@ -32,7 +32,7 @@ const url=process.env.QA_URL;
 const widths=(process.env.QA_WIDTHS||"").split(",").map(Number);
 const out=[];
 for (const W of widths){
-  await s.send("Emulation.setDeviceMetricsOverride",{width:W,height:900,deviceScaleFactor:1,mobile:W<700});
+  await s.send("Emulation.setDeviceMetricsOverride",{width:W,height:900,deviceScaleFactor:1,mobile:false});
   await goto(s,url);
   await evaluate(s,'document.fonts.ready.then(()=>1)');
   await evaluate(s,'new Promise(r=>setTimeout(r,700))');

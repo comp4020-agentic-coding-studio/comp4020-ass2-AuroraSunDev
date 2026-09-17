@@ -33,6 +33,16 @@ export function serve(root, port) {
   return new Promise((r) => server.listen(port, () => r(server)));
 }
 
+// A note on viewport emulation, paid for twice.
+// `Emulation.setDeviceMetricsOverride` with `mobile: true` does NOT give a
+// 390px layout viewport in current headless Chrome: device-width stops
+// resolving against the emulated screen and the page lays out at the 980px
+// mobile fallback, with `<meta name=viewport>` present and correct. Nothing
+// errors; the tool prints `"viewport": 980` and reports no overflow, which
+// reads exactly like a pass. Every tool here therefore passes `mobile: false`
+// and sets the width directly --- that gives a true layout viewport at any
+// width, and the media queries this site is checked against key off width
+// alone. Read the `viewport` field in a tool's output before believing it.
 export async function launch(port = 9333, extraArgs = []) {
   const proc = spawn(CHROME, [
     "--headless=new", `--remote-debugging-port=${port}`,

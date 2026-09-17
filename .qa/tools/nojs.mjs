@@ -7,7 +7,7 @@ const [, , url, out, wS, hS] = process.argv;
 const { proc, wsUrl } = await launch(9345);
 const s = await connect(wsUrl);
 await s.send("Emulation.setDeviceMetricsOverride", {
-  width: +wS, height: +hS, deviceScaleFactor: 1, mobile: +wS < 700,
+  width: +wS, height: +hS, deviceScaleFactor: 1, mobile: false,
 });
 await s.send("Emulation.setScriptExecutionDisabled", { value: true });
 await goto(s, url);

@@ -9,7 +9,7 @@ const resizeAt = Number(flags.find((f) => f.startsWith("--resize="))?.split("=")
 const { proc, wsUrl } = await launch(9349);
 const s = await connect(wsUrl);
 const metrics = (w, h) => s.send("Emulation.setDeviceMetricsOverride",
-  { width: w, height: h, deviceScaleFactor: 1, mobile: w < 700 });
+  { width: w, height: h, deviceScaleFactor: 1, mobile: false });
 await metrics(1920, 1080);
 await goto(s, url);
 
