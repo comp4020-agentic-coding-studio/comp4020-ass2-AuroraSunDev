@@ -30,14 +30,17 @@ const FAMILIES = [
 
 <div class="fam-grid-wrap">
   <ul class="fam-grid" role="list">
+    {/* Name first, drawing second --- the order both references use, and the
+        order the chapter reads in: the family name is the label the rest of
+        the course cites, and the drawing is what it looks like. */}
     {FAMILIES.map((f) => (
       <li class="fam-cell">
+        <span class="fam-text">
+          <b class:list={["fam-name", "display", `fam-name--${f.family}`]}>{f.name}</b>
+          <span class="fam-line">{f.line}</span>
+        </span>
         <span class="fam-fig" aria-hidden="true">
           <FailureFamilyFigure family={f.family} />
-        </span>
-        <span class="fam-text">
-          <b class="fam-name display">{f.name}</b>
-          <span class="fam-line">{f.line}</span>
         </span>
       </li>
     ))}

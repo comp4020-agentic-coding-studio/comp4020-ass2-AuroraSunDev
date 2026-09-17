@@ -15,9 +15,10 @@
  * changes, so there is no second copy to keep in step.
  *
  * The numbers are positions in the manual, not a sequence to be worked
- * through --- nobody reads a field manual front to back --- so they are set
- * as record numbers in the mono face rather than as an ordered list a reader
- * is invited to start at 01 and finish at 09.
+ * through --- nobody reads a field manual front to back --- so the list is
+ * unordered and the numbers are record marks. They are set in the display
+ * face at the weight the body's own chapter headings use, so that following
+ * "04" lands on something that says 04 in the same hand.
  */
 
 /** The chapters, in page order. `id` must match the heading's generated slug. */
@@ -40,7 +41,7 @@ const CHAPTERS = [
     {CHAPTERS.map((c) => (
       <li>
         <a href={`#${c.id}`}>
-          <span class="manual-contents-n mono" aria-hidden="true">{c.n}</span>
+          <span class="manual-contents-n" aria-hidden="true">{c.n}</span>
           <span class="manual-contents-t">{c.text}</span>
         </a>
       </li>

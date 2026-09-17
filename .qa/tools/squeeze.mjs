@@ -29,7 +29,13 @@ import {launch,connect,goto,evaluate} from "./cdp.mjs";
 const {proc,wsUrl}=await launch(+(process.env.QA_PORT ?? 9359));
 const s=await connect(wsUrl);
 const url=process.env.QA_URL;
-const widths=(process.env.QA_WIDTHS||"").split(",").map(Number);
+/* Default sweep: the two graded viewports plus the widths between them where
+   a fixed column count outlives the content. Without a default this read
+   `[NaN]`, which Chrome takes as "no override" --- the tool then measured one
+   arbitrary width and printed an empty finding list that looked like a pass
+   across the whole range. */
+const DEFAULT_WIDTHS = [390, 480, 560, 620, 700, 768, 860, 960, 1024, 1100, 1250, 1440, 1680, 1920];
+const widths=(process.env.QA_WIDTHS ? process.env.QA_WIDTHS.split(",").map(Number) : DEFAULT_WIDTHS);
 const out=[];
 for (const W of widths){
   await s.send("Emulation.setDeviceMetricsOverride",{width:W,height:900,deviceScaleFactor:1,mobile:false});
@@ -63,9 +69,23 @@ for (const W of widths){
       if (el.closest("[inert]") || el.closest('[aria-hidden="true"]')) continue;
       if (r.width <= 2 || r.height <= 2) continue;
       const cs = getComputedStyle(el);
-      const fs = parseFloat(cs.fontSize);
-      const lh = parseFloat(cs.lineHeight) || fs * 1.4;
-      const lines = Math.round(r.height / lh);
+      /* Count the lines the TEXT occupies, not the lines the BOX could hold.
+         A <td> is as tall as the tallest cell in its row, so "Annotated
+         image" --- two comfortable lines --- was measured against a 182px
+         box and reported as seven lines of 2.1 characters. The same is true
+         of any stretched flex or grid item. A range over the element's own
+         contents gives one rect per rendered line. */
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const lineTops = new Set();
+      let textW = 0;
+      for (const b of range.getClientRects()) {
+        if (b.width < 1 || b.height < 1) continue;
+        lineTops.add(Math.round(b.top));
+        textW = Math.max(textW, b.width);
+      }
+      range.detach?.();
+      const lines = Math.max(1, lineTops.size);
       const chars = el.textContent.trim().length;
       // a column so narrow the text stacks: many lines for few characters
       const perLine = chars / Math.max(1, lines);
@@ -74,7 +94,7 @@ for (const W of widths){
          measuring against its own font size flagged every one of them. */
       if (lines >= 3 && perLine < 9 && r.width < 140) {
         cramped.push({ tag: el.tagName.toLowerCase(), cls: (el.className||"").toString().slice(0,34),
-          w: Math.round(r.width), lines, perLine: +perLine.toFixed(1),
+          w: Math.round(r.width), textW: Math.round(textW), lines, perLine: +perLine.toFixed(1),
           txt: el.textContent.trim().slice(0, 34) });
       }
       /* Line boxes, not the union box. An inline <a> wrapped over two lines

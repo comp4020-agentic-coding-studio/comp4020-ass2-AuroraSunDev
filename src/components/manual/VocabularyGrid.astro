@@ -20,7 +20,7 @@ const TERMS = [
   { name: "boundary", term: "Boundary", gloss: "The limits of the system of interest." },
   { name: "interface", term: "Interface", gloss: "The plane where two components meet." },
   { name: "load", term: "Load", gloss: "The controlled action applied to the system." },
-  { name: "failure", term: "Failure", gloss: "The condition at which the system no longer satisfies its intent." },
+  { name: "failure", term: "Failure", fail: true, gloss: "The condition at which the system no longer satisfies its intent." },
   { name: "load-case", term: "Load case", gloss: "The declared combination of load, setup and success criteria." },
 ] as const;
 ---
@@ -32,7 +32,7 @@ const TERMS = [
         <ManualIcon name={t.name} />
       </span>
       <span class="vocab-text">
-        <b class="vocab-term">{t.term}</b>
+        <b class:list={["vocab-term", "fail" in t && t.fail && "vocab-term--fail"]}>{t.term}</b>
         <span class="vocab-gloss">{t.gloss}</span>
       </span>
     </li>
