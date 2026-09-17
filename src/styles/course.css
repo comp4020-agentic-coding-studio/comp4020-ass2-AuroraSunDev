@@ -345,14 +345,35 @@ h1,
 
 .slop-nav .slop-nav-details { position: relative; }
 
+/* The summary has to wear the same box as the links beside it. It was
+   inheriting the body face at 18px with no padding, against the theme's
+   15.75px links padded `--at-spacing-xs --at-spacing-sm` --- 28.8px tall
+   against 34.2px, so "Course" sat larger than its neighbours and its text
+   rode above their baseline. These are the theme's own declarations for
+   `.at-nav-links a`, not numbers matched by eye. */
 .slop-nav .slop-nav-summary {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
+  padding: var(--at-spacing-sm);
+  border-radius: var(--at-border-radius);
+  color: var(--at-text-secondary);
+  font-size: var(--at-font-size-sm);
   cursor: pointer;
   list-style: none;
+  transition: color 0.15s, background-color 0.15s;
   /* Safari draws its own triangle through ::-webkit-details-marker. */
   user-select: none;
+}
+.slop-nav .slop-nav-summary:hover {
+  color: var(--at-text);
+  background: var(--at-accent-soft);
+}
+@media (width >= 640px) {
+  .slop-nav .slop-nav-summary {
+    padding: var(--at-spacing-xs) var(--at-spacing-sm);
+    white-space: nowrap;
+  }
 }
 .slop-nav .slop-nav-summary::-webkit-details-marker { display: none; }
 .slop-nav .slop-nav-summary::marker { content: ""; }
