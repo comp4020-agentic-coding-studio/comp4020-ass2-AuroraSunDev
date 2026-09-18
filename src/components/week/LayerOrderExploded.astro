@@ -565,6 +565,20 @@ const VERDICT_WORD = { accepted: "Accepted", rejected: "Rejected" } as const;
     }
   }
 
+  /* At 1280px .lox itself gains a fourth column for the notes rail (below),
+     which roughly halves each stack's own width right at that breakpoint.
+     The 13rem drawing column above doesn't know that happened and keeps
+     asking for its full width, so the label column --- sized off whatever is
+     left --- collapsed to a few px there: a material name wrapped one or two
+     letters to a line and successive labels overlapped, unreadable. Capping
+     the drawing column at a share of its own row keeps it in proportion with
+     the space the notes rail actually left it. */
+  @media (width >= 1280px) {
+    .lox-order {
+      grid-template-columns: minmax(0, min(13rem, 40%)) minmax(0, 1fr);
+    }
+  }
+
   .lox-svg {
     display: block;
     width: 100%;
