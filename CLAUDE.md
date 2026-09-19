@@ -26,6 +26,11 @@ narrowed to what's likely to matter across most Assignment 2 sessions.
   ~490px layout cropped to 390 and silently hides overflow that's actually
   there. Load the page in a 390px `<iframe>` on a wider window when checking
   the small viewport instead.
+- CDP's `Emulation.setDeviceMetricsOverride` with `mobile: true` no longer
+  resolves `width=device-width` against the emulated screen --- it silently
+  falls back to a ~980px layout regardless of the requested width. Pass
+  `mobile: false` and set the width directly; a tool reporting "clean at
+  390px" while using `mobile: true` has not actually measured 390px.
 
 ## The base path
 
@@ -39,3 +44,11 @@ same way.
 
 Before trusting a new check you've added, make it fail for the right reason
 once: feed it something it should reject and read the message it prints.
+
+## Visual implementation
+
+Don't default to SVG as the first tool for a page's visual elements. First
+judge what the image actually is: if it's simple geometric line art
+(diagrams, schematics, exploded/technical drawings, icons), draw it as SVG;
+if it isn't --- anything photographic, textured, or illustrative --- use the
+image-generation model API instead of approximating it in SVG shapes.

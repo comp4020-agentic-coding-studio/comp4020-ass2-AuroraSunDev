@@ -2,59 +2,18 @@
 
 ## What I built
 
-**SLOP2895 — The Sandwich Must Hold**, a twelve-week course site that treats a
-sandwich as a structural specimen: how layers carry load, exchange moisture and
-come apart under handling. The joke is the subject, never the delivery. I
-decided early that a good course site is one a marker can be *answered* by — it
-states what the course requires, what counts as evidence, and what it cannot
-establish — and that everything which makes a real course trustworthy is
-structural, not decorative: an assessment total that adds up, twelve weeks that
-are actually dated, and a classification the course is honest about having
-invented.
+I built a twelve-week Slop University course site around a deadpan materials-failure premise: the humour sits in the subject, while the site itself behaves like a serious syllabus. Before implementation I studied real courses with unusual premises — MIT's fighting-game design course and Michigan State's zombie-survival course — and used them to set the standard: assessment weights must add to 100%, all twelve teaching weeks must be dated, and invented classifications must be presented honestly.
+
+I also fixed the visual direction before Claude started building. A past assignment had shown me that letting Claude make visual decisions while coding produced inconsistent results, so I used a Codex front-end plugin to develop the reference set and wrote the visual language into `plan.md`. The committed reference material is in [`design-references/`](design-references/). Claude then implemented against that fixed direction rather than redesigning as it went ([`8aa6548`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/8aa6548)).
 
 ## How I got here
 
-I wrote the design first and treated it as evidence, committing the plan and its
-reference set before any page existed
-([`8aa6548`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/8aa6548)),
-then built the homepage back against those references
-([`803a7e0`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/803a7e0)).
-The curriculum, the four briefs and the real Week 4 deck followed, and the site
-grew from eight pages to thirty-one across
-[`063a38c...8c79630`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/compare/063a38c...8c79630).
+I split the build into phases with a manual gate between them so scope drift could be caught before the next phase. The first significant failure exposed a missing capability: the hero panels called for photographs of a specimen under load, but no image-generation API was connected. Claude therefore fell back to an SVG cross-section, reasoning that "a photograph is not something this repo can honestly ship" ([`2ae288f`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/2ae288f)).
 
-The decisions I cared about most I encoded rather than remembered. Four promises
-about the course became executable checks in `spec/course-promises.test.ts`
-([`321e349`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/321e349)):
-the assessment totals exactly 100%; the twelve weeks run 1–12 dated and
-gapless; an *anti-recipe gate* fails the build on food-blog vocabulary, cooking
-quantities or preparation instructions, and requires both entry pages to promise
-that no student must handle or consume food; and the four failure families may
-never be presented as a professional standard. Those checks are the record of
-what I decided had to stay true — a marker can read them instead of trusting me.
+That fallback was defensible without an API, but not once one existed. After connecting it, I rejected the SVG because "the SVG rig read as a generic outline diagram, not as a specimen under test" ([`1aa2ef1`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/1aa2ef1)). I replaced it with generated photographs and later a reusable pipeline ([`736694e`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/736694e)).
 
-The harness in `CLAUDE.md` holds what I kept getting wrong. Two rules earned
-their place. *Check both graded viewports* — with the note that headless Chrome
-clamps its layout viewport near 490px, so a 390px check must run in an iframe or
-it silently passes. And *make a new check fail for the right reason once before
-trusting it*: obeying that rule caught three error messages I had written into
-my own test comments that the tests never actually printed.
+The pipeline moved the problem rather than closing it. Claude still had no standing rule for when an image should be SVG and when it should use the generator, and twice independently concluded that lettered evidence panels had to remain markup because "the model cannot letter" ([`7849126`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/7849126), [`942e81c`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/942e81c)). Each call was right; what was missing was a persistent rule. I had treated `CLAUDE.md` as already complete because `/comp4020:start` carried forward rules from an earlier project ([`74525a6`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/74525a6)); that assumption meant the repeated decision did not trigger an audit until the final pass.
 
-The harness kept paying out. A tooling check found evidence photographs
-rendering at the correct size 36px left of their own figures — invisible in a
-screenshot, caused by a theme rule that bleeds images past the page margins
-([`3b33093`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/3b33093)).
-Measuring found the header sitting in an 864px column while every section below
-it ran to 1760px
-([`8525404`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/8525404)),
-and the homepage drawing the same twelve weeks twice
-([`7b65626`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/7b65626)).
-The pattern I would keep: when a layout looks wrong, measure it rather than
-squint at it.
+That audit clarified what belonged where in the harness. Course facts belong in executable checks, so the four promises — assessment totals to 100%, twelve gapless dated weeks, an anti-recipe gate, and no failure family presented as a professional standard — live in `spec/course-promises.test.ts` ([`321e349`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/321e349)). Agent-behaviour rules belong in `CLAUDE.md`: check both graded viewports, since headless Chrome clamps its layout viewport at ~490px and CDP's `mobile: true` emulation silently falls back to a ~980px layout regardless of the requested width; and make every new check fail for the intended reason once. Those rules came from finding that viewport emulation and a squeeze detector had both been giving false confidence; the detector silently measured nothing because an unset width list became `NaN` ([`499c5fb`](https://github.com/comp4020-agentic-coding-studio/comp4020-ass2-AuroraSunDev/commit/499c5fb)). Once those checks were trustworthy, I could reduce the manual gates and let Claude self-check between phases.
 
-What I deliberately left unencoded: voice. Nothing checks whether the writing is
-dry enough or the deadpan lands, because a check that graded tone would either
-be trivial or wrong, and that judgement is the marker's. I also cut the optional
-Load Tester rather than ship a half-built interaction, and left the Field
-Manual's wide tables scrolling sideways on a phone rather than restructure them
-late.
+I deliberately left tone unencoded: no automated check can decide whether the deadpan lands, so that remains a human judgement.
